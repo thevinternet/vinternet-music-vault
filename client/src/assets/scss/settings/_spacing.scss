@@ -1,0 +1,22 @@
+// Breakpoints
+$extra-small: 330px;
+$small: 600px;
+$small-top: 899px;
+$medium: 900px;
+$medium-top: 1199px;
+$large: 1200px;
+$extra-large: 1200px;
+
+// Incremetal Spacing Units
+$base-spacing-unit: 6px;
+$base-spacing-unit-tiny: round($base-spacing-unit * 2); // 12px
+$base-spacing-unit-small: round($base-spacing-unit * 3); // 18px
+$base-spacing-unit-medium: round($base-spacing-unit * 4); // 24px
+$base-spacing-unit-large: round($base-spacing-unit * 5); // 30px
+$base-spacing-unit-extra-large: round($base-spacing-unit * 6); // 36px
+
+/*--- Avatar measurements ---*/
+
+$image-size-small: 60px;
+$image-size-medium: 95px;
+$image-size-large: 130px;

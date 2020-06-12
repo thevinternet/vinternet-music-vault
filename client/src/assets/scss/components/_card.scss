@@ -1,0 +1,72 @@
+/*--- Card ---*/
+
+.card,
+[class*="card--"] {
+  @include media($extra-small) {
+    @include card;
+  }
+}
+
+/*--- Card inline ---*/
+
+.card--inline .card__details * {
+  display: inline;
+}
+
+/*--- Card details ---*/
+
+.card__details {
+  @include first-child;
+  @include last-child;
+  @include media($extra-small) {
+    flex: 1 1 0;
+  }
+  > * {
+    margin-top: $base-spacing-unit;
+    margin-bottom: $base-spacing-unit;
+  }
+  .details--inline {
+    list-style-type: none;
+    padding-left: 0;
+    li {
+      margin-bottom: $base-spacing-unit;
+      @include fontsize(14);
+    }
+    @include media($small) {
+      :last-child::after {
+        content: "";
+        padding: 0;
+      }
+      li {
+        display: inline-block;
+      }
+      li::after {
+        content: "|";
+        padding: 0 $base-spacing-unit-tiny;
+      }
+    }
+  }
+}
+
+/*--- Card extended ---*/
+
+.card--extended {
+  @include last-child;
+}
+
+/*--- Card styles ---*/
+
+.card {
+  @include figure;
+  @include avatar--round;
+}
+
+.card--small {
+  @include figure("small");
+  @include avatar--round("small");
+}
+
+.card--large {
+  @include figure("large");
+  @include avatar--round("large");
+}

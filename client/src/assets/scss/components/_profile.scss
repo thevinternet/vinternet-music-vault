@@ -1,0 +1,17 @@
+.profile__picture img {
+    margin: ($base-spacing-unit + 1) $base-spacing-unit $base-spacing-unit
+    $base-spacing-unit;
+    background-color: $white;
+    border-radius: $base-spacing-unit;
+    border: solid 1px $grey-4;
+}
+
+.profile__details {
+    padding: 0 $base-spacing-unit-small 0 $base-spacing-unit-tiny;
+    flex-grow: 1;
+}
+
+.profile__actions {
+    padding: $base-spacing-unit-small 0;
+}
+  

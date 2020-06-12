@@ -1,0 +1,66 @@
+ol,
+ul {
+  margin: 0 0 $base-spacing-unit-small 0;
+  padding: 0 0 0 $base-spacing-unit-medium;
+}
+
+li {
+  margin-bottom: $base-spacing-unit-tiny;
+}
+
+dl,
+dt,
+dd {
+  margin: 0;
+  padding: 0;
+  word-break: break-word;
+}
+
+/*--- List Base Settings ---*/
+
+.list {
+  @include list;
+  @include list-headings;
+}
+
+.list--deep {
+  > li {
+    @include block--deep;
+  }
+}
+
+/*--- List Block Options ---*/
+
+.list--block {
+  @include list--block;
+  padding-top: $base-spacing-unit-medium;
+  padding-bottom: $base-spacing-unit-medium;
+  border-top: 1px dashed $grey-4;
+  border-bottom: 1px dashed $grey-4;
+}
+
+.list--block__deep {
+  @include list--block;
+  li {
+    @include block--deep;
+  }
+}
+
+/*--- List Pipe Options ---*/
+
+.list--pipe {
+  @include list--pipe;
+}
+
+.list--pipe__deep {
+  @include list--pipe;
+  li {
+    @include block--deep;
+  }
+}
+
+/*--- List Definition ---*/
+
+dl {
+  @include list--definition;
+}

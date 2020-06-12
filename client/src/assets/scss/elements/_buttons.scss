@@ -1,0 +1,53 @@
+/*-- Default Button --*/
+
+button {
+  width: auto;
+  cursor: pointer;
+  color: inherit;
+  background-color: transparent;
+  padding: 0;
+  border: 0;
+  font-size: $base-font-size;
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+  }
+}
+
+.btn {
+  @include btn;
+}
+
+/*-- Button Variants --*/
+
+a.btn--primary,
+.btn--primary {
+  @include button($white, $purple-1, $purple-2);
+}
+
+a.btn--secondary,
+.btn--secondary {
+  @include button($grey-1, $grey-4, $grey-5);
+}
+
+a.btn--grey,
+.btn--grey {
+  @include button($black, $grey-4, $white, $grey-4);
+}
+
+a.btn--success,
+.btn--success {
+  @include button($white, $success--dark, $success);
+}
+
+a.btn--warning,
+.btn--warning {
+  @include button($white, $warning--dark, $warning);
+}
+
+a.btn--disabled,
+.btn--disabled {
+  @include button($grey-1, $grey-4, $grey-4);
+  pointer-events: none;
+  cursor: not-allowed;
+}

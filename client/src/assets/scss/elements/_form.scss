@@ -1,0 +1,322 @@
+/*-- Core Form Element Styling --*/
+
+form,
+legend,
+label {
+  margin: 0 0 $base-spacing-unit-tiny 0;
+}
+
+input,
+textarea,
+select,
+fieldset {
+  margin: 0 0 $base-spacing-unit-large 0;
+}
+
+form {
+  width: 100%;
+  > :last-child {
+    //margin-bottom: $base-spacing-unit-tiny;
+    border-bottom: none;
+  }
+}
+
+label {
+  display: block;
+  line-height: 1.5;
+}
+
+fieldset {
+  border: none;;
+  margin: 0;
+  padding: 0;
+  &:first-of-type {
+    margin-top: $base-spacing-unit-extra-large;
+  }
+  &:last-of-type {
+    margin-bottom: $base-spacing-unit-large;
+    border-bottom: solid 1px $grey-4;
+  }
+}
+
+input,
+textarea,
+select,
+datalist {
+  width: 100%;
+  display: block;
+  padding: ($base-spacing-unit-tiny - 1);
+  @include media($small) {
+    width: 70%;
+  }
+}
+
+input {
+  &[type="text"],
+  &[type="email"] {
+    border-radius: 0;
+    appearance: none;
+  }
+  &[type="text"],
+  &[type="email"] {
+    border: 2px solid $grey-3;
+  }
+  &[name="postcode"] {
+    text-transform: uppercase;
+  }
+  &[type="submit"] {
+    width: auto;
+    cursor: pointer;
+  }
+  &[type="radio"]:checked,
+  &[type="radio"]:not(:checked),
+  &[type="checkbox"]:checked,
+  &[type="checkbox"]:not(:checked) {
+    position: absolute;
+    appearance: none;
+    width: 2px;
+    height: 2px;
+    opacity: 0;
+    margin: 0;
+  }
+  &[type="radio"]:checked + label,
+  &[type="radio"]:not(:checked) + label,
+  &[type="checkbox"]:checked + label,
+  &[type="checkbox"]:not(:checked) + label {
+    position: relative;
+    padding-left: ($base-spacing-unit-medium * 2);
+    color: $grey-1;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  &[type="radio"]:checked + label:before,
+  &[type="radio"]:not(:checked) + label:before,
+  &[type="checkbox"]:checked + label:before,
+  &[type="checkbox"]:not(:checked) + label:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -6px;
+    width: 32px;
+    height: 32px;
+    @include media($small) {
+      width: 38px;
+      height: 38px;
+    }
+    border: 2px solid $grey-3;
+    background: $white;
+  }
+  &[type="radio"]:checked + label:before,
+  &[type="radio"]:not(:checked) + label:before {
+    border-radius: 100%;
+  }
+  &[type="radio"]:checked + label:after,
+  &[type="radio"]:not(:checked) + label:after {
+    content: "";
+    position: absolute;
+    top: 0px;
+    left: 6px;
+    width: 20px;
+    height: 20px;
+    @include media($small) {
+      top: 2px;
+      left: 8px;
+      width: 22px;
+      height: 22px;
+    }
+    border-radius: 100%;
+    background: $grey-1;
+  }
+  &[type="checkbox"]:checked + label:after,
+  &[type="checkbox"]:not(:checked) + label:after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 7px;
+    @include media($small) {
+      top: 5px;
+      left: 10px;
+    }
+    width: 18px;
+    height: 11px;
+    border-style: solid;
+    border-width: 0 0 4px 4px;
+    border-color: $grey-1;
+    border-top-color: transparent;
+    background: transparent;
+    transform: rotate(-45deg);
+  }
+  &[type="radio"]:not(:checked) + label:after,
+  &[type="checkbox"]:not(:checked) + label:after {
+    opacity: 0;
+    transform: scale(0);
+  }
+  &[type="radio"]:checked + label:after {
+    opacity: 1;
+    transform: scale(1);
+  }
+  &[type="radio"]:focus + label::before,
+  &[type="checkbox"]:focus + label::before {
+    box-shadow: 0 0 0 4px $yellow;
+  }
+}
+
+select {
+  height: 48px;
+  background-color: $white;
+  border: 0;
+  outline: solid 2px $grey-3;
+  outline-offset: -2px;
+}
+
+textarea {
+  min-height: 120px;
+  border: 2px solid $grey-3;
+}
+
+/*-- File Upload Specific --*/
+
+input[type="file"] {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  opacity: 0;
+  z-index: -1;
+  + label {
+    display: inline-block;
+    cursor: pointer;
+  }
+}
+
+/*-- Pseudo State Styling (including Mozilla focus overides) --*/
+
+input:focus,
+button:focus,
+select:focus,
+textarea:focus {
+  z-index: 10;
+  outline: none;
+}
+
+input:focus,
+textarea:focus {
+  box-shadow: 0 0 0 4px $yellow;
+}
+
+select:focus {
+  outline: 5px solid $yellow;
+  outline-offset: -2px;
+}
+
+datalist option:focus {
+  outline: 3px solid $yellow;
+  outline-offset: -5px;
+}
+
+input[type="file"]:focus + label,
+input[type="file"].js-has-focus + label {
+  box-shadow: 0 0 0 4px $yellow;
+}
+
+/*-- Form Error Messaging --*/
+
+.message--error {
+  color: $warning--dark;
+  + input,
+  + textarea {
+    border: solid 2px $warning--dark;
+    box-shadow: none;
+    &:focus {
+      box-shadow: 0 0 0 3px $warning--dark;
+    }
+  }
+  + select {
+    outline: solid 2px $warning--dark;
+    outline-offset: -2px;
+    box-shadow: none;
+    &:focus {
+      outline: 5px solid $warning--dark;
+      outline-offset: -2px;
+    }
+  }
+  + [class*="input-group"] {
+    input {
+      &[type="checkbox"]:checked + label:before,
+      &[type="checkbox"]:not(:checked) + label:before {
+        border: solid 2px $warning--dark;
+        box-shadow: none;
+      }
+      &[type="checkbox"]:focus + label::before {
+        box-shadow: 0 0 0 3px $warning--dark;
+        outline: none;
+      }
+    }
+  }
+}
+
+/*-- Form Block Holders --*/
+
+.input-wrapper {
+  margin-bottom: $base-spacing-unit-extra-large;
+  border-bottom: $base-spacing-unit dotted $grey-4;
+  & > :last-child {
+    margin-bottom: $base-spacing-unit-extra-large;
+  }
+}
+
+.input-group,
+.input-group__inline {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.input-group {
+  label {
+    flex: 0 0 100%;
+  }
+  input[type="radio"] {
+    margin-bottom: $base-spacing-unit;
+  }
+}
+
+.input-group__inline {
+  margin-top: $base-spacing-unit;
+  margin-bottom: 0;
+  @include media($small) {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 24px;
+    input[type="checkbox"] + label,
+    input[type="radio"] + label {
+      padding-right: $base-spacing-unit-large;
+    }
+  }
+}
+
+.input-group__dropdown {
+  margin-bottom: $base-spacing-unit-large;
+  input {
+    margin-bottom: $base-spacing-unit;
+  }
+  datalist {
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 0 1px;
+    :first-child {
+      border-top: 1px solid $grey-3;
+    }
+    :last-child {
+      border-bottom: 1px solid $grey-3;
+    }
+    option {
+      padding: ($base-spacing-unit-tiny - 3);
+      border-left: 1px solid $grey-3;
+      border-right: 1px solid $grey-3;
+      border-bottom: 1px dashed $grey-3;
+      @include fontsize(13);
+      cursor: pointer;
+    }
+  }
+}

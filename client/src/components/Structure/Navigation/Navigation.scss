@@ -1,0 +1,31 @@
+@import "../../../assets/scss/settings.scss";
+@import "../../../assets/scss/components/container.scss";
+
+nav {
+  display: flex;
+  width: 100%;
+  ul {
+    display: flex;
+    flex-grow: 1;
+    align-items: flex-end;
+    list-style-type: none;
+    :first-child {
+      margin-left: auto;
+    }
+    :last-child {
+      padding-right: 0;
+    }
+    li {
+      @include fontsize(22);
+      padding-right: $base-spacing-unit-medium;
+      color: $white;
+      > a {
+        color: $white;
+        text-decoration: none;
+        :hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}

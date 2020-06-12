@@ -1,0 +1,26 @@
+h1,
+h2,
+h3,
+p {
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+p {
+  margin: 0 0 $base-spacing-unit-small 0;
+}
+
+h1 {
+  @include fontsize(40);
+  margin: 0 0 $base-spacing-unit-small 0;
+}
+
+h2 {
+  @include fontsize(28);
+  margin: 0 0 $base-spacing-unit-tiny 0;
+}
+
+h3 {
+  @include fontsize(22);
+  margin: 0 0 $base-spacing-unit-tiny 0;
+}

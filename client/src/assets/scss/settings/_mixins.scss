@@ -1,0 +1,307 @@
+/*-- Font Size [size] Pass Pixel value to get REM/Pixel fallback --*/
+
+@mixin fontsize($size) {
+  font-size: ($size / ($base-font-size / 1px)) + 0rem;
+}
+
+/*-- Links [link colour, link decoration, visited colour, hover colour] --*/
+
+@mixin links($link-color, $link-decoration, $visited-color, $hover-color) {
+  color: $link-color;
+  text-decoration: $link-decoration;
+  &:visited {
+    color: $visited-color;
+  }
+  &:hover {
+    color: $hover-color;
+    text-decoration: none;
+  }
+}
+
+/*-- Buttons --*/
+
+@mixin btn {
+  border: 2px solid transparent;
+  border-radius: $base-spacing-unit;
+  padding: $base-spacing-unit-tiny $base-spacing-unit-small;
+  margin-right: $base-spacing-unit-small;
+  margin-bottom: $base-spacing-unit-tiny;
+  &:link {
+    display: inline-block;
+  }
+}
+
+/*-- Button Mixin [text colour, background colour, background hover colour, border colour] --*/
+
+@mixin button(
+  $color,
+  $background-color,
+  $background-hover,
+  $border-color: transparent
+) {
+  @include btn;
+  @include links($color, none, $color, $color);
+  background-color: $background-color;
+  border-color: $border-color;
+  &:hover,
+  &:focus {
+    text-decoration: none;
+  }
+  &:hover {
+    background-color: $background-hover;
+  }
+  &:focus {
+    color: $color;
+    box-shadow: 0 0 0 ($base-spacing-unit / 2) $yellow;
+    outline: none;
+  }
+}
+
+/*--- Theme [background colour, typography, link colour, hover color, accent colour] ---*/
+
+@mixin theme($background, $color, $link-color, $hover-color, $accent) {
+  color: $color;
+  border-color: $accent;
+  background-color: $background;
+
+  a {
+    @include links($link-color, underline, $color, $hover-color);
+    &:focus {
+      color: $purple-1;
+      text-decoration: none;
+    }
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    color: $color;
+
+    &:after {
+      background-color: $accent;
+    }
+  }
+}
+
+/*--- Remove top/bottom margins ---*/
+
+@mixin first-child {
+  :first-child {
+    margin-top: 0;
+  }
+}
+
+@mixin last-child {
+  :last-child {
+    margin-bottom: 0;
+    margin-right: 0;
+  }
+}
+
+/*--- List Mixins ---*/
+
+@mixin list {
+  padding-left: 0;
+  list-style: none;
+
+  ol {
+    list-style: decimal;
+  }
+  ul {
+    list-style: disc;
+  }
+  > li {
+    display: block;
+    position: relative;
+    @include last-child;
+    margin-bottom: $base-spacing-unit;
+    color: $grey-2;
+
+    &.active {
+      color: $purple-1;
+      text-decoration: none;
+    }
+  }
+}
+
+@mixin list--block {
+  @include list;
+  @include list-headings;
+
+  > li {
+    width: 100%;
+    @include block;
+  }
+}
+
+@mixin list--pipe {
+  @include list;
+  @include list-headings;
+
+  > li {
+    width: 100%;
+    margin-bottom: 0;
+    background: transparent;
+    border-bottom: 1px solid $grey-3;
+    padding: $base-spacing-unit-tiny 0 ($base-spacing-unit-tiny - 1) 0;
+  }
+  > li:first-of-type {
+    border-top: solid 1px $grey-3;
+  }
+}
+
+@mixin list--definition {
+  @include list;
+  width: 100%;
+  margin: 0 0 $base-spacing-unit-small;
+
+  dt,
+  dd {
+    margin-top: $base-spacing-unit-tiny;
+    margin-bottom: $base-spacing-unit-tiny;
+    @include media($extra-small) {
+      margin-top: 0;
+    }
+  }
+
+  dt {
+    font-weight: bold;
+    padding-right: $base-spacing-unit-tiny;
+    @include media($extra-small) {
+      float: left;
+    }
+  }
+  dt:after {
+    content: ":";
+  }
+  ul {
+    @include list;
+    display: inline-block;
+  }
+  ul li {
+    display: block;
+  }
+  dd ul > li {
+    margin-bottom: 0;
+  }
+}
+
+/*--- Heading Mixins [ Usage - headings within lists] ---*/
+
+@mixin list-headings {
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @include fontsize(18);
+    line-height: 1.334; // 24px
+  }
+}
+
+/*--- Block Mixins ---*/
+
+@mixin block {
+  padding: $base-spacing-unit-tiny $base-spacing-unit-small $base-spacing-unit-tiny
+    $base-spacing-unit-small;
+  background-color: $white;
+  @include last-child;
+}
+
+@mixin block--deep {
+  padding-top: $base-spacing-unit-extra-large;
+  padding-bottom: $base-spacing-unit-extra-large;
+}
+
+/*--- Card Mixins ---*/
+
+@mixin card {
+  display: flex;
+  flex-wrap: wrap;
+  flex-basis: 100%;
+  align-items: center;
+}
+
+/*--- Figure Mixins ---*/
+
+@mixin figure($size: null) {
+  figure {
+    margin-top: 0;
+    margin-left: 0;
+    margin-bottom: 0;
+    margin-right: if(
+      $size == "small",
+      $base-spacing-unit-tiny,
+      $base-spacing-unit-small
+    );
+
+    @if ($size == "small") {
+      max-width: $image-size-small;
+    } @else if ($size == "large") {
+      max-width: $image-size-large;
+    } @else {
+      max-width: $image-size-medium;
+    }
+
+    width: 100%;
+  }
+}
+
+/*--- Picture Mixins ---*/
+
+@mixin avatar--round($size: null) {
+  .avatar--round picture {
+    @if ($size == "small") {
+      min-height: $image-size-small;
+    } @else if ($size == "large") {
+      min-height: $image-size-large;
+    } @else {
+      min-height: $image-size-medium;
+    }
+  }
+}
+
+/*-- CSS Animations [duration, timing function, direction, fill mode, delay, name] --*/
+
+@mixin css-animation(
+  $duration,
+  $timing-func,
+  $direction,
+  $fill-mode,
+  $delay,
+  $name
+) {
+  animation-duration: $duration;
+  animation-timing-function: $timing-func;
+  animation-direction: $direction;
+  animation-fill-mode: $fill-mode;
+  animation-delay: $delay;
+  animation-name: $name;
+}
+
+/*-- Media Queries [minimum size, maximum size (opt)] --*/
+
+@mixin media($min, $max: null) {
+  @if ($max) {
+    @media (max-width: $max) and (min-width: $min) {
+      @content;
+    }
+  } @else {
+    @media (min-width: $min) {
+      @content;
+    }
+  }
+}
+
+/*-- Screen Reader --*/
+
+@mixin screenreader {
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: none;
+  overflow: hidden;
+  position: absolute;
+  clip: rect(0 0 0 0);
+}

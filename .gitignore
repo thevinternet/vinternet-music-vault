@@ -1,0 +1,40 @@
+# Environment Variables
+.env
+
+# Server
+server/node_modules
+server/logs
+npm-debug.log*
+*.npm
+*.node_repl_history
+*.lock-wscript
+*.log
+*.tgz
+
+# Client
+client/src/assets/images/artists/*
+!client/src/assets/images/artists/avatar.jpg
+client/src/assets/images/labels/*
+!client/src/assets/images/labels/avatar.jpg
+client/src/assets/images/releases/*
+!client/src/assets/images/releases/avatar.jpg
+client/node_modules
+client/coverage
+client/build
+client/.pnp
+.pnp.js
+yarn-debug.log*
+yarn-error.log*
+
+# Operating System
+.DS_Store
+Desktop.ini
+ehthumbs.db
+Thumbs.db
+$RECYCLE.BIN/
+._*
+.Spotlight-V100
+.Trashes
+.vscode
+tmp
+temp

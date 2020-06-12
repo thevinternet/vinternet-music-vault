@@ -1,0 +1,9 @@
+.container {
+  width: 90%;
+  @include media($medium) {
+    width: 80%;
+  }
+  @include media($large) {
+    width: 80%;
+  }
+}

@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vmv-app-container
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    stdin_open: true
+    env_file: .env
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    expose:
+      - ${SERVER_PORT}
+    networks:
+      - vmv-network
+    depends_on:
+      - mongo  
+  mongo:
+    image: mongo
+    container_name: vmv-data-container
+    volumes:
+      - vmv-data-volume:/data/db
+    env_file: .env
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    expose:
+      - ${MONGO_PORT}  
+    networks:
+      - vmv-network
+
+networks:
+  vmv-network:
+    driver: bridge
+
+volumes:
+  vmv-data-volume:

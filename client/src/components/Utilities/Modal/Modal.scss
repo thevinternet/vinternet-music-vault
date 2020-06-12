@@ -1,0 +1,19 @@
+@import "../../../assets/scss/settings.scss";
+
+.modal {
+  position: fixed;
+  z-index: 500;
+  width: 70%;
+  left: 15%;
+  top: 30%;
+  background-color: $white;
+  border: 1px solid $grey-3;
+  box-shadow: 1px 1px 1px $black;
+  padding: $base-spacing-unit-small;
+  color: $grey-2;
+  transition: all 0.3s ease-out;
+  @include media($medium) {
+    width: 500px;
+    left: calc(50% - 250px);
+  }
+}

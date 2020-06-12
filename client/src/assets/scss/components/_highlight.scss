@@ -1,0 +1,23 @@
+.status--highlight {
+  border-left-style: solid;
+  @include theme($purple-4, $grey-1, $purple-1, $grey-2, $purple-3);
+  margin-bottom: $base-spacing-unit-small;
+  padding: $base-spacing-unit-small;
+  border-left-width: $base-spacing-unit-tiny;
+  :last-child {
+    margin-bottom: 0;
+    margin-right: 0;
+  }
+}
+
+.theme--purple--light {
+  @include theme($purple-4, $grey-1, $purple-1, $grey-2, $purple-3);
+}
+
+.theme--success {
+  @include theme($success--light, $grey-1, $purple-1, $grey-2, $success);
+}
+
+.theme--warning {
+  @include theme($warning--light, $grey-1, $purple-1, $grey-2, $warning);
+}

@@ -1,0 +1,14 @@
+header {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 90%;
+  margin: 0 auto;
+  padding-top: $base-spacing-unit-medium;
+  @include media($medium) {
+    width: 80%;
+  }
+  @include media($large) {
+    width: 80%;
+  }
+}

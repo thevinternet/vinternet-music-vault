@@ -1,0 +1,35 @@
+/*-- Useful Accessibility Helpers */
+
+.visually-hidden {
+  visibility: hidden;
+  opacity: 0;
+  height: 0;
+}
+
+.sr-only {
+  @include screenreader;
+}
+
+.sr-only--focusable {
+  &:focus, &:active {
+    margin: 0;
+    z-index: 2;
+    clip: auto;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    padding: $base-spacing-unit-tiny;
+  }
+}
+
+.skip-to-content {
+  @extend .sr-only;
+  @extend .sr-only--focusable;
+  z-index: 2;
+  text-indent: -9999px;
+  clip: auto;
+  padding: 1px;
+  &:focus, &:active {
+    text-indent: 0;
+  }
+}

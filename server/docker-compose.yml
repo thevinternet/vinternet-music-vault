@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # Setup Server Container
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vmv-server
+    container_name: vmv-server-container
+    volumes:
+      - .:/usr/app/server
+      - /usr/app/server/node_modules
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    env_file: .env
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    expose:
+      - ${SERVER_PORT}
+    networks:
+      - vmv-server-network  
+    depends_on:
+      - mongo    
+    command: npm run development
+  # Setup Database Container
+  mongo:
+    image: mongo
+    container_name: vmv-mongodb-container
+    volumes:
+      - vmv-data:/data/db
+    env_file: .env
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    expose:
+      - ${MONGO_PORT}
+    networks:
+      - vmv-server-network
+
+networks:
+  vmv-server-network:
+    driver: bridge
+  
+volumes:
+  vmv-data:

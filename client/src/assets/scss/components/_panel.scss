@@ -1,0 +1,14 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  @include media($medium) {
+    flex-direction: row;
+    padding: $base-spacing-unit $base-spacing-unit;
+    margin-bottom: $base-spacing-unit-medium;
+    background-color: $grey-2;
+    border-radius: $base-spacing-unit;
+    border: solid 2px $purple-4;
+    box-shadow: 0 $base-spacing-unit-tiny $base-spacing-unit-medium -$base-spacing-unit
+      rgba(0, 0, 0, 0.95);
+  }
+}
