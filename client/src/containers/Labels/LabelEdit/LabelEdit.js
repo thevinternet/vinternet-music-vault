@@ -32,11 +32,9 @@ class LabelEdit extends Component {
     dataListId: "",
     defaultFuseConfigs: {
       shouldSort: true,
-      threshold: 0.1,
-      location: 0,
-      distance: 100,
-      maxPatternLength: 32,
-      minMatchCharLength: 2,
+      threshold: 0,
+			ignoreLocation: true,
+			minMatchCharLength: 3,
       keys: ["name"]
     }
   };
@@ -105,7 +103,6 @@ class LabelEdit extends Component {
       };
     }
 
-    // console.log(this.state.avatarFile);
 		console.log(updatedLabelData);
 		console.log(fileFlag);
 
@@ -121,7 +118,7 @@ class LabelEdit extends Component {
         value: event.target.value,
         valid: checkValidity(
           event.target.value,
-          this.props.stateLabelForm[inputIdentifier].validation
+          this.props.stateLabelForm[inputIdentifier].validationRequired
         ),
         touched: true
       }
@@ -164,7 +161,11 @@ class LabelEdit extends Component {
       this.props.stateLabelForm[inputIdentifier],
       {
         id: inputIdentifier,
-        value: inputValue,
+				value: inputValue,
+				valid: checkValidity(
+          inputValue,
+          this.props.stateLabelForm[inputIdentifier].validationRequired
+        ),
         touched: true,
         matchedRecords: matchedRecords,
         linkedRecord: false,
@@ -174,13 +175,17 @@ class LabelEdit extends Component {
 
     const updatedLabelForm = updateObject(this.props.stateLabelForm, {
       [inputIdentifier]: updatedLabelElement
-    });
+		});
+		
+		let formIsValid = true;
+    for (let inputIdentifier in updatedLabelForm) {
+      formIsValid = updatedLabelForm[inputIdentifier].valid && formIsValid;
+    }
 
     this.setState({
-      dataListId: inputId
+			dataListId: inputId,
+			formIsValid: formIsValid
     });
-
-    //console.log(updatedLabelForm);
 
     this.props.onEditLocalLabel(updatedLabelForm);
   };
@@ -268,8 +273,6 @@ class LabelEdit extends Component {
       [inputIdentifier]: updatedLabelElement
     });
 
-    //console.log(updatedLabelForm);
-
     this.props.onEditLocalLabel(updatedLabelForm);
   };
 
@@ -335,14 +338,14 @@ class LabelEdit extends Component {
             <form onSubmit={this.labelUpdateHandler}>
               <div className="input-wrapper">
                 {formElements.map((formElement, index) =>
-                  formElement.attributes.elementType === "file" ? (
+                  formElement.attributes.type === "file" ? (
                     <FileInput
                       key={index}
-                      elementType={formElement.attributes.elementType}
-                      elementAttr={formElement.attributes.elementAttr}
+											elementType={formElement.attributes.type}
+											elementId={formElement.attributes.id}
+											elementName={formElement.attributes.name}
                       elementLabel={formElement.attributes.label}
                       elementLabelFor={formElement.attributes.labelFor}
-                      elementId={formElement.attributes.id}
                       elementImage={
                         formElement.attributes.pictureLocation
                           ? `labels/${formElement.attributes.pictureLocation}`
@@ -361,12 +364,17 @@ class LabelEdit extends Component {
                     />
                   ) : formElement.attributes.isFuzzy ? (
                     <FuzzyInput
-                      key={index}
-                      elementAttr={formElement.attributes.elementAttr}
+											key={index}
+											elementType={formElement.attributes.type}
+											elementId={formElement.attributes.id}
+											elementName={formElement.attributes.name}
                       elementLabel={formElement.attributes.label}
                       elementLabelFor={formElement.attributes.labelFor}
-                      elementId={formElement.attributes.id}
-                      elementValue={formElement.attributes.value}
+											elementValue={formElement.attributes.value}
+											invalid={!formElement.attributes.valid}
+                      shouldValidate={formElement.attributes.validationRequired}
+                      errorMessage={formElement.attributes.validationFeedback}
+                      touched={formElement.attributes.touched}
                       data={this.props.stateLabels}
                       dataListId={`${formElement.attributes.labelFor}List`}
                       matches={formElement.attributes.matchedRecords}
@@ -392,15 +400,16 @@ class LabelEdit extends Component {
                   ) : (
                     <Input
                       key={index}
-                      elementType={formElement.attributes.elementType}
-                      elementAttr={formElement.attributes.elementAttr}
+											element={formElement.attributes.element}
+											elementType={formElement.attributes.type}
+											elementId={formElement.attributes.id}
+											elementName={formElement.attributes.name}
                       elementLabel={formElement.attributes.label}
                       elementLabelFor={formElement.attributes.labelFor}
-                      elementId={formElement.attributes.id}
                       elementValue={formElement.attributes.value}
                       invalid={!formElement.attributes.valid}
-                      shouldValidate={formElement.attributes.validation}
-                      errorMessage={formElement.attributes.validationError}
+                      shouldValidate={formElement.attributes.validationRequired}
+                      errorMessage={formElement.attributes.validationFeedback}
                       touched={formElement.attributes.touched}
                       changed={event =>
                         this.inputChangeHandler(event, formElement.id)

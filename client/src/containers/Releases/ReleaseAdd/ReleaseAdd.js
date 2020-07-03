@@ -31,11 +31,9 @@ class ReleaseAdd extends Component {
     dataListId: "",
     defaultFuseConfigs: {
       shouldSort: true,
-      threshold: 0.1,
-      location: 0,
-      distance: 100,
-      maxPatternLength: 32,
-      minMatchCharLength: 2,
+      threshold: 0,
+			ignoreLocation: true,
+			minMatchCharLength: 3,
       keys: ["name"]
     }
   };
@@ -68,8 +66,6 @@ class ReleaseAdd extends Component {
     event.preventDefault();
 
     const releaseDataArray = Object.values(this.props.stateReleaseForm);
-
-    console.log(releaseDataArray);
   
     const releaseDataObject = {};
     releaseDataObject["labelName"] = [];
@@ -112,17 +108,12 @@ class ReleaseAdd extends Component {
       }
     });
 
-    console.log(releaseDataObject);
-
-
-
+		console.log(releaseDataObject);
   };
 
   //===============================================================================================================//
 
   inputChangeHandler = (event, inputIdentifier) => {
-
-    console.log(event.target);
 
     let inputValue;
     if (event.target.type === "checkbox") {
@@ -138,7 +129,7 @@ class ReleaseAdd extends Component {
         value: inputValue,
         valid: checkValidity(
           event.target.value,
-          this.props.stateReleaseForm[inputIdentifier].validation
+          this.props.stateReleaseForm[inputIdentifier].validationRequired
         ),
         touched: true
       }
@@ -173,7 +164,7 @@ class ReleaseAdd extends Component {
         value: event.target.value,
         valid: checkValidity(
           event.target.value,
-          this.props.stateReleaseForm.tracks[arrayIndex][inputIdentifier].validation
+          this.props.stateReleaseForm.tracks[arrayIndex][inputIdentifier].validationRequired
         ),
         touched: true
       }
@@ -234,6 +225,10 @@ class ReleaseAdd extends Component {
       {
         id: inputIdentifier,
         value: inputValue,
+        valid: checkValidity(
+          event.target.value,
+          this.props.stateReleaseForm[inputIdentifier].validationRequired
+        ),
         touched: true,
         matchedRecords: matchedRecords,
         linkedRecord: false,
@@ -245,11 +240,17 @@ class ReleaseAdd extends Component {
       [inputIdentifier]: updatedReleaseElement
     });
 
+    let formIsValid = true;
+    for (let inputIdentifier in updatedReleaseForm) {
+      if (inputIdentifier !== "tracks") {
+        formIsValid = updatedReleaseForm[inputIdentifier].valid && formIsValid;
+      }
+    }
+
     this.setState({
+			formIsValid: formIsValid,
       dataListId: inputId
     });
-
-    //console.log(updatedLabelForm);
 
     this.props.onEditLocalRelease(updatedReleaseForm);
   };
@@ -265,6 +266,10 @@ class ReleaseAdd extends Component {
       {
         id: inputIdentifier,
         value: inputValue,
+        valid: checkValidity(
+          event.target.value,
+          this.props.stateReleaseForm.tracks[arrayIndex][inputIdentifier].validationRequired
+        ),
         touched: true,
         matchedRecords: matchedRecords,
         linkedRecord: false,
@@ -288,9 +293,15 @@ class ReleaseAdd extends Component {
       }
     })
 
-    const updatedReleaseForm = updateObject(this.props.stateReleaseForm, { tracks });
+		const updatedReleaseForm = updateObject(this.props.stateReleaseForm, { tracks });
+		
+		let formIsValid = true;
+    for (let inputIdentifier in updatedReleaseForm.tracks[arrayIndex]) {
+      formIsValid = updatedReleaseForm.tracks[arrayIndex][inputIdentifier].valid && formIsValid;
+    }
 
     this.setState({
+			formIsValid: formIsValid,
       dataListId: inputId
     });
 
@@ -401,7 +412,6 @@ class ReleaseAdd extends Component {
           attributes: this.props.stateReleaseForm[key]
         });
       }
-    console.log(formElements);
     }
 
     //===============================================================================================================//
@@ -429,14 +439,14 @@ class ReleaseAdd extends Component {
             <form onSubmit={this.releaseCreateHandler}>
               <div className="input-wrapper">
                 {formElements.map((formElement, index) =>
-                  formElement.attributes.elementType === "file" ? (
+                  formElement.attributes.type === "file" ? (
                     <FileInput
-                      key={index}
-                      elementType={formElement.attributes.elementType}
-                      elementAttr={formElement.attributes.elementAttr}
+											key={index}
+											elementType={formElement.attributes.type}
+											elementId={formElement.attributes.id}
+											elementName={formElement.attributes.name}
                       elementLabel={formElement.attributes.label}
                       elementLabelFor={formElement.attributes.labelFor}
-                      elementId={formElement.attributes.id}
                       elementImage={this.state.avatar}
                       elementImageName={this.state.avatarName}
                       hasUpload={this.state.avatarFile ? true : false}
@@ -447,13 +457,22 @@ class ReleaseAdd extends Component {
                     />
                     ) : formElement.attributes.isFuzzy ? (
                       <FuzzyInput
-                        key={index}
-                        elementAttr={formElement.attributes.elementAttr}
+												key={index}
+												elementType={formElement.attributes.type}
+												elementId={formElement.attributes.id}
+												elementName={formElement.attributes.name}
                         elementLabel={formElement.attributes.label}
                         elementLabelFor={formElement.attributes.labelFor}
-                        elementId={formElement.attributes.id}
-                        elementValue={formElement.attributes.value}
-                        data={this.props.stateLabels}
+												elementValue={formElement.attributes.value}
+												invalid={!formElement.attributes.valid}
+												shouldValidate={formElement.attributes.validationRequired}
+												errorMessage={formElement.attributes.validationFeedback}
+												touched={formElement.attributes.touched}
+													data={
+                          formElement.attributes.name === "artistName"
+                            ? this.props.stateArtists
+                            : this.props.stateLabels
+                        }
                         dataListId={`${formElement.attributes.labelFor}List`}
                         matches={formElement.attributes.matchedRecords}
                         showDropdown={formElement.attributes.showDropdown}
@@ -465,7 +484,7 @@ class ReleaseAdd extends Component {
                             event,
                             formElement.id,
                             `${formElement.attributes.labelFor}List`,
-                            formElement.attributes.elementAttr.name
+                            formElement.attributes.name
                           )
                         }
                         keyup={event =>
@@ -486,11 +505,16 @@ class ReleaseAdd extends Component {
                                 element.isFuzzy ? (
                                   <FuzzyInput
                                     key={index}
-                                    elementAttr={element.elementAttr}
-                                    elementLabel={element.label}
+																		elementType={formElement.attributes.type}
+																		elementId={formElement.attributes.id}
+																		elementName={formElement.attributes.name}
+																		elementLabel={element.label}
                                     elementLabelFor={element.labelFor}
-                                    elementId={element.id}
-                                    elementValue={element.value}
+																		elementValue={element.value}
+																		invalid={!formElement.attributes.valid}
+																		shouldValidate={formElement.attributes.validationRequired}
+																		errorMessage={formElement.attributes.validationFeedback}
+																		touched={formElement.attributes.touched}	
                                     data={this.props.stateArtists}
                                     dataListId={`${element.labelFor}List${arrayIndex}`}
                                     matches={element.matchedRecords}
@@ -523,16 +547,17 @@ class ReleaseAdd extends Component {
                                 ) : (
                                   <Input
                                     key={index}
-                                    elementType={element.elementType}
-                                    elementAttr={element.elementAttr}
-                                    elementLabel={element.label}
+																		element={formElement.attributes.element}
+																		elementType={formElement.attributes.type}
+																		elementId={formElement.attributes.id}
+																		elementName={formElement.attributes.name}
+																		elementLabel={element.label}
                                     elementLabelFor={element.labelFor}
-                                    elementId={element.id}
                                     arrayIndex={arrayIndex}
                                     elementValue={element.value}
                                     invalid={!element.valid}
-                                    shouldValidate={element.validation}
-                                    errorMessage={element.validationError}
+                                    shouldValidate={element.validationRequired}
+                                    errorMessage={element.validationFeedback}
                                     touched={element.touched}
                                     changed={event =>
                                       this.trackInputChangeHandler(event, arrayIndex, element.id)
@@ -546,15 +571,16 @@ class ReleaseAdd extends Component {
                       ) : (
                         <Input
                         key={index}
-                        elementType={formElement.attributes.elementType}
-                        elementAttr={formElement.attributes.elementAttr}
+                        element={formElement.attributes.element}
+												elementType={formElement.attributes.type}
+												elementId={formElement.attributes.id}
+												elementName={formElement.attributes.name}
                         elementLabel={formElement.attributes.label}
                         elementLabelFor={formElement.attributes.labelFor}
-                        elementId={formElement.attributes.id}
                         elementValue={formElement.attributes.value}
                         invalid={!formElement.attributes.valid}
-                        shouldValidate={formElement.attributes.validation}
-                        errorMessage={formElement.attributes.validationError}
+                        shouldValidate={formElement.attributes.validationRequired}
+                        errorMessage={formElement.attributes.validationFeedback}
                         touched={formElement.attributes.touched}
                         changed={event =>
                           this.inputChangeHandler(event, formElement.id)

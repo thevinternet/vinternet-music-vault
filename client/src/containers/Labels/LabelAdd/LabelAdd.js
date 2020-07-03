@@ -30,11 +30,9 @@ class LabelAdd extends Component {
     dataListId: "",
     defaultFuseConfigs: {
       shouldSort: true,
-      threshold: 0.1,
-      location: 0,
-      distance: 100,
-      maxPatternLength: 32,
-      minMatchCharLength: 2,
+      threshold: 0,
+			ignoreLocation: true,
+			minMatchCharLength: 3,
       keys: ["name"]
     }
   };
@@ -103,7 +101,6 @@ class LabelAdd extends Component {
       };
     }
 
-    // console.log(this.state.avatarFile);
 		console.log(newLabelData);
 		console.log(fileFlag);
 
@@ -114,14 +111,13 @@ class LabelAdd extends Component {
   //===============================================================================================================//
 
   inputChangeHandler = (event, inputIdentifier) => {
-    console.log(inputIdentifier);
     const updatedLabelElement = updateObject(
       this.props.stateLabelForm[inputIdentifier],
       {
         value: event.target.value,
         valid: checkValidity(
           event.target.value,
-          this.props.stateLabelForm[inputIdentifier].validation
+          this.props.stateLabelForm[inputIdentifier].validationRequired
         ),
         touched: true
       }
@@ -157,8 +153,6 @@ class LabelAdd extends Component {
   //===============================================================================================================//
 
   fuzzyInputChangeHandler = (event, inputIdentifier, inputId) => {
-    console.log(inputIdentifier);
-    console.log(event.target);
     const inputValue = event.target.value;
     const matchedRecords = this.fuse.search(inputValue);
 
@@ -167,6 +161,10 @@ class LabelAdd extends Component {
       {
         id: inputIdentifier,
         value: inputValue,
+				valid: checkValidity(
+          inputValue,
+          this.props.stateLabelForm[inputIdentifier].validationRequired
+        ),
         touched: true,
         matchedRecords: matchedRecords,
         linkedRecord: false,
@@ -178,11 +176,15 @@ class LabelAdd extends Component {
       [inputIdentifier]: updatedLabelElement
     });
 
-    this.setState({
-      dataListId: inputId
-    });
+		let formIsValid = true;
+    for (let inputIdentifier in updatedLabelForm) {
+      formIsValid = updatedLabelForm[inputIdentifier].valid && formIsValid;
+    }
 
-    //console.log(updatedLabelForm);
+    this.setState({
+			dataListId: inputId,
+			formIsValid: formIsValid
+    });
 
     this.props.onEditLocalLabel(updatedLabelForm);
   };
@@ -270,8 +272,6 @@ class LabelAdd extends Component {
       [inputIdentifier]: updatedLabelElement
     });
 
-    //console.log(updatedLabelForm);
-
     this.props.onEditLocalLabel(updatedLabelForm);
   };
 
@@ -321,14 +321,14 @@ class LabelAdd extends Component {
             <form onSubmit={this.labelCreateHandler}>
               <div className="input-wrapper">
                 {formElements.map((formElement, index) =>
-                  formElement.attributes.elementType === "file" ? (
+                  formElement.attributes.type === "file" ? (
                     <FileInput
                       key={index}
-                      elementType={formElement.attributes.elementType}
-                      elementAttr={formElement.attributes.elementAttr}
+											elementType={formElement.attributes.type}
+											elementId={formElement.attributes.id}
+											elementName={formElement.attributes.name}
                       elementLabel={formElement.attributes.label}
                       elementLabelFor={formElement.attributes.labelFor}
-                      elementId={formElement.attributes.id}
                       elementImage={this.state.avatar}
                       elementImageName={this.state.avatarName}
                       hasUpload={this.state.avatarFile ? true : false}
@@ -339,12 +339,17 @@ class LabelAdd extends Component {
                     />
                   ) : formElement.attributes.isFuzzy ? (
                     <FuzzyInput
-                      key={index}
-                      elementAttr={formElement.attributes.elementAttr}
+											key={index}
+											elementType={formElement.attributes.type}
+											elementId={formElement.attributes.id}
+											elementName={formElement.attributes.name}
                       elementLabel={formElement.attributes.label}
                       elementLabelFor={formElement.attributes.labelFor}
-                      elementId={formElement.attributes.id}
-                      elementValue={formElement.attributes.value}
+											elementValue={formElement.attributes.value}
+											invalid={!formElement.attributes.valid}
+                      shouldValidate={formElement.attributes.validationRequired}
+                      errorMessage={formElement.attributes.validationFeedback}
+                      touched={formElement.attributes.touched}
                       data={this.props.stateLabels}
                       dataListId={`${formElement.attributes.labelFor}List`}
                       matches={formElement.attributes.matchedRecords}
@@ -370,15 +375,16 @@ class LabelAdd extends Component {
                   ) : (
                     <Input
                       key={index}
-                      elementType={formElement.attributes.elementType}
-                      elementAttr={formElement.attributes.elementAttr}
+											element={formElement.attributes.element}
+											elementType={formElement.attributes.type}
+											elementId={formElement.attributes.id}
+											elementName={formElement.attributes.name}
                       elementLabel={formElement.attributes.label}
                       elementLabelFor={formElement.attributes.labelFor}
-                      elementId={formElement.attributes.id}
-                      elementValue={formElement.attributes.value}
-                      invalid={!formElement.attributes.valid}
-                      shouldValidate={formElement.attributes.validation}
-                      errorMessage={formElement.attributes.validationError}
+											elementValue={formElement.attributes.value}
+											invalid={!formElement.attributes.valid}
+                      shouldValidate={formElement.attributes.validationRequired}
+                      errorMessage={formElement.attributes.validationFeedback}
                       touched={formElement.attributes.touched}
                       changed={event =>
                         this.inputChangeHandler(event, formElement.id)

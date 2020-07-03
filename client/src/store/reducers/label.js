@@ -1,8 +1,9 @@
 import * as actionTypes from "../actions/actionTypes";
 import { updateObject } from "../../utilities/helpers";
-import { formAttrInd } from "../../utilities/formHelpers/formAttributeBuilderSingle";
-import { formAttrGrp } from "../../utilities/formHelpers/formAttributeBuilderGroup";
 import { createLabelForm } from "../../utilities/formHelpers/formBuilderLabel";
+import * as feBuilderLabel from "../../utilities/formHelpers/formElementBuilderLabel";
+import * as feBuilderGeneric from "../../utilities/formHelpers/formElementBuilderGeneric";
+
 
 //===============================================================================================================//
 
@@ -65,109 +66,40 @@ const addLabelSuccess = (state, action) => {
 // Edit Label Reducer Functions
 
 const editLabelClientPrep = (state, action) => {
-  //=========================================================//
 
-  const labelName = formAttrInd(
-    action.label.name,
-    "labelName",
-    "input",
-    true,
-    false
-  );
-  const updatedLabelName = Object.assign(labelName);
+  const labelName = feBuilderLabel.labelNameFormElement(action.label.name, "labelName");
 
-  //=========================================================//
+	let parentLabel = [];
 
-  let labelParent;
-  let updatedParentLabel;
+	action.label.parent_label.length ?
+	parentLabel = action.label.parent_label.map(feBuilderLabel.parentLabelFormElement) :
+	parentLabel.push(feBuilderLabel.parentLabelFormElement("", 0));
 
-  if (action.label.parent_label.length) {
-    labelParent = formAttrGrp(
-      action.label.parent_label,
-      "parentLabel",
-      "input",
-      false,
-      true
-    );
-    updatedParentLabel = Object.assign(updatedLabelName, ...labelParent);
-  } else {
-    labelParent = formAttrInd("", "parentLabel", "input", false, true);
-    updatedParentLabel = Object.assign(updatedLabelName, labelParent);
-  }
+	let subsidiaryLabel = [];
 
-  //console.log(updatedParentLabel);
+	action.label.subsidiary_label.length ?
+	subsidiaryLabel = action.label.subsidiary_label.map(feBuilderLabel.subsidiaryLabelFormElement) :
+	subsidiaryLabel.push(feBuilderLabel.subsidiaryLabelFormElement("", 0));
+
+	const labelProfile = feBuilderGeneric.profileFormElement(action.label.profile, "profile");
+
+	const labelWebsite = action.label.website.map(feBuilderGeneric.websiteFormElement);
+
+  const labelDiscogsId = feBuilderGeneric.discogsIdFormElement(action.label.discogs_id, "discogsId");
+	
+	const labelPicture = action.label.picture.map(feBuilderGeneric.imageUploadFormElement);
 
   //=========================================================//
 
-  let labelSubsidiary;
-  let updatedSubsidiaryLabel;
-
-  if (action.label.subsidiary_label.length) {
-    labelSubsidiary = formAttrGrp(
-      action.label.subsidiary_label,
-      "subsidiaryLabel",
-      "input",
-      false,
-      true
-    );
-    updatedSubsidiaryLabel = Object.assign(
-      updatedParentLabel,
-      ...labelSubsidiary
-    );
-  } else {
-    labelSubsidiary = formAttrInd("", "subsidiaryLabel", "input", false, true);
-    updatedSubsidiaryLabel = Object.assign(updatedParentLabel, labelSubsidiary);
-  }
-
-  //console.log(updatedSubsidiaryLabel);
-
-  //=========================================================//
-
-  const labelProfile = formAttrInd(
-    action.label.profile,
-    "profile",
-    "textarea",
-    true,
-    false
-  );
-  const updatedProfile = Object.assign(updatedSubsidiaryLabel, labelProfile);
-
-  //=========================================================//
-
-  const labelWebsite = formAttrGrp(
-    action.label.website,
-    "website",
-    "input",
-    false,
-    false
-  );
-  const updatedWebsite = Object.assign(updatedProfile, ...labelWebsite);
-
-  //=========================================================//
-
-  const labelDiscogsId = formAttrInd(
-    action.label.discogs_id,
-    "discogsId",
-    "input",
-    false,
-    false
-  );
-  const updatedDiscogsId = Object.assign(updatedWebsite, labelDiscogsId);
-
-  //=========================================================//
-
-  const labelPicture = formAttrGrp(
-    action.label.picture,
-    "picture",
-    "file",
-    false,
-    false
-  );
-  const updatedPicture = Object.assign(updatedDiscogsId, ...labelPicture);
-
-  //=========================================================//
-
-  const updatedLabelForm = Object.assign(updatedPicture);
+	const updatedLabelForm = Object.assign({}, 
+		labelName,
+		...parentLabel,
+		...subsidiaryLabel,
+		labelProfile,
+		...labelWebsite,
+		labelDiscogsId,
+		...labelPicture
+	);
 
   return updateObject(state, {
     label: action.label,

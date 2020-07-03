@@ -1,8 +1,8 @@
 import * as actionTypes from "../actions/actionTypes";
 import { updateObject } from "../../utilities/helpers";
-import { formAttrInd } from "../../utilities/formHelpers/formAttributeBuilderSingle";
-import { formAttrGrp } from "../../utilities/formHelpers/formAttributeBuilderGroup";
 import { createArtistForm } from "../../utilities/formHelpers/formBuilderArtist";
+import * as feBuilderArtist from "../../utilities/formHelpers/formElementBuilderArtist";
+import * as feBuilderGeneric from "../../utilities/formHelpers/formElementBuilderGeneric";
 
 //===============================================================================================================//
 
@@ -66,92 +66,35 @@ const addArtistSuccess = (state, action) => {
 
 const editArtistClientPrep = (state, action) => {
 
-  const artistName = formAttrInd(
-    action.artist.name,
-    "artistName",
-    "input",
-    true,
-    false
-  );
-  const updatedArtistName = Object.assign(artistName);
+	const artistName = feBuilderArtist.artistNameFormElement(action.artist.name, "artistName");
+	
+  const realName = feBuilderArtist.realNameFormElement(action.artist.real_name, "realName");
+
+	let aliasName = [];
+
+	action.artist.alias_name.length ?
+	aliasName = action.artist.alias_name.map(feBuilderArtist.aliasNameFormElement) :
+	aliasName.push(feBuilderArtist.aliasNameFormElement("", 0));
+
+	const artistProfile = feBuilderGeneric.profileFormElement(action.artist.profile, "profile");
+
+	const artistWebsite = action.artist.website.map(feBuilderGeneric.websiteFormElement);
+
+  const artistDiscogsId = feBuilderGeneric.discogsIdFormElement(action.artist.discogs_id, "discogsId");
+	
+	const artistPicture = action.artist.picture.map(feBuilderGeneric.imageUploadFormElement);
 
   //=========================================================//
 
-  const realName = formAttrInd(
-    action.artist.real_name,
-    "realName",
-    "input",
-    false,
-    false
-  );
-  const updatedRealName = Object.assign(updatedArtistName, realName);
-
-  //=========================================================//
-
-  let aliasName;
-  let updatedAliasName;
-
-  if (action.artist.alias_name.length) {
-    aliasName = formAttrGrp(
-      action.artist.alias_name,
-      "aliasName",
-      "input",
-      false,
-      true
-    );
-    updatedAliasName = Object.assign(updatedRealName, ...aliasName);
-  } else {
-    aliasName = formAttrInd("", "aliasName", "input", false, true);
-    updatedAliasName = Object.assign(updatedRealName, aliasName);
-  }
-
-  //=========================================================//
-
-  const artistProfile = formAttrInd(
-    action.artist.profile,
-    "profile",
-    "textarea",
-    true,
-    false
-  );
-  const updatedProfile = Object.assign(updatedAliasName, artistProfile);
-
-  //=========================================================//
-
-  const artistWebsite = formAttrGrp(
-    action.artist.website,
-    "website",
-    "input",
-    false,
-    false
-  );
-  const updatedWebsite = Object.assign(updatedProfile, ...artistWebsite);
-
-  //=========================================================//
-
-  const artistDiscogsId = formAttrInd(
-    action.artist.discogs_id,
-    "discogsId",
-    "input",
-    false,
-    false
-  );
-  const updatedDiscogsId = Object.assign(updatedWebsite, artistDiscogsId);
-
-  //=========================================================//
-
-  const artistPicture = formAttrGrp(
-    action.artist.picture,
-    "picture",
-    "file",
-    false,
-    false
-  );
-  const updatedPicture = Object.assign(updatedDiscogsId, ...artistPicture);
-
-  //=========================================================//
-
-  const updatedArtistForm = Object.assign(updatedPicture);
+	const updatedArtistForm = Object.assign({}, 
+		artistName,
+		realName,
+		...aliasName,
+		artistProfile,
+		...artistWebsite,
+		artistDiscogsId,
+		...artistPicture
+	);
 
   return updateObject(state, {
     artist: action.artist,

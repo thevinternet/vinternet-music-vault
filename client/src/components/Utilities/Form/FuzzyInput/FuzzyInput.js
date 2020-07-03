@@ -5,6 +5,7 @@ import "./FuzzyInput.scss";
 //===============================================================================================================//
 
 const fuzzyInput = props => {
+	props.matches.map(match => (console.log(match.item._id) ));
   return (
     <div className="input-group__dropdown">
       <label htmlFor={props.elementLabelFor}>{props.elementLabel}</label>
@@ -18,8 +19,9 @@ const fuzzyInput = props => {
         </p>
       ) : null}
       <input
-        {...props.elementAttr}
-        id={props.elementId}
+				type={props.elementType}
+				name={props.elementName}
+				id={props.elementId}
         value={props.elementValue}
         onChange={props.changed}
         lists={props.dataListId}
@@ -32,15 +34,15 @@ const fuzzyInput = props => {
       >
         {props.matches.map(match => (
           <option
-            key={match._id}
+            key={match.item._id}
             onClick={props.clicked}
             onKeyUp={props.keyup}
-            value={match.name}
-            id={match._id}
-            name={match.name}
+            value={match.item.name}
+            id={match.item._id}
+            name={match.item.name}
             tabIndex="0"
           >
-            {match.name}
+            {match.item.name}
           </option>
         ))}
       </datalist>

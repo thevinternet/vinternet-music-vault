@@ -32,11 +32,9 @@ class ArtistAdd extends Component {
     dataListId: "",
     defaultFuseConfigs: {
       shouldSort: true,
-      threshold: 0.1,
-      location: 0,
-      distance: 100,
-      maxPatternLength: 32,
-      minMatchCharLength: 2,
+      threshold: 0,
+			ignoreLocation: true,
+			minMatchCharLength: 3,
       keys: ["name"]
     }
   };
@@ -62,8 +60,6 @@ class ArtistAdd extends Component {
 
   artistCreateHandler = event => {
     event.preventDefault();
-
-    //console.log(event.target);
 
     const artistDataArray = Object.values(this.props.stateArtistForm);
     const artistDataObject = {};
@@ -121,7 +117,7 @@ class ArtistAdd extends Component {
         value: event.target.value,
         valid: checkValidity(
           event.target.value,
-          this.props.stateArtistForm[inputIdentifier].validation
+          this.props.stateArtistForm[inputIdentifier].validationRequired
         ),
         touched: true
       }
@@ -164,7 +160,11 @@ class ArtistAdd extends Component {
       this.props.stateArtistForm[inputIdentifier],
       {
         id: inputIdentifier,
-        value: inputValue,
+				value: inputValue,
+				valid: checkValidity(
+          inputValue,
+          this.props.stateArtistForm[inputIdentifier].validationRequired
+        ),
         touched: true,
         matchedRecords: matchedRecords,
         linkedRecord: false,
@@ -174,10 +174,16 @@ class ArtistAdd extends Component {
 
     const updatedArtistForm = updateObject(this.props.stateArtistForm, {
       [inputIdentifier]: updatedArtistElement
-    });
+		});
+		
+		let formIsValid = true;
+    for (let inputIdentifier in updatedArtistForm) {
+      formIsValid = updatedArtistForm[inputIdentifier].valid && formIsValid;
+    }
 
     this.setState({
-      dataListId: inputId
+			dataListId: inputId,
+			formIsValid: formIsValid
     });
 
     this.props.onEditLocalArtist(updatedArtistForm);
@@ -242,7 +248,7 @@ class ArtistAdd extends Component {
       this.props.stateArtistForm[inputIdentifier],
       {
         id: event.target.id,
-        value: event.target.value,
+				value: event.target.value,
         linkedRecord: true,
         showDropdown: "false"
       }
@@ -250,8 +256,8 @@ class ArtistAdd extends Component {
 
     const updatedArtistForm = updateObject(this.props.stateArtistForm, {
       [inputIdentifier]: updatedArtistElement
-    });
-
+		});
+		
     this.props.onEditLocalArtist(updatedArtistForm);
   };
 
@@ -273,7 +279,7 @@ class ArtistAdd extends Component {
           id: key,
           attributes: this.props.stateArtistForm[key]
         });
-      }
+			}
     }
 
     //===============================================================================================================//
@@ -301,14 +307,14 @@ class ArtistAdd extends Component {
             <form onSubmit={this.artistCreateHandler}>
               <div className="input-wrapper">
                 {formElements.map((formElement, index) =>
-                  formElement.attributes.elementType === "file" ? (
+                  formElement.attributes.type === "file" ? (
                     <FileInput
-                      key={index}
-                      elementType={formElement.attributes.elementType}
-                      elementAttr={formElement.attributes.elementAttr}
+											key={index}
+											elementType={formElement.attributes.type}
+											elementId={formElement.attributes.id}
+											elementName={formElement.attributes.name}
                       elementLabel={formElement.attributes.label}
                       elementLabelFor={formElement.attributes.labelFor}
-                      elementId={formElement.attributes.id}
                       elementImage={this.state.avatar}
                       elementImageName={this.state.avatarName}
                       hasUpload={this.state.avatarFile ? true : false}
@@ -319,12 +325,17 @@ class ArtistAdd extends Component {
                     />
                   ) : formElement.attributes.isFuzzy ? (
                     <FuzzyInput
-                      key={index}
-                      elementAttr={formElement.attributes.elementAttr}
+											key={index}
+											elementType={formElement.attributes.type}
+											elementId={formElement.attributes.id}
+											elementName={formElement.attributes.name}
                       elementLabel={formElement.attributes.label}
                       elementLabelFor={formElement.attributes.labelFor}
-                      elementId={formElement.attributes.id}
-                      elementValue={formElement.attributes.value}
+											elementValue={formElement.attributes.value}
+											invalid={!formElement.attributes.valid}
+                      shouldValidate={formElement.attributes.validationRequired}
+                      errorMessage={formElement.attributes.validationFeedback}
+                      touched={formElement.attributes.touched}
                       data={this.props.stateArtists}
                       dataListId={`${formElement.attributes.labelFor}List`}
                       matches={formElement.attributes.matchedRecords}
@@ -349,16 +360,17 @@ class ArtistAdd extends Component {
                     />
                   ) : (
                     <Input
-                      key={index}
-                      elementType={formElement.attributes.elementType}
-                      elementAttr={formElement.attributes.elementAttr}
+											key={index}
+											element={formElement.attributes.element}
+											elementType={formElement.attributes.type}
+											elementId={formElement.attributes.id}
+											elementName={formElement.attributes.name}
                       elementLabel={formElement.attributes.label}
                       elementLabelFor={formElement.attributes.labelFor}
-                      elementId={formElement.attributes.id}
-                      elementValue={formElement.attributes.value}
+											elementValue={formElement.attributes.value}
                       invalid={!formElement.attributes.valid}
-                      shouldValidate={formElement.attributes.validation}
-                      errorMessage={formElement.attributes.validationError}
+                      shouldValidate={formElement.attributes.validationRequired}
+                      errorMessage={formElement.attributes.validationFeedback}
                       touched={formElement.attributes.touched}
                       changed={event =>
                         this.inputChangeHandler(event, formElement.id)

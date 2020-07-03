@@ -1,59 +1,45 @@
-import { formAttrInd } from "./formAttributeBuilderSingle";
-import { formAttrGrp } from "./formAttributeBuilderGroup";
-import { formAttrTrk } from "./formAttributeBuilderTrack";
-
-//===============================================================================================================//
 //===============================================================================================================//
 
+import { feReleaseFormatObject, feImageUploadObject, feTrackObject } from './formElementAttributeBuilder.js'
+import * as feBuilderRelease from "./formElementBuilderRelease";
+import * as feBuilderGeneric from "./formElementBuilderGeneric";
+import { createTrackForm } from "./formBuilderTrack";
 
-
-
-
-
-
-
-
-
-//===============================================================================================================//
 //===============================================================================================================//
 
 export const createReleaseForm = () => {
-  const formatObj = [
-    { name: "Vinyl", release: "no" },
-    { name: "CD", release: "no" },
-    { name: "Cassette", release: "no" },
-    { name: "Digital", release: "no" }
-  ];
-  const pictureObj = [{ filename: "", location: "", format: "" }];
-  const trackObj = [ { track_number: 1, artist_name: "", title: "", catalogue: "", genre: "", mixkey: "" } ];
+
+	const formatObj = feReleaseFormatObject();
+	const pictureObj = feImageUploadObject();
+	const trackObj = feTrackObject();
 
   //===============================================================================================================//
 
-  const releaseTitle = formAttrInd("", "releaseTitle", "input", true, false);
-  const labelName = formAttrInd("", "labelName", "input", true, true);
-  const catalogue = formAttrInd("", "catalogue", "input", false, false);
-  const releaseYear = formAttrInd("", "releaseYear", "input", false, false);
-  const releaseFormat = formAttrGrp(formatObj, "releaseFormat", "checkbox", false, false);
-  const discogsLink = formAttrInd("", "discogsLink", "input", false, false);
-  const discogsId = formAttrInd("", "discogsId", "input", false, false);
-  const picture = formAttrGrp(pictureObj, "picture", "file", false, false);
-  const tracks = { tracks : formAttrTrk(trackObj) }
+	const releaseTitle = feBuilderRelease.releaseTitleFormElement("", "releaseTitle");
+	const releaseLabel = feBuilderRelease.releaseLabelFormElement("", 0);
+	const releaseCatalogue = feBuilderRelease.releaseCatalogueFormElement("", "catalogue");
+	const releaseYear = feBuilderRelease.releaseYearFormElement("", "releaseYear");
+	const releaseFormat = formatObj.map(feBuilderRelease.newReleaseFormatFormElement);
+	const releaseDiscogsId = feBuilderGeneric.discogsIdFormElement("", "discogsId");
+	const releaseDiscogsUrl = feBuilderGeneric.discogsUrlFormElement("", "discogsLink");
+	const releasePicture = pictureObj.map(feBuilderGeneric.imageUploadFormElement);
+  const releaseTrack = { tracks : createTrackForm(trackObj) }
 
   //===============================================================================================================//
 
-  const releaseForm = Object.assign(
+  const releaseForm = Object.assign({},
     releaseTitle,
-    labelName,
-    catalogue,
+    releaseLabel,
+    releaseCatalogue,
     releaseYear,
     ...releaseFormat,
-    discogsLink,
-    discogsId,
-    ...picture,
-    tracks
+    releaseDiscogsId,
+    releaseDiscogsUrl,
+    ...releasePicture,
+    releaseTrack
   );
-
-  //===============================================================================================================//
 
   return releaseForm;
 };
+
+//===============================================================================================================//

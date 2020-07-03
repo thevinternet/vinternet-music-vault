@@ -10,7 +10,7 @@ const input = props => {
   let inputElement = null;
 
   switch (props.elementType) {
-    case "input":
+    case "text":
       inputElement = (
         <Auxiliary>
           <label htmlFor={props.elementLabelFor}>{props.elementLabel}</label>
@@ -24,15 +24,16 @@ const input = props => {
             </p>
           ) : null}
           <input
-            {...props.elementAttr}
+						type={props.elementType}
+						name={props.elementName}
             id={props.elementId}
-            value={props.elementValue}
+						value={props.elementValue}
             onChange={props.changed}
             aria-invalid={props.invalid ? "true" : "false"}
           />
         </Auxiliary>
       );
-      break;
+    break;
     case "textarea":
       inputElement = (
         <Auxiliary>
@@ -47,14 +48,15 @@ const input = props => {
             </p>
           ) : null}
           <textarea
-            {...props.elementAttr}
-            value={props.elementValue}
+						name={props.elementName}
+						id={props.elementId}
+						value={props.elementValue}
             onChange={props.changed}
             aria-invalid={props.invalid ? "true" : "false"}
           />
         </Auxiliary>
       );
-      break;
+    break;
     case "select":
       inputElement = (
         <Auxiliary>
@@ -80,33 +82,32 @@ const input = props => {
           </select>
         </Auxiliary>
       );
-      break;
-
-      case "checkbox":
-        inputElement = (
-          <div className="input-group__inline">
-            {props.invalid && props.shouldValidate && props.touched ? (
-              <p
-                className="message--error"
-                aria-live="polite"
-                aria-describedby={props.elementId}
-              >
-                {props.errorMessage}
-              </p>
-            ) : null}
-            <input
-              {...props.elementAttr}
-              id={props.elementId}
-              value={props.elementValue}
-              onChange={props.changed}
-              aria-invalid={props.invalid ? "true" : "false"}
-              checked={props.elementValue === "yes" ? true : false }
-            />
-            <label htmlFor={props.elementLabelFor}>{props.elementLabel}</label>
-          </div>
-        );
-        break;
-        
+		break;
+		case "checkbox":
+			inputElement = (
+				<div className="input-group__inline">
+					{props.invalid && props.shouldValidate && props.touched ? (
+						<p
+							className="message--error"
+							aria-live="polite"
+							aria-describedby={props.elementId}
+						>
+							{props.errorMessage}
+						</p>
+					) : null}
+					<input
+						type={props.elementType}
+						name={props.elementName}
+						id={props.elementId}
+						value={props.elementValue}
+						onChange={props.changed}
+						aria-invalid={props.invalid ? "true" : "false"}
+						//checked={props.elementValue === "yes" ? true : false }
+					/>
+					<label htmlFor={props.elementLabelFor}>{props.elementLabel}</label>
+				</div>
+			);
+    break;
     default:
       inputElement = (
         <Auxiliary>
@@ -121,7 +122,9 @@ const input = props => {
             </p>
           ) : null}
           <input
-            {...props.elementAttr}
+						type={props.elementType}
+						name={props.elementName}
+						id={props.elementId}
             value={props.elementValue}
             onChange={props.changed}
             aria-invalid={props.invalid ? "true" : "false"}

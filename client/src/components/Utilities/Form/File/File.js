@@ -26,7 +26,9 @@ const file = props => {
         </figure>
         <div className="card__details">
           <input
-            {...props.elementAttr}
+						{...props.elementAttr}
+						type={props.elementType}
+						name={props.elementName}
             id={props.elementId}
             onChange={props.changed}
           />

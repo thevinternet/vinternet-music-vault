@@ -29,8 +29,6 @@ class Release extends Component {
 
     if (!this.props.stateLoading && this.props.stateRelease) {
 
-      console.log(this.props.stateRelease.format);
-
       const artistNamesArray = [];
       let artistNames = [];
       let releaseFormats = [];
@@ -52,7 +50,6 @@ class Release extends Component {
           if (format.release === "yes") { releaseFormats.push(format.name) }
           return releaseFormats;
         })
-        console.log(releaseFormats);
       }
 
       //============================================================================================================//

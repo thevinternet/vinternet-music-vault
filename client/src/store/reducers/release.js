@@ -1,9 +1,10 @@
 import * as actionTypes from "../actions/actionTypes";
 import { updateObject } from "../../utilities/helpers";
-import { formAttrInd } from "../../utilities/formHelpers/formAttributeBuilderSingle";
-import { formAttrGrp } from "../../utilities/formHelpers/formAttributeBuilderGroup";
-import { formAttrTrk } from "../../utilities/formHelpers/formAttributeBuilderTrack";
 import { createReleaseForm } from "../../utilities/formHelpers/formBuilderRelease";
+import { createTrackForm } from "../../utilities/formHelpers/formBuilderTrack";
+import * as feBuilderRelease from "../../utilities/formHelpers/formElementBuilderRelease";
+import * as feBuilderGeneric from "../../utilities/formHelpers/formElementBuilderGeneric";
+
 
 //===============================================================================================================//
 
@@ -80,152 +81,49 @@ const addReleaseSuccess = (state, action) => {
 
 //===============================================================================================================//
 
-
-
-
-
-
-
 // Edit Release Reducer Functions
 
 const editReleaseClientPrep = (state, action) => {
-  
-  // let artistName;
-  // let updatedArtistName;
 
-  // if (action.release.artist_name.length) {
-  //   artistName = formAttrGrp(
-  //     action.release.artist_name,
-  //     "artistName",
-  //     "input",
-  //     false,
-  //     true
-  //   );
-  //   updatedArtistName = Object.assign(...artistName);
-  // } else {
-  //   artistName = formAttrInd("", "artistName", "input", false, true);
-  //   updatedArtistName = Object.assign(artistName);
-  // }
+	const releaseTitle = feBuilderRelease.releaseTitleFormElement(action.release.title, "releaseTitle");
 
-  //=========================================================//
+	let releaseLabel = [];
 
-  const releaseTitle = formAttrInd(
-    action.release.title,
-    "releaseTitle",
-    "input",
-    true,
-    false
-  );
-  //const updatedReleaseTitle = Object.assign(updatedArtistName, releaseTitle);
-  const updatedReleaseTitle = Object.assign(releaseTitle);
+	action.release.label_name.length ?
+	releaseLabel = action.release.label_name.map(feBuilderRelease.releaseLabelFormElement) :
+	releaseLabel.push(feBuilderRelease.releaseLabelFormElement("", 0));
+	
+	const releaseCatalogue = feBuilderRelease.releaseCatalogueFormElement(action.release.catalogue, "catalogue");
+	
+	const releaseYear = feBuilderRelease.releaseYearFormElement(action.release.year, "releaseYear");
 
-  //=========================================================//
+	let releaseFormat = [];
 
-  let labelName;
-  let updatedLabelName;
+	action.release.format.length ?
+	releaseFormat = action.release.format.map(feBuilderRelease.releaseFormatFormElement) :
+	releaseFormat.push(feBuilderRelease.releaseFormatFormElement("", 0));
 
-  if (action.release.label_name.length) {
-    labelName = formAttrGrp(
-      action.release.label_name,
-      "labelName",
-      "input",
-      false,
-      true
-    );
-    updatedLabelName = Object.assign(updatedReleaseTitle, ...labelName);
-  } else {
-    labelName = formAttrInd("", "labelName", "input", false, true);
-    updatedLabelName = Object.assign(updatedReleaseTitle, labelName);
-  }
+	const releaseDiscogsId = feBuilderGeneric.discogsIdFormElement(action.release.discogs_id, "discogsId");
 
-  //=========================================================//
+	const releaseDiscogsUrl = feBuilderGeneric.discogsUrlFormElement(action.release.discogs_url, "discogsLink");
 
-  const catalogue = formAttrInd(
-    action.release.catalogue,
-    "catalogue",
-    "input",
-    false,
-    false
-  );
-  const updatedCatalogue = Object.assign(updatedLabelName, catalogue);
+	const releasePicture = action.release.picture.map(feBuilderGeneric.imageUploadFormElement);
 
-  //=========================================================//
+	const releaseTracks = { tracks: createTrackForm(action.release.track) };
 
-  const releaseYear = formAttrInd(
-    action.release.year,
-    "releaseYear",
-    "input",
-    false,
-    false
-  );
-  const updatedReleaseYear = Object.assign(updatedCatalogue, releaseYear);
+	//=========================================================//
 
-  //=========================================================//
-
-  let releaseFormat;
-  let updatedReleaseFormat;
-
-  if (action.release.format.length) {
-    releaseFormat = formAttrGrp(
-      action.release.format,
-      "releaseFormat",
-      "checkbox",
-      false,
-      false
-    );
-    updatedReleaseFormat = Object.assign(updatedReleaseYear, ...releaseFormat);
-  } else {
-    releaseFormat = formAttrInd("", "releaseFormat", "checkbox", false, false);
-    updatedReleaseFormat = Object.assign(updatedReleaseYear, releaseFormat);
-  }
-
-  //=========================================================//
-
-  const releaseDiscogsUrl = formAttrInd(
-    action.release.discogs_url,
-    "discogsLink",
-    "input",
-    false,
-    false
-  );
-  const updatedReleaseDiscogsUrl = Object.assign(updatedReleaseFormat, releaseDiscogsUrl);
-
-  //=========================================================//
-
-  const releaseDiscogsId = formAttrInd(
-    action.release.discogs_id,
-    "discogsId",
-    "input",
-    false,
-    false
-  );
-  const updatedReleaseDiscogsId = Object.assign(updatedReleaseDiscogsUrl, releaseDiscogsId);
-
-  //=========================================================//
-
-  const releasePicture = formAttrGrp(
-    action.release.picture,
-    "picture",
-    "file",
-    false,
-    false
-  );
-  const updatedReleasePicture = Object.assign(updatedReleaseDiscogsId, ...releasePicture);
-
-  //=========================================================//
-
-  let releaseTracks;
-  let updatedReleaseTracks
-
-  if (action.release.track.length) {
-    releaseTracks = formAttrTrk(
-      action.release.track
-    )
-    const tracks = { tracks : releaseTracks };
-    updatedReleaseTracks = Object.assign(updatedReleasePicture, tracks)
-  }
-  
-  const updatedReleaseForm = Object.assign(updatedReleaseTracks);
+	const updatedReleaseForm = Object.assign({}, 
+		releaseTitle,
+		...releaseLabel,
+		releaseCatalogue,
+		releaseYear,
+		...releaseFormat,
+		releaseDiscogsId,
+		releaseDiscogsUrl,
+		...releasePicture,
+		releaseTracks
+	);
 
   //=========================================================//
   

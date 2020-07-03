@@ -1,41 +1,39 @@
-import { formAttrInd } from "./formAttributeBuilderSingle";
-import { formAttrGrp } from "./formAttributeBuilderGroup";
+//===============================================================================================================//
+
+import { feLabelWebsiteObject, feImageUploadObject } from './formElementAttributeBuilder.js'
+import * as feBuilderLabel from "./formElementBuilderLabel";
+import * as feBuilderGeneric from "./formElementBuilderGeneric";
 
 //===============================================================================================================//
 
 export const createLabelForm = () => {
-  const websiteObj = [
-    { name: "Label Website", url: "" },
-    { name: "Discogs", url: "" },
-    { name: "Bandcamp", url: "" },
-    { name: "Soundcloud", url: "" },
-    { name: "Twitter", url: "" }
-  ];
-  const pictureObj = [{ filename: "", location: "", format: "" }];
+	
+  const websiteObj = feLabelWebsiteObject();
+  const pictureObj = feImageUploadObject();
 
   //===============================================================================================================//
 
-  const labelName = formAttrInd("", "labelName", "input", true, false);
-  const parentLabel = formAttrInd("", "parentLabel", "input", false, true);
-  const subLabel = formAttrInd("", "subsidiaryLabel", "input", false, true);
-  const profile = formAttrInd("", "profile", "textarea", true, false);
-  const website = formAttrGrp(websiteObj, "website", "input", false, false);
-  const discogsId = formAttrInd("", "discogsId", "input", false, false);
-  const picture = formAttrGrp(pictureObj, "picture", "file", false, false);
+  const labelName = feBuilderLabel.labelNameFormElement("", "labelName");
+  const parentLabel = feBuilderLabel.parentLabelFormElement("", 0);
+  const subsidiaryLabel = feBuilderLabel.subsidiaryLabelFormElement("", 0);
+  const profile = feBuilderGeneric.profileFormElement("", "profile");
+  const website = websiteObj.map(feBuilderGeneric.websiteFormElement);
+  const discogsId = feBuilderGeneric.discogsIdFormElement("", "discogsId");
+  const picture = pictureObj.map(feBuilderGeneric.imageUploadFormElement);
 
   //===============================================================================================================//
 
-  const labelForm = Object.assign(
+  const labelForm = Object.assign({},
     labelName,
     parentLabel,
-    subLabel,
+    subsidiaryLabel,
     profile,
     ...website,
     discogsId,
     ...picture
   );
 
-  //===============================================================================================================//
-
   return labelForm;
 };
+
+//===============================================================================================================//
