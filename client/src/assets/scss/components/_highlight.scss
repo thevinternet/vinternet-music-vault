@@ -8,6 +8,9 @@
     margin-bottom: 0;
     margin-right: 0;
   }
+	h2 {
+		@include fontsize(22);
+	}
 }
 
 .theme--purple--light {

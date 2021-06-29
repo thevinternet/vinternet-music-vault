@@ -13,49 +13,50 @@
     margin-top: 0;
     padding: $base-spacing-unit-medium $base-spacing-unit-medium;
   }
-
   h2 {
     margin: 0 0 $base-spacing-unit-tiny 0;
     line-height: 1.5;
     font-size: $base-font-size;
   }
-
   img {
     background-color: $white;
     padding: $base-spacing-unit;
     border: 1px solid $grey-4;
   }
-}
-
-.userform--track {
-  legend {
-    width: 100%;
-    margin-bottom: 0;
-    padding: $base-spacing-unit-small 0 $base-spacing-unit-small $base-spacing-unit-tiny;
-    border-top: 1px solid $grey-4;
-    @include fontsize(22);
-  }
-
-  legend::before {
-    margin-right: $base-spacing-unit;
-  }
-
-  legend.closed::before {
-    content: "\025B8";
-  }
-
-  legend.open::before {
-    content: "\025BE";
-  }
-
-  legend.open ~ div {
-    padding: $base-spacing-unit-small 0 $base-spacing-unit-medium $base-spacing-unit-tiny;
-  }
-  
-  legend:hover, legend:active {
-    cursor: pointer;
-    background-color: $purple-4;
-  }
+	details {
+		width: 100%;
+		margin-bottom: $base-spacing-unit-small;
+		padding: $base-spacing-unit-medium $base-spacing-unit-small 0 $base-spacing-unit-small;
+		outline: 1px solid $grey-4;
+		outline-offset: -1px;
+		&:last-of-type {
+			margin-bottom: $base-spacing-unit-large;
+		}
+		&[open=""] {
+			background-color: $purple-5;
+			outline: 1px solid $purple-3;
+			summary {
+				color: $purple-1;
+				font-weight: 600;
+			}
+			fieldset {
+				background-color: $grey-5;
+			}
+		}
+		> div > button:last-child {
+			margin-bottom: $base-spacing-unit-medium;
+		}
+	}
+	summary {
+		padding-bottom: $base-spacing-unit-medium;
+		outline: none;
+		@include fontsize(22);
+		&:hover,
+		&:focus {
+			color: $purple-1;		
+			cursor: pointer;
+		}
+	}
 }
 
 .userform--actions {

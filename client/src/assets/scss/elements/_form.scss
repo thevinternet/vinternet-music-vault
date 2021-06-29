@@ -16,7 +16,6 @@ fieldset {
 form {
   width: 100%;
   > :last-child {
-    //margin-bottom: $base-spacing-unit-tiny;
     border-bottom: none;
   }
 }
@@ -27,17 +26,13 @@ label {
 }
 
 fieldset {
-  border: none;;
-  margin: 0;
-  padding: 0;
-  &:first-of-type {
-    margin-top: $base-spacing-unit-extra-large;
-  }
-  &:last-of-type {
-    margin-bottom: $base-spacing-unit-large;
-    border-bottom: solid 1px $grey-4;
-  }
+  margin: 0 0 $base-spacing-unit-large 0;
+  padding: $base-spacing-unit-tiny;
+	legend {
+		font-weight: 600;
+	}	
 }
+
 
 input,
 textarea,
@@ -275,7 +270,16 @@ input[type="file"].js-has-focus + label {
 .input-group {
   label {
     flex: 0 0 100%;
-  }
+	}
+	input[type="text"] {
+		margin-right: $base-spacing-unit;
+	}
+	button {
+		height: 42px;
+		margin-bottom: 0;
+		padding-top: $base-spacing-unit;
+		padding-bottom: $base-spacing-unit;
+	}
   input[type="radio"] {
     margin-bottom: $base-spacing-unit;
   }
