@@ -1,164 +1,199 @@
 const ArtistModel = require("../schemas/artist.schema");
 
 //===============================================================================================================//
-
 // Return ALL documents in Artists collection
-
-ArtistModel.getAllArtists = () => {
-  return ArtistModel.find({})
-    .lean()
-    .sort("name")
-    .exec()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
-
 //===============================================================================================================//
 
-// Return Artist By Id
+ArtistModel.getAllArtists = async () => {
+	try {
+		const artists = await ArtistModel.find({});
 
-ArtistModel.getArtistById = id => {
-  return ArtistModel.findById(id)
-    .lean()
-    .populate("alias_name", "name")
-    .exec()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
+		if (!artists.length) {
+			return {
+				error : {
+					status: "Request Successful: HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							msg: "No artist results found"
+						}
+					]
+				}
+			}
+		} else {
+			return ArtistModel.find({}).lean().sort("name").exec();
+		}
 
-//===============================================================================================================//
-
-// Create New Artist
-
-ArtistModel.createNewArtist = (props, file) => {
-  const newArtist = new ArtistModel({
-    name: props.artistName,
-    real_name: props.realName,
-    alias_name: props.aliasName,
-    profile: props.profile,
-    website: props.website,
-    discogs_id: props.discogsId,
-    picture: file
-  });
-
-  return newArtist
-    .save()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
 
 //===============================================================================================================//
-
-// Update Artist Text Properties & Image File By Id
-
-ArtistModel.updateArtistPropertiesFile = (id, props, file) => {
-  return ArtistModel.updateOne(
-    { _id: id },
-    {
-      $set: {
-        name: props.artistName,
-        real_name: props.realName,
-        alias_name: props.aliasName,
-        profile: props.profile,
-        website: props.website,
-        discogs_id: props.discogsId,
-        picture: file
-      }
-    },
-    { new: true }
-  )
-    .exec()
-    .then(result => {
-      console.log(result);
-      return result;
-    })
-    .catch(error => {
-      console.log(error);
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
-
+// Return Artist Document by ID
 //===============================================================================================================//
 
-// Update Artist Text Properties Only By Id
+ArtistModel.getArtistById = async (id) => {
+	try {
+		const artist = await ArtistModel.findById(id);
 
-ArtistModel.updateArtistPropertiesText = (id, props) => {
-  return ArtistModel.updateOne(
-    { _id: id },
-    {
-      $set: {
-        name: props.artistName,
-        real_name: props.realName,
-        alias_name: props.aliasName,
-        profile: props.profile,
-        website: props.website,
-        discogs_id: props.discogsId
-      }
-    },
-    { new: true }
-  )
-    .exec()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
+		if (artist === null) {
+			return {
+				error : {
+					status: "Request Successful: HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: id,
+							msg: "The artist Id provided was not found",
+							param: "id",
+              location: "params"
+						}
+					]
+				}
+			}
+		} else {
+			return ArtistModel.findById(id).lean().populate("alias_name", "name").exec();
+		}
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
 
 //===============================================================================================================//
+// Create New Artist Document
+//===============================================================================================================//
 
-// Remove Artist By Id
+ArtistModel.createNewArtist = async (props, file) => {
+  try {
+		const artist = await ArtistModel.create({
+			name: props.artistName,
+			real_name: props.realName,
+			alias_name: props.aliasName,
+			profile: props.profile,
+			website: props.website,
+			discogs_id: props.discogsId,
+			picture: file
+		});
 
-ArtistModel.removeArtistById = id => {
-  return ArtistModel.deleteOne({ _id: id })
-    .exec()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
+		return artist;
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
+
+//===============================================================================================================//
+// Update Existing Artist Document
+//===============================================================================================================//
+
+ArtistModel.updateExistingArtistById = async (id, props) => {
+	
+	// Create 'Set' Object with updated Artist Props and optional Image File
+	const artistUpdateProps = {
+		$set: {
+			name: props.artistName,
+			real_name: props.realName,
+			alias_name: props.aliasName,
+			profile: props.profile,
+			website: props.website,
+			discogs_id: props.discogsId,
+		}
+	}
+	if (props.picture) {
+		artistUpdateProps.$set.picture = props.picture;
+	}
+
+	// Submit artist update object to model and handle response
+	try {
+		const artist = await ArtistModel.updateOne(
+			{ _id: id },
+			artistUpdateProps,
+			{ new: true }
+		);
+
+		return artist;
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
+
+//===============================================================================================================//
+// // Remove Artist By Id
+//===============================================================================================================//
+
+ArtistModel.removeArtistById = async (id) => {
+	try {
+		const artist = await ArtistModel.findById(id);
+
+		if (artist === null) {
+			return {
+				error : {
+					status: "Request Successful: HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: id,
+							msg: "The artist id provided was not found",
+							param: "id",
+              location: "params"
+						}
+					]
+				}
+			}
+		} else {
+			return ArtistModel.deleteOne({ _id: id }).exec();
+		}
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
 
 //===============================================================================================================//
 
 module.exports = ArtistModel;
-
-//===============================================================================================================//
