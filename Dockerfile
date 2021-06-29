@@ -2,7 +2,7 @@
 
 #--- Stage 1: Build Client ---#
 
-FROM node:12-alpine as client
+FROM node:14-alpine as client
 
 # Declare Client App Directory
 WORKDIR /usr/app/client/
@@ -18,7 +18,7 @@ RUN yarn build
 
 #--- Stage 2: Build Server ---#
 
-FROM node:12-alpine
+FROM node:14-alpine
 
 # Declare Main App Directory
 WORKDIR /usr/src/app/
