@@ -7,26 +7,27 @@ services:
       context: .
       dockerfile: Dockerfile
     image: vmv-server
-    container_name: vmv-server-container
+    container_name: vmv-server-dev
     volumes:
       - .:/usr/app/server
-      - /usr/app/server/node_modules
+    # - /usr/app/server/node_modules
     environment:
       - NODE_ENV=${NODE_ENV}
+      - CHOKIDAR_USEPOLLING='true'
     env_file: .env
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     expose:
       - ${SERVER_PORT}
     networks:
-      - vmv-server-network  
+      - vmv-app-network  
     depends_on:
       - mongo    
     command: npm run development
-  # Setup Database Container
+  # Setup Database Containers
   mongo:
     image: mongo
-    container_name: vmv-mongodb-container
+    container_name: vmv-mongodb-dev
     volumes:
       - vmv-data:/data/db
     env_file: .env
@@ -35,11 +36,23 @@ services:
     expose:
       - ${MONGO_PORT}
     networks:
-      - vmv-server-network
-
+      - vmv-app-network
+  mongo-express:
+    image: mongo-express
+    container_name: vmv-mongoex-dev
+    env_file: .env
+    ports:
+      - ${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}
+    networks:
+      - vmv-app-network
+    depends_on:
+      - mongo     
+    
 networks:
-  vmv-server-network:
+  vmv-app-network:
     driver: bridge
   
 volumes:
   vmv-data:
+    driver: local
+    
