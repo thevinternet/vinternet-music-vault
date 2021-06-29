@@ -1,6 +1,6 @@
 # Dockerfile - React Frontend
 
-FROM node:12-alpine
+FROM node:14-alpine
 
 # Create Client App Directory
 RUN mkdir -p /usr/app/client/
