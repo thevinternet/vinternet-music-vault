@@ -1,6 +1,6 @@
 var LabelModel = require("../models/label.model");
 const { body, param, validationResult } = require('express-validator');
-const LabelUtilties = require("../utilities/label.utilities");
+const LabelUtilities = require("../utilities/label.utilities");
 const LabelController = {};
 
 //===============================================================================================================//
@@ -161,7 +161,7 @@ LabelController.createNewLabel = async (req, res, next) => {
 		}
 
 		// If all checks pass prepare label object with linked properties 
-		const props = await LabelUtilties.createLabelDocument(req.body.label);
+		const props = await LabelUtilities.createLabelDocument(req.body.label);
 
 		// Prepare label picture object
 		let file;
@@ -249,7 +249,7 @@ LabelController.updateExistingLabelById = async (req, res, next) => {
 		}
 
 		// If all checks pass prepare label object with linked properties 
-		const props = await LabelUtilties.createLabelDocument(req.body.label);
+		const props = await LabelUtilities.createLabelDocument(req.body.label);
 
 		// Handle optional picture file and append to label object
 		if (req.file) {

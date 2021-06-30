@@ -54,8 +54,7 @@ const LabelSchema = new Schema(
 			]
 		},
 		discogs_id: {
-			type: String,
-			default: ""
+			type: String
 		}
 	},
 	{

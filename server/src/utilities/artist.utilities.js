@@ -1,11 +1,11 @@
 const ArtistModel = require("../models/artist.model");
-const ArtistUtilties = {}
+const ArtistUtilities = {}
 
 //===============================================================================================================//
 // Utility - Create Artist Document (Managing Linked Alias Names)
 //===============================================================================================================//
 
-ArtistUtilties.createArtistDocument = async (artist) => {
+ArtistUtilities.createArtistDocument = async (artist) => {
 
 	const props = {
 		artistName: artist.artistName,
@@ -55,4 +55,4 @@ ArtistUtilties.createArtistDocument = async (artist) => {
 
 //===============================================================================================================//
 
-module.exports = ArtistUtilties;
+module.exports = ArtistUtilities;

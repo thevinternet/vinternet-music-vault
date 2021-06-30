@@ -10,8 +10,7 @@ const ArtistSchema = new Schema(
 			required: [true, "Please provide the name of the artist"]
 		},
 		real_name: {
-			type: String,
-			default: "Unknown"
+			type: String
 		},
 		alias_name: [
 			{
@@ -52,8 +51,7 @@ const ArtistSchema = new Schema(
 			]
 		},
 		discogs_id: {
-			type: String,
-			default: ""
+			type: String
 		}
 	},
 	{

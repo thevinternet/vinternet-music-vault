@@ -1,11 +1,11 @@
 const LabelModel = require("../models/label.model");
-const LabelUtilties = {}
+const LabelUtilities = {}
 
 //===============================================================================================================//
 // Utility - Create Label Document (Managing Linked Parent & Subsidiary Labels)
 //===============================================================================================================//
 
-LabelUtilties.createLabelDocument = async (label) => {
+LabelUtilities.createLabelDocument = async (label) => {
 
 	const props = {
 		labelName: label.labelName,
@@ -63,4 +63,4 @@ LabelUtilties.createLabelDocument = async (label) => {
 
 //===============================================================================================================//
 
-module.exports = LabelUtilties;
+module.exports = LabelUtilities;

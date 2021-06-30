@@ -1,6 +1,6 @@
 const ArtistModel = require("../models/artist.model");
 const { body, param, validationResult } = require('express-validator');
-const ArtistUtilties = require("../utilities/artist.utilities");
+const ArtistUtilities = require("../utilities/artist.utilities");
 const ArtistController = {};
 
 //===============================================================================================================//
@@ -155,7 +155,7 @@ ArtistController.createNewArtist = async (req, res, next) => {
 		}
 
 		// If all checks pass prepare artist object with linked properties 
-		const props = await ArtistUtilties.createArtistDocument(req.body.artist);
+		const props = await ArtistUtilities.createArtistDocument(req.body.artist);
 
 		// Prepare artist picture object
 		let file;
@@ -243,7 +243,7 @@ ArtistController.updateExistingArtistById = async (req, res, next) => {
 		}
 
 		// If all checks pass prepare artist object with linked properties 
-		const props = await ArtistUtilties.createArtistDocument(req.body.artist);
+		const props = await ArtistUtilities.createArtistDocument(req.body.artist);
 
 		// Handle optional picture file and append to artist object
 		if (req.file) {
