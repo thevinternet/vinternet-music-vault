@@ -147,7 +147,7 @@ ArtistController.createNewArtist = async (req, res, next) => {
 							value: req.body.artist.artistName,
 							msg: "The artist name provided is already in the database",
 							param: "artistName",
-              location: "body"
+							location: "body"
 						}
 					]
 				}
@@ -235,7 +235,7 @@ ArtistController.updateExistingArtistById = async (req, res, next) => {
 							value: req.body.id,
 							msg: "The artist id provided was not found",
 							param: "id",
-              location: "body"
+							location: "body"
 						}
 					]
 				}

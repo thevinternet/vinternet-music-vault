@@ -54,7 +54,7 @@ ArtistModel.getArtistById = async (id) => {
 							value: id,
 							msg: "The artist Id provided was not found",
 							param: "id",
-              location: "params"
+							location: "params"
 						}
 					]
 				}
@@ -82,7 +82,7 @@ ArtistModel.getArtistById = async (id) => {
 //===============================================================================================================//
 
 ArtistModel.createNewArtist = async (props, file) => {
-  try {
+	try {
 		const artist = await ArtistModel.create({
 			name: props.artistName,
 			real_name: props.realName,
@@ -171,7 +171,7 @@ ArtistModel.removeArtistById = async (id) => {
 							value: id,
 							msg: "The artist id provided was not found",
 							param: "id",
-              location: "params"
+							location: "params"
 						}
 					]
 				}

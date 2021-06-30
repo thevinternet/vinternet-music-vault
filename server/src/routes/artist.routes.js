@@ -62,7 +62,6 @@ router.put(
 	upload.single("image"),
 	function (req, res, next) {
 		req.body = JSON.parse(req.body.artist);
-		console.log(req.body);
 		next();
 	},
 	ArtistController.validate("checkArtistInput"),
