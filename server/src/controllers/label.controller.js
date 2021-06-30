@@ -1,256 +1,342 @@
 var LabelModel = require("../models/label.model");
+const { body, param, validationResult } = require('express-validator');
+const LabelUtilties = require("../utilities/label.utilities");
 const LabelController = {};
 
 //===============================================================================================================//
+// Controller - Validate Label Input Data (Express Validator Middleware)
+//===============================================================================================================//
 
-// Helper Function - Create Label Document (Managing Linked Parent & Subsidiary Labels)
-
-createLabelDocument = async (label) => {
-
-  const props = {
-    labelName: label.labelName,
-    parentLabel: [],
-    subsidiaryLabel: [],
-    profile: label.profile,
-    website: label.website,
-    discogs_id: label.discogsId,
-  }
-
-  if (label.parentLabel.length) {
-
-    const parentLabelNames = label.parentLabel.filter(parent => parent.name);
-
-    if (parentLabelNames.length) {
-      const parentNames = await LabelModel.create(parentLabelNames);
-      parentNames.forEach(name => {
-        props.parentLabel.push({ _id: name._id })
-      })
-    }
-
-    const parentLabelIds = label.parentLabel.filter(parent => parent._id);
-
-    if (parentLabelIds.length){
-      parentLabelIds.forEach(parentLabelId => {
-        props.parentLabel.push({ _id: parentLabelId._id })
-      })
-    }  
-  }
-  
-  if (label.subsidiaryLabel.length) {
-
-    const subsidiaryLabelNames = label.subsidiaryLabel.filter(subsidiary => subsidiary.name);
-
-    if (subsidiaryLabelNames.length) {
-      const subsidiaryNames = await LabelModel.create(subsidiaryLabelNames);
-      subsidiaryNames.forEach(name => {
-        props.subsidiaryLabel.push({ _id: name._id })
-      })
-    }
-
-    const subsidiaryLabelIds = label.subsidiaryLabel.filter(subsidiary => subsidiary._id);
-
-    if (subsidiaryLabelIds.length){
-      subsidiaryLabelIds.forEach(subsidiaryLabelId => {
-        props.subsidiaryLabel.push({ _id: subsidiaryLabelId._id })
-      })
-    }
-  }
-  return props;
+LabelController.validate = (method) => {
+	switch (method) {	
+		case "checkLabelId": {
+			return [
+				param("id")
+					.isMongoId()
+					.withMessage("The value passed for Label Id is not valid")
+			]
+		}
+		case "checkLabelInput": {
+			return [
+				body("label._id")
+					.optional().isMongoId()
+					.withMessage("The value for the Label Id provided is not valid"),
+				body("label.labelName")
+					.notEmpty().escape().trim()
+					.withMessage("Please provide the name of the label"),
+				body("label.parentLabel")
+					.isArray()
+					.withMessage("Parent Label array is malformed and not valid"),
+				body("label.parentLabel.*._id")
+					.isMongoId().optional()
+					.withMessage("The value for the Parent Label Id provided is not valid"),
+				body("label.parentLabel.*.name")
+					.optional().escape().trim(),
+				body("label.subsidiaryLabel")
+					.isArray()
+					.withMessage("Subsidiary Label array is malformed and not valid"),
+				body("label.subsidiaryLabel.*._id")
+					.isMongoId().optional()
+					.withMessage("The value for the Subsidiary Label Id provided is not valid"),
+				body("label.subsidiaryLabel.*.name")
+					.optional().escape().trim(),
+				body("label.profile")
+					.optional().escape().trim(),
+				body("label.website")
+					.isArray({ min: 5 })
+					.withMessage("Website array is malformed and not valid"),
+				body("label.website.*._id")
+					.isMongoId().optional()
+					.withMessage("The value for the Website Id provided is not valid"),
+				body("label.website.*.name")
+					.notEmpty().escape().trim()
+					.withMessage("Please provide the name of the website"),
+				body("label.website.*.url")
+					.optional().escape().trim(),
+				body("label.discogsId")
+					.optional().escape().trim()
+			]
+		}
+	}
 }
 
 //===============================================================================================================//
-
 // Controller - Retrieve All Labels
-
-LabelController.getAllLabels = (req, res, next) => {
-  return LabelModel.getAllLabels()
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json(result);
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
-};
-
 //===============================================================================================================//
 
+LabelController.getAllLabels = async (req, res, next) => {
+	try {
+		const labels = await LabelModel.getAllLabels();
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json(labels);
+		}
+	} catch(err) {
+		return next(err)
+	}
+}
+
+//===============================================================================================================//
 // Controller - Retrieve Single Label By Id
-
-LabelController.getLabelById = (req, res, next) => {
-  const id = req.params.id;
-
-  return LabelModel.getLabelById(id)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json(result);
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
-};
-
 //===============================================================================================================//
 
+LabelController.getLabelById = async (req, res, next) => {
+	try {
+		// Check for validation errors in request and return error object
+		const errors = validationResult(req);
+
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
+
+		// If no validation errors run query request and return result
+		const id = req.params.id;
+		let label = await LabelModel.getLabelById(id);
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json(label);
+		}
+	} catch(err) {
+		return next(err)
+	}
+}
+
+//===============================================================================================================//
 // Controller - Create New Label With Text Properties & Image File
+//===============================================================================================================//
 
-LabelController.createNewLabelFile = async (req, res, next) => {
-  
-  const props = await createLabelDocument(JSON.parse(req.body.label));
-  
-  const file = {
-    location: req.file.filename,
-    filename: req.file.originalname,
-    format: req.file.mimetype
-  };
+LabelController.createNewLabel = async (req, res, next) => {
+	try {
+		// If validation errors in request return error object
+		const errors = validationResult(req);
 
-  return LabelModel.createNewLabel(props, file)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json({
-          success: `${props.labelName} successfully added`,
-          reference: result
-        });
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
+
+		// If label name already exists return error object
+		const labelCheck = await LabelModel.find({ name: req.body.label.labelName }).exec();
+
+		if (labelCheck.length) {
+			return res.json({
+				error : {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: req.body.label.labelName,
+							msg: "The label name provided is already in the database",
+							param: "labelName",
+							location: "body"
+						}
+					]
+				}
+			});
+		}
+
+		// If all checks pass prepare label object with linked properties 
+		const props = await LabelUtilties.createLabelDocument(req.body.label);
+
+		// Prepare label picture object
+		let file;
+		if (req.file) {
+			file = {
+				location: req.file.filename,
+				filename: req.file.originalname,
+				format: req.file.mimetype
+			}
+		} else {
+			file = {
+				location: "avatar.jpg",
+				filename: "avatar.jpg",
+				format: "image/jpeg"
+			}
+		}
+
+		// Submit label object to model and handle response
+		const label = await LabelModel.createNewLabel(props, file);
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json({
+				success: {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					feedback: [
+						{
+							msg: `${label.name} successfully added`,
+							value: label
+						}
+					]
+				}
+			});
+		}
+	} catch(err) {
+		return next(err)
+	}
 };
 
 //===============================================================================================================//
-
-// Controller - Create New Label With Text Properties File
-
-LabelController.createNewLabelText = async (req, res, next) => {
-  
-  const props = await createLabelDocument(req.body.label);
-  
-  const file = {
-    location: "avatar.jpg",
-    filename: "avatar.jpg",
-    format: "image/jpeg"
-  };
-
-  return LabelModel.createNewLabel(props, file)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json({
-          success: `${props.labelName} successfully added`,
-          reference: result
-        });
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
-};
-
-//===============================================================================================================//
-
 // Controller - Update Label Text Properties & Image File By Id
+//===============================================================================================================//
 
-LabelController.updateLabelPropertiesFile = async (req, res, next) => {
-  
-  const id = req.body.id;
+LabelController.updateExistingLabelById = async (req, res, next) => {
+	try {
+		// If validation errors in request return error object
+		const errors = validationResult(req);
 
-  const props = await createLabelDocument(JSON.parse(req.body.label));
-  
-  const file = {
-    location: req.file.filename,
-    filename: req.file.originalname,
-    format: req.file.mimetype
-  };
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
 
-  return LabelModel.updateLabelPropertiesFile(id, props, file)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json({
-          success: `${props.labelName} successfully updated`,
-          reference: result
-        });
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
+		// If label id does not exist return error object
+		const id = req.params.id;
+		const labelCheck = await LabelModel.find({ _id: id }).exec();
+
+		if (!labelCheck.length) {
+			return res.json({
+				error : {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: req.body.id,
+							msg: "The label id provided was not found",
+							param: "id",
+							location: "body"
+						}
+					]
+				}
+			});
+		}
+
+		// If all checks pass prepare label object with linked properties 
+		const props = await LabelUtilties.createLabelDocument(req.body.label);
+
+		// Handle optional picture file and append to label object
+		if (req.file) {
+			props.picture = {
+				location: req.file.filename,
+				filename: req.file.originalname,
+				format: req.file.mimetype
+			}
+		}
+
+		// Submit label object to model and handle response
+		const label = await LabelModel.updateExistingLabelById(id, props);
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json({
+				success: {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					feedback: [
+						{
+							msg: `${props.labelName} successfully updated`,
+							value: label
+						}
+					]
+				}
+			});
+		}
+	} catch(err) {
+		return next(err)
+	}
 };
 
 //===============================================================================================================//
-
-// Controller - Update Label Text Properties Only By Id
-
-LabelController.updateLabelPropertiesText = async (req, res, next) => {
-  
-  const id = req.body.id;
-  
-  const props = await createLabelDocument(req.body.label);
-
-  return LabelModel.updateLabelPropertiesText(id, props)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json({
-          success: `${props.labelName} successfully updated`,
-          reference: result
-        });
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
-};
-
-//===============================================================================================================//
-
 // Controller - Remove Single Label By Id
+//===============================================================================================================//
 
-LabelController.removeLabelById = (req, res, next) => {
-  
-  const id = req.params.id;
+LabelController.removeLabelById = async (req, res, next) => {
+	try {
+		// Check for validation errors in request and return error object
+		const errors = validationResult(req);
 
-  return LabelModel.removeLabelById(id)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json({
-          success: `Label removed from database`,
-          reference: result
-        });
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
-};
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
+
+		// If no validation errors run query request and return result
+		const id = req.params.id;
+		const label = await LabelModel.removeLabelById(id)
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json({
+				success: {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					feedback: [
+						{
+							msg: `Label removed from database`,
+							value: label
+						}
+					]
+				}
+			});
+		}
+	} catch(err) {
+		return next(err)
+	}
+}
 
 //===============================================================================================================//
 
