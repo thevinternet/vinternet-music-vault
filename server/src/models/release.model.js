@@ -1,187 +1,288 @@
 const ReleaseModel = require("../schemas/release.schema");
 
 //===============================================================================================================//
-
 // Return ALL documents in Releases collection
-
-ReleaseModel.getAllReleases = () => {
-  return ReleaseModel.find({})
-    .populate("artist_name", "name")
-    .populate("label_name", "name")
-    .sort("catalogue")
-    .lean()
-    .exec()
-    .then(result => {
-      console.log(result);
-      return result;
-    })
-    .catch(error => {
-      console.log(error);
-      return error;
-    });
-};
-
 //===============================================================================================================//
 
-// Return Release By Id
+ReleaseModel.getAllReleases = async () => {
+	try {
+		const releases = await ReleaseModel.find({});
 
-ReleaseModel.getReleaseById = id => {
-  return ReleaseModel.findById(id)
-  .populate("artist_name", "name")
-  .populate("track.artist_name", "name")
-  .populate("label_name", "name")
-  .lean()
-  .exec()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
+		if (!releases.length) {
+			return {
+				error : {
+					status: "Request Successful: HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							msg: "No release results found"
+						}
+					]
+				}
+			}
+		} else {
+			//.populate("artist_name", "name")
+			return ReleaseModel.find({}).populate("label_name", "name").lean().sort("catalogue").exec();
+		}
 
-//===============================================================================================================//
-
-// Return Release By Label Id
-
-ReleaseModel.getReleasesByLabel = id => {
-  return ReleaseModel.find({ label_name: id })
-  .populate("artist_name", "name")
-  .populate("track.artist_name", "name")
-  .populate("label_name", "name")
-  .sort("catalogue")
-  .lean()
-  .exec()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
 
 //===============================================================================================================//
-
-// Return Release By Artist Id
-
-ReleaseModel.getReleasesByArtist = id => {
-  return ReleaseModel.find({ artist_name: id })
-  .populate("artist_name", "name")
-  .populate("track.artist_name", "name")
-  .populate("label_name", "name")
-  .sort("catalogue")
-  .lean()
-  .exec()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
-
+// Return Release Document by ID
 //===============================================================================================================//
 
-// Update Release Text Properties & Image File By Id
+ReleaseModel.getReleaseById = async (id) => {
+	try {
+		const release = await ReleaseModel.findById(id);
 
-ReleaseModel.updateReleasePropertiesFile = (id, props, file) => {
-  return ReleaseModel.updateOne(
-    { _id: id },
-    {
-      $set: {
-        artist_name: props.artistName,
-        title: props.title,
-        label_name: props.labelName,
-        catalogue: props.catalogue,
-        year: props.year,
-        format: props.format,
-        discogs_url: props.discogs_url,
-        discogs_id: props.discogs_id,
-        track: props.track,
-        picture: file
-      }
-    },
-    { new: true }
-  )
-    .exec()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
+		if (release === null) {
+			return {
+				error : {
+					status: "Request Successful: HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: id,
+							msg: "The release Id provided was not found",
+							param: "id",
+							location: "params"
+						}
+					]
+				}
+			}
+		} else {
+			//.populate("artist_name", "name")
+			return LabelModel.findById(id).populate("tracks.artist_name", "name").populate("label_name", "name").lean().sort("catalogue").exec();
+		}
 
-//===============================================================================================================//
-
-// Update Release Text Properties Only By Id
-
-ReleaseModel.updateReleasePropertiesText = (id, props) => {
-  console.log(props);
-  return ReleaseModel.updateOne(
-    { _id: id },
-    {
-      $set: {
-        artist_name: props.artistName,
-        title: props.title,
-        label_name: props.labelName,
-        catalogue: props.catalogue,
-        year: props.year,
-        format: props.format,
-        discogs_url: props.discogs_url,
-        discogs_id: props.discogs_id,
-        track: props.track
-      }
-    },
-    { new: true }
-  )
-    .exec()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
 
 //===============================================================================================================//
+// Return Release Documents by Label ID
+//===============================================================================================================//
 
-// Remove Release By Id
+ReleaseModel.getReleasesByLabel = async (id) => {
+	try {
+		const release = await ReleaseModel.findById({ label_name: id });
 
-ReleaseModel.removeReleaseById = id => {
-  return ReleaseModel.deleteOne({ _id: id })
-    .exec()
-    .then(result => {
-      return result;
-    })
-    .catch(error => {
-      return {
-        status: "error",
-        type: error.errors.name.name,
-        msg: error.errors.name.message
-      };
-    });
-};
+		if (release === null) {
+			return {
+				error : {
+					status: "Request Successful: HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: id,
+							msg: "No releases for the Label Id provided were found",
+							param: "id",
+							location: "params"
+						}
+					]
+				}
+			}
+		} else {
+			//.populate("artist_name", "name")
+			return LabelModel.findById(id).populate("tracks.artist_name", "name").populate("label_name", "name").lean().sort("catalogue").exec();
+		}
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
+
+//===============================================================================================================//
+// Return Release Documents by Artist ID
+//===============================================================================================================//
+
+ReleaseModel.getReleasesByArtist = async (id) => {
+	try {
+		const release = await ReleaseModel.findById({ tracks: artist_name._id });
+
+		if (release === null) {
+			return {
+				error : {
+					status: "Request Successful: HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: id,
+							msg: "No releases for the Artist Id provided were found",
+							param: "id",
+							location: "params"
+						}
+					]
+				}
+			}
+		} else {
+			//.populate("artist_name", "name")
+			return ReleaseModel.findById({ tracks: artist_name._id }).populate("tracks", "artist_name").populate("label_name", "name").lean().sort("catalogue").exec();
+		}
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
+
+//===============================================================================================================//
+// Create New Release Document
+//===============================================================================================================//
+
+ReleaseModel.createNewRelease = async (props, file) => {
+	try {
+		const release = await ReleaseModel.create({
+			title: props.releaseTitle,
+			label_name: props.labelName,
+			catalogue: props.catalogue,
+			year: props.year,
+			format: props.format,
+			tracks: props.tracks,
+			discogs_url: props.discogsUrl,
+			discogs_id: props.discogsId,
+			picture: file
+		});
+
+		return release;
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
+
+//===============================================================================================================//
+// Update Existing Release Document
+//===============================================================================================================//
+
+ReleaseModel.updateExistingReleaseById = async (id, props) => {
+	
+	// Create 'Set' Object with updated Release Props and optional Image File
+	const releaseUpdateProps = {
+		$set: {
+			title: props.releaseTitle,
+			label_name: props.labelName,
+			catalogue: props.catalogue,
+			year: props.year,
+			format: props.format,
+			tracks: props.tracks,
+			discogs_url: props.discogsUrl,
+			discogs_id: props.discogsId
+		}
+	}
+	if (props.picture) {
+		releaseUpdateProps.$set.picture = props.picture;
+	}
+
+	// Submit release update object to model and handle response
+	try {
+		const release = await ReleaseModel.updateOne(
+			{ _id: id },
+			releaseUpdateProps,
+			{ new: true }
+		);
+
+		return release;
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
+
+//===============================================================================================================//
+// // Remove Release By ID
+//===============================================================================================================//
+
+// TODO: Handle Removal of Tracks associated with Release!
+
+ReleaseModel.removeReleaseById = async (id) => {
+	try {
+		const release = await ReleaseModel.findById(id);
+
+		if (release === null) {
+			return {
+				error : {
+					status: "Request Successful: HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: id,
+							msg: "The release id provided was not found",
+							param: "id",
+							location: "params"
+						}
+					]
+				}
+			}
+		} else {
+			return ReleaseModel.deleteOne({ _id: id }).exec();
+		}
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
 
 //===============================================================================================================//
 

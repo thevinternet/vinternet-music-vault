@@ -1,278 +1,416 @@
 const ReleaseModel = require("../models/release.model");
+const { body, param, validationResult } = require('express-validator');
+const ReleaseUtilties = require("../utilities/release.utilities");
 const ReleaseController = {};
 
 //===============================================================================================================//
+// Controller - Validate Release Input Data (Express Validator Middleware)
+//===============================================================================================================//
 
-// Helper Function - Manage & Create Linked Data For Artists & Labels
+//TODO: Handle Validation of Tracks object array
 
-manageLinkedData = async (dataArray, dataModel) => {
-
-  let linkedData = [];
-
-  const arrayNames = dataArray.filter(item => item.name);
-
-  if (arrayNames.length) {
-    try {
-    const linkedArrayNames = await dataModel.create(arrayNames);
-    linkedArrayNames.forEach(name => {
-      linkedData.push({ _id: name._id })
-    })
-    } catch (error) {
-      throw new Error(`Error: ${error}`);
-    }
-  }
-
-  //==================================================//
-
-  const arrayIds = dataArray.filter(item => item._id);
-
-  if (arrayIds.length){
-    arrayIds.forEach(identifier => {
-      linkedData.push({ _id: identifier._id })
-    })
-  }
-
-  return linkedData;
+ReleaseController.validate = (method) => {
+	switch (method) {	
+		case "checkReleaseId": {
+			return [
+				param("id")
+					.isMongoId()
+					.withMessage("The value passed for Release Id is not valid")
+			]
+		}
+		case "checkReleaseInput": {
+			return [
+				body("release._id")
+					.optional().isMongoId()
+					.withMessage("The value for the Release Id provided is not valid"),
+				body("release.releaseTitle")
+					.notEmpty().escape().trim()
+					.withMessage("Please provide the name of the release"),
+				body("release.labelName")
+					.isArray()
+					.withMessage("Label array is malformed and not valid"),
+				body("release.labelName.*._id")
+					.isMongoId().optional()
+					.withMessage("The value for the Label Id provided is not valid"),
+				body("release.labelName.*.name")
+					.optional().escape().trim(),
+				body("release.catalogue")
+					.optional().escape().trim(),
+				body("release.year")
+					.optional().escape().trim(),
+				body("release.format")
+					.isArray()
+					.withMessage("Format array is malformed and not valid"),
+				body("release.format.*._id")
+					.isMongoId().optional()
+					.withMessage("The value for the Format Id provided is not valid"),
+				body("release.format.*.name")
+					.notEmpty().escape().trim()
+					.withMessage("Please provide the name/type of the media format"),
+				body("release.format.*.released")
+					.optional().escape().trim(),
+				body("label.discogsUrl")
+					.optional().escape().trim(),
+				body("label.discogsId")
+					.optional().escape().trim()
+			]
+		}
+	}
 }
 
 //===============================================================================================================//
-
-// Helper Function - Create Release Document (Managing Linked Artists & Labels)
-
-createReleaseDocument = async (release) => {
-
-  const props = {
-    artistName: [],
-    title: release.releaseTitle,
-    labelName: [],
-    catalogue: release.catalogue,
-    year: release.releaseYear,
-    format: release.releaseFormat,
-    discogs_url: release.discogsLink,
-    discogs_id: release.discogsId,
-    track: []
-  }
-
-  //==================================================//
-
-  if (release.artistName.length) {
-    let updatedArtist;
-    try {
-      updatedArtist = await manageLinkedData(release.artistName, "ArtistModel");
-    } catch (error) {
-      throw new Error(`Error: ${error}`);
-    }
-    props.artistName = updatedArtist;
-  }
-
-  //==================================================//
-
-  if (release.labelName.length) {
-    let updatedLabel;
-    try {
-      updatedLabel = await manageLinkedData(release.labelName, "LabelModel");
-    } catch (error) {
-      throw new Error(`Error: ${error}`);
-    }
-    props.labelName = updatedLabel;
-  }
-
-  //==================================================//
-
-  if (release.tracks.length) {
-    const updatedTracks = await Promise.all(release.tracks.map(async (item) => {
-      try {
-        let track = {
-          track_number: item.trackNumber,
-          artist_name: await manageLinkedData(item.artistName, "ArtistModel"),
-          title: item.trackTitle,
-          catalogue: item.catalogueReference,
-          genre: item.genre,
-          mixkey: item.mixKey,
-          file_location: item.fileLocation
-        }
-        return track;
-      }
-      catch(error) {
-        throw new Error(`Error: ${error}`);
-      }
-    }))
-    props.track = updatedTracks;
-  }
-
-  return props;
-}
-
-//===============================================================================================================//
-
 // Controller - Retrieve All Releases
-
-ReleaseController.getAllReleases = (req, res, next) => {
-  return ReleaseModel.getAllReleases()
-  .then(result => {
-    if (result.status === "error") {
-      return res.json({
-        failure: `${result.type}: ${result.msg}`
-      });
-    } else {
-      return res.json(result);
-    }
-  })
-  .catch(error => {
-    return res.json(error);
-  });
-};
-
 //===============================================================================================================//
 
+ReleaseController.getAllReleases = async (req, res, next) => {
+	try {
+		const releases = await ReleaseModel.getAllReleases();
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json(releases);
+		}
+	} catch(err) {
+		return next(err)
+	}
+}
+
+//===============================================================================================================//
 // Controller - Retrieve Single Release By Id
-
-ReleaseController.getReleaseById = (req, res, next) => {
-  const id = req.params.id;
-
-  return ReleaseModel.getReleaseById(id)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json(result);
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
-};
-
 //===============================================================================================================//
 
+ReleaseController.getReleaseById = async (req, res, next) => {
+	try {
+		// Check for validation errors in request and return error object
+		const errors = validationResult(req);
+
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
+
+		// If no validation errors run query request and return result
+		const id = req.params.id;
+		let release = await ReleaseModel.getReleaseById(id);
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json(release);
+		}
+	} catch(err) {
+		return next(err)
+	}
+}
+
+//===============================================================================================================//
 // Controller - Retrieve All Releases By Label Id
-
-ReleaseController.getReleasesByLabel = (req, res, next) => {
-  const id = req.params.id;
-
-  return ReleaseModel.getReleasesByLabel(id)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json(result);
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
-};
-
 //===============================================================================================================//
 
+ReleaseController.getReleasesByLabel = async (req, res, next) => {
+	try {
+		// Check for validation errors in request and return error object
+		const errors = validationResult(req);
+
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
+
+		// If no validation errors run query request and return result
+		const id = req.params.id;
+		let releases = await ReleaseModel.getReleasesByLabel(id);
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json(releases);
+		}
+	} catch(err) {
+		return next(err)
+	}
+}
+
+//===============================================================================================================//
 // Controller - Retrieve All Releases By Artist Id
+//===============================================================================================================//
 
-ReleaseController.getReleasesByArtist = (req, res, next) => {
-  const id = req.params.id;
+ReleaseController.getReleasesByArtist = async (req, res, next) => {
+	try {
+		// Check for validation errors in request and return error object
+		const errors = validationResult(req);
 
-  return ReleaseModel.getReleasesByArtist(id)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json(result);
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
+
+		// If no validation errors run query request and return result
+		const id = req.params.id;
+		let releases = await ReleaseModel.getReleasesByArtist(id);
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json(releases);
+		}
+	} catch(err) {
+		return next(err)
+	}
+}
+
+//===============================================================================================================//
+// Controller - Create New Release With Text Properties & Image File
+//===============================================================================================================//
+
+ReleaseController.createNewRelease = async (req, res, next) => {
+	try {
+		// If validation errors in request return error object
+		const errors = validationResult(req);
+
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
+
+		// If release title already exists return error object
+		const releaseCheck = await ReleaseModel.find({ title: req.body.release.releaseTitle }).exec();
+
+		if (releaseCheck.length) {
+			return res.json({
+				error : {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: req.body.release.releaseTitle,
+							msg: "The release title provided is already in the database",
+							param: "releaseTitle",
+							location: "body"
+						}
+					]
+				}
+			});
+		}
+
+		// If all checks pass prepare release object with linked properties 
+		const props = await ReleaseUtilties.createReleaseDocument(req.body.release);
+
+		// Prepare release picture object
+		let file;
+		if (req.file) {
+			file = {
+				location: req.file.filename,
+				filename: req.file.originalname,
+				format: req.file.mimetype
+			}
+		} else {
+			file = {
+				location: "avatar.jpg",
+				filename: "avatar.jpg",
+				format: "image/jpeg"
+			}
+		}
+
+		// Submit release object to model and handle response
+		const release = await ReleaseModel.createNewRelease(props, file);
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json({
+				success: {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					feedback: [
+						{
+							msg: `${release.title} successfully added`,
+							value: release
+						}
+					]
+				}
+			});
+		}
+	} catch(err) {
+		return next(err)
+	}
 };
 
 //===============================================================================================================//
-
 // Controller - Update Release Text Properties & Image File By Id
+//===============================================================================================================//
 
-ReleaseController.updateReleasePropertiesFile = async (req, res, next) => {
-  
-  const id = req.body.id;
-  const props = await createReleaseDocument(JSON.parse(req.body.release));
-  const file = {
-    location: req.file.filename,
-    filename: req.file.originalname,
-    format: req.file.mimetype
-  };
+ReleaseController.updateExistingReleaseById = async (req, res, next) => {
+	try {
+		// If validation errors in request return error object
+		const errors = validationResult(req);
 
-  return ReleaseModel.updateReleasePropertiesFile(id, props, file)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json({
-          success: `${props.title} successfully updated`,
-          reference: result
-        });
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
+
+		// If release id does not exist return error object
+		const id = req.params.id;
+		const releaseCheck = await ReleaseModel.find({ _id: id }).exec();
+
+		if (!releaseCheck.length) {
+			return res.json({
+				error : {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: req.body.id,
+							msg: "The release id provided was not found",
+							param: "id",
+							location: "body"
+						}
+					]
+				}
+			});
+		}
+
+		// If all checks pass prepare release object with linked properties 
+		const props = await ReleaseUtilties.createReleaseDocument(req.body.release);
+
+		// Handle optional picture file and append to release object
+		if (req.file) {
+			props.picture = {
+				location: req.file.filename,
+				filename: req.file.originalname,
+				format: req.file.mimetype
+			}
+		}
+
+		// Submit release object to model and handle response
+		const release = await ReleaseModel.updateExistingReleaseById(id, props);
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json({
+				success: {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					feedback: [
+						{
+							msg: `${props.releaseTitle} successfully updated`,
+							value: release
+						}
+					]
+				}
+			});
+		}
+	} catch(err) {
+		return next(err)
+	}
 };
 
 //===============================================================================================================//
-
-// Controller - Update Release Text Properties Only By Id
-
-ReleaseController.updateReleasePropertiesText = async (req, res, next) => {
-  
-  const id = req.body.id;
-  const props = await createReleaseDocument(req.body.release);
-
-  return ReleaseModel.updateReleasePropertiesText(id, props)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json({
-          success: `${props.title} successfully updated`,
-          reference: result
-        });
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
-};
-
-//===============================================================================================================//
-
 // Controller - Remove Single Release By Id
+//===============================================================================================================//
 
-ReleaseController.removeReleaseById = (req, res, next) => {
-  
-  const id = req.params.id;
+ReleaseController.removeReleaseById = async (req, res, next) => {
+	try {
+		// Check for validation errors in request and return error object
+		const errors = validationResult(req);
 
-  return ReleaseModel.removeReleaseById(id)
-    .then(result => {
-      if (result.status === "error") {
-        return res.json({
-          failure: `${result.type}: ${result.msg}`
-        });
-      } else {
-        return res.json({
-          success: `Release removed from database`,
-          reference: result
-        });
-      }
-    })
-    .catch(error => {
-      return res.json(error);
-    });
-};
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
+
+		// If no validation errors run query request and return result
+		const id = req.params.id;
+		const release = await ReleaseModel.removeReleaseById(id)
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json({
+				success: {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					feedback: [
+						{
+							msg: `Release removed from database`,
+							value: release
+						}
+					]
+				}
+			});
+		}
+	} catch(err) {
+		return next(err)
+	}
+}
 
 //===============================================================================================================//
 

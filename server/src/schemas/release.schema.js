@@ -4,66 +4,54 @@ const Schema = mongoose.Schema;
 //===============================================================================================================//
 
 const ReleaseSchema = new Schema(
-  {
-    artist_name: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Artist"
-      }
-    ],
-    title: {
-      type: String,
-      required: [true, "Please provide the title for this release"]
-    },
-    label_name: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Label"
-      }
-    ],
-    catalogue: {
-      type: String
-    },
-    track: [
-      {
-        track_number: { type: Number },
-        artist_name: [{ type: Schema.Types.ObjectId, ref: "Artist" }],
-        title: { type: String },
-        catalogue: { type: String },
-        genre: [{ type: String }],
-        mixkey: { type: String },
-        file_location: { type: String }
-      }
-    ],
-    year: {
-      type: Number,
-      min: 4,
-      max: 4
-    },
-    format: [
-      {
-        name: String,
-        release: String
-      }
-    ],
-    picture: [
-      {
-        filename: String,
-        location: String,
-        format: String
-      }
-    ],
-    discogs_url: {
-      type: String
-    },
-    discogs_id: {
-      type: String,
-      default: "0"
-    }
-  },
-  {
-    timestamps: true
-  }
+	{
+		title: {
+			type: String,
+			required: [true, "Please provide the name of the release"]
+		},
+		label_name: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: "Label"
+			}
+		],
+		catalogue: {
+			type: String
+		},
+		year: {
+			type: Number,
+			min: 4,
+			max: 4
+		},
+		format: [
+			{
+				name: { type: String },
+				released: { type: Boolean }
+			}
+		],
+		picture: [
+			{
+				filename: { type: String },
+				location: { type: String },
+				format: { type: String }
+			}
+		],
+		tracks: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: "Track"
+			}
+		],
+		discogs_url: {
+			type: String
+		},
+		discogs_id: {
+			type: String
+		}
+	},
+	{
+		timestamps: true
+	}
 );
 
 const ReleaseModel = mongoose.model("Release", ReleaseSchema, "release");
