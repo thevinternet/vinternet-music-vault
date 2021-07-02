@@ -1,6 +1,6 @@
 //===============================================================================================================//
 
-import { feLabelWebsiteObject, feImageUploadObject } from './formElementAttributeBuilder.js'
+import { feWebsiteObject, feImageUploadObject } from './formElementAttributeBuilder.js'
 import * as feBuilderLabel from "./formElementBuilderLabel";
 import * as feBuilderGeneric from "./formElementBuilderGeneric";
 
@@ -8,29 +8,29 @@ import * as feBuilderGeneric from "./formElementBuilderGeneric";
 
 export const createLabelForm = () => {
 	
-  const websiteObj = feLabelWebsiteObject();
+  const websiteObj = feWebsiteObject("labelWebsite");
   const pictureObj = feImageUploadObject();
 
   //===============================================================================================================//
 
-  const labelName = feBuilderLabel.labelNameFormElement("", "labelName");
-  const parentLabel = feBuilderLabel.parentLabelFormElement("", 0);
-  const subsidiaryLabel = feBuilderLabel.subsidiaryLabelFormElement("", 0);
-  const profile = feBuilderGeneric.profileFormElement("", "profile");
-  const website = websiteObj.map(feBuilderGeneric.websiteFormElement);
-  const discogsId = feBuilderGeneric.discogsIdFormElement("", "discogsId");
-  const picture = pictureObj.map(feBuilderGeneric.imageUploadFormElement);
+	const labelName = feBuilderLabel.labelNameFormElement("", "labelName");
+	const profile = feBuilderGeneric.profileFormElement("", "profile");
+  const parentLabel = { parentLabel : feBuilderLabel.parentLabelForm([]) };
+	const subsidiaryLabel = { subsidiaryLabels : feBuilderLabel.subsidiaryLabelForm([]) };
+	const labelWebsite = { websites : feBuilderLabel.websiteForm(websiteObj) };
+	const picture = pictureObj.map(feBuilderGeneric.imageUploadFormElement);
+	const discogsId = feBuilderGeneric.discogsIdFormElement("", "discogsId");
 
   //===============================================================================================================//
 
   const labelForm = Object.assign({},
-    labelName,
+		labelName,
+		profile,
     parentLabel,
     subsidiaryLabel,
-    profile,
-    ...website,
-    discogsId,
-    ...picture
+    labelWebsite,
+		...picture,
+		discogsId,
   );
 
   return labelForm;

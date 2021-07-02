@@ -1,4 +1,4 @@
-export const checkValidity = (value, rules) => {
+export const checkInputValidity = (value, rules) => {
   let isValid = true;
 
   if (rules) {
@@ -14,4 +14,24 @@ export const checkValidity = (value, rules) => {
   // }
 
   return isValid;
+};
+
+//===============================================================================================================//
+
+export const checkFormValidity = (formObject) => {
+	let isValid = true;
+
+	function validateObject(formObject) {
+		Object.keys(formObject).forEach(key => {
+			if (key === "valid" && formObject[key] === false) {
+				isValid = false;
+			}
+			if (typeof formObject[key] === "object") {
+				validateObject(formObject[key]);
+			}
+		});
+	}
+	validateObject(formObject);
+
+	return isValid;
 };

@@ -1,6 +1,6 @@
 //===============================================================================================================//
 
-import { feArtistWebsiteObject, feImageUploadObject } from './formElementAttributeBuilder.js'
+import { feWebsiteObject, feImageUploadObject } from './formElementAttributeBuilder.js'
 import * as feBuilderArtist from "./formElementBuilderArtist";
 import * as feBuilderGeneric from "./formElementBuilderGeneric";
 
@@ -8,29 +8,29 @@ import * as feBuilderGeneric from "./formElementBuilderGeneric";
 
 export const createArtistForm = () => {
 	
-  const websiteObj = feArtistWebsiteObject();
+  const websiteObj = feWebsiteObject("personalWebsite");
   const pictureObj = feImageUploadObject();
 
   //===============================================================================================================//
 
   const artistName = feBuilderArtist.artistNameFormElement("", "artistName");
-  const realName = feBuilderArtist.realNameFormElement("", "realName");
-  const aliasName = feBuilderArtist.aliasNameFormElement("", 0);
-  const profile = feBuilderGeneric.profileFormElement("", "profile");
-  const website = websiteObj.map(feBuilderGeneric.websiteFormElement);
+	const realName = feBuilderArtist.realNameFormElement("", "realName");
+	const profile = feBuilderGeneric.profileFormElement("", "profile");
+  const artistAlias = { aliasNames : feBuilderArtist.aliasNameForm([]) };
+	const artistWebsite = { websites : feBuilderArtist.websiteForm(websiteObj) };
+	const picture = pictureObj.map(feBuilderGeneric.imageUploadFormElement);
   const discogsId = feBuilderGeneric.discogsIdFormElement("", "discogsId");
-  const picture = pictureObj.map(feBuilderGeneric.imageUploadFormElement);
 
   //===============================================================================================================//
 
   const artistForm = Object.assign({},
     artistName,
-    realName,
-    aliasName,
-    profile,
-    ...website,
-    discogsId,
-    ...picture
+		realName,
+		profile,
+    artistAlias,
+    artistWebsite,
+		...picture,
+		discogsId
 	);
 
   return artistForm;

@@ -15,17 +15,33 @@ export const trackNumberFormElement = (action="", id) => {
 	return { [id] : trackNumber }
 }
 
+//===============================================================================================================//
+
 export const trackArtistFormElement = (element, index) => {
 	const trackArtist = Object.assign(
 		{},
-		feAttrBuilder.feBaseAttributes("input", "text", `trackArtist${index}`, `trackArtist${index}`),
+		feAttrBuilder.feBaseAttributes("input", "text", `trackArtist${index}`, "trackArtist"),
 		feAttrBuilder.feLabelAttribute("artistName"),
 		feAttrBuilder.feValueAttribute(element.name || ""),
 		feAttrBuilder.feValidationTrueAttributes(element.name, true, "Please enter the name of the artist"),
-		feAttrBuilder.feFuzzySearchAttributes(element._id || `trackArtist${index}`)
+		feAttrBuilder.feFuzzySearchAttributes(element._id || `trackArtist${index}`, element._id ? true : false)
 	);
-	return { [`trackArtist${index}`] : trackArtist }
+	return trackArtist
 }
+
+export const trackArtistForm = (action) => {
+	let trackArtists = [];
+
+	action.length ?
+	trackArtists = action.map(trackArtistFormElement) :
+	trackArtists.push(trackArtistFormElement("", 0));
+
+	//console.log(trackArtists);
+
+	return trackArtists;
+}
+
+//===============================================================================================================//
 
 export const trackTitleFormElement = (action="", id) => {
 	const trackTitle = Object.assign(
@@ -38,6 +54,8 @@ export const trackTitleFormElement = (action="", id) => {
 	return { [id] : trackTitle }
 }
 
+//===============================================================================================================//
+
 export const trackGenreFormElement = (action="", id) => {
 	const trackGenre = Object.assign(
 		{},
@@ -48,6 +66,8 @@ export const trackGenreFormElement = (action="", id) => {
 	);
 	return { [id] : trackGenre }
 }
+
+//===============================================================================================================//
 
 export const trackMixKeyFormElement = (action="", id) => {
 	const trackMixKey = Object.assign(

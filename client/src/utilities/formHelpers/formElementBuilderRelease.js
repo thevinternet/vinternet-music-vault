@@ -15,17 +15,32 @@ export const releaseTitleFormElement = (action="", id) => {
 	return { [id] : releaseTitle }
 }
 
+//===============================================================================================================//
+
 export const releaseLabelFormElement = (element, index) => {
 	const releaseLabel = Object.assign(
 		{},
-		feAttrBuilder.feBaseAttributes("input", "text", `releaseLabel${index}`, `releaseLabel${index}`),
+		feAttrBuilder.feBaseAttributes("input", "text", `releaseLabel${index}`, "label"),
 		feAttrBuilder.feLabelAttribute("Label"),
 		feAttrBuilder.feValueAttribute(element.name || ""),
 		feAttrBuilder.feValidationFalseAttributes(false),
-		feAttrBuilder.feFuzzySearchAttributes(element._id || `releaseLabel${index}`)
+		feAttrBuilder.feFuzzySearchAttributes(element._id || `releaseLabel${index}`, element._id ? true : false)
 	);
-	return { [`releaseLabel${index}`] : releaseLabel }
+	return releaseLabel;
+
 }
+
+export const releaseLabelForm = (action) => {
+	let releaseLabels = [];
+
+	action.length ?
+	releaseLabels = action.map(releaseLabelFormElement) :
+	releaseLabels.push(releaseLabelFormElement("", 0));
+
+	return releaseLabels;
+}
+
+//===============================================================================================================//
 
 export const releaseCatalogueFormElement = (action="", id) => {
 	const releaseCatalogue = Object.assign(
@@ -38,6 +53,8 @@ export const releaseCatalogueFormElement = (action="", id) => {
 	return { [id] : releaseCatalogue }
 }
 
+//===============================================================================================================//
+
 export const releaseYearFormElement = (action="", id) => {
 	const releaseYear = Object.assign(
 		{},
@@ -49,26 +66,27 @@ export const releaseYearFormElement = (action="", id) => {
 	return { [id] : releaseYear }
 }
 
+//===============================================================================================================//
+
 export const releaseFormatFormElement = (element, index) => {
 	const releaseFormat = Object.assign(
 		{},
 		feAttrBuilder.feBaseAttributes("input", "checkbox", `releaseFormat${index}`, "releaseFormat"),
-		feAttrBuilder.feLabelAttribute(element),
-		feAttrBuilder.feValueAttribute(""),
+		feAttrBuilder.feLabelAttribute(element.name),
+		feAttrBuilder.feValueAttribute(element.released),
 		feAttrBuilder.feValidationFalseAttributes(false)
 	);
-	return { [`releaseFormat${index}`] : releaseFormat }
+	return releaseFormat
 }
 
-export const newReleaseFormatFormElement = (element, index) => {
-	const newReleaseFormat = Object.assign(
-		{},
-		feAttrBuilder.feBaseAttributes("input", "checkbox", `releaseFormat${index}`, "releaseFormat"),
-		feAttrBuilder.feLabelAttribute(element.name),
-		feAttrBuilder.feValueAttribute(element.release),
-		feAttrBuilder.feValidationFalseAttributes(false)
-	);
-	return { [`releaseFormat${index}`] : newReleaseFormat }
+export const releaseFormatForm = (action) => {
+	let releaseFormats;
+
+	action.length ?
+	releaseFormats = action.map(releaseFormatFormElement) :
+	releaseFormats = feAttrBuilder.feReleaseFormatObject().map(releaseFormatFormElement);
+
+	return releaseFormats;
 }
 
 //===============================================================================================================//

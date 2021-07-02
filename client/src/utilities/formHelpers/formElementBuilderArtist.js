@@ -1,6 +1,7 @@
 //===============================================================================================================//
 
 import * as feAttrBuilder from './formElementAttributeBuilder.js';
+import { websiteFormElement } from './formElementBuilderGeneric.js';
 
 //===============================================================================================================//
 
@@ -16,6 +17,8 @@ export const artistNameFormElement = (action="", id) => {
 	return { [id] : artistName }
 }
 
+//===============================================================================================================//
+
 export const realNameFormElement = (action="", id) => {
 	const realName = Object.assign(
 		{},
@@ -27,16 +30,40 @@ export const realNameFormElement = (action="", id) => {
 	return { [id] : realName }
 }
 
+//===============================================================================================================//
+
 export const aliasNameFormElement = (element, index) => {
 	const aliasName = Object.assign(
 		{},
-		feAttrBuilder.feBaseAttributes("input", "text", element._id || `aliasName${index}`, `aliasName${index}`),
+		feAttrBuilder.feBaseAttributes("input", "text", element._id || `aliasName${index}`, `aliasName`),
 		feAttrBuilder.feLabelAttribute("aliasName"),
 		feAttrBuilder.feValueAttribute(element.name || ""),
 		feAttrBuilder.feValidationFalseAttributes(false),
 		feAttrBuilder.feFuzzySearchAttributes(element._id || `aliasName${index}`)
 	);
-	return { [`aliasName${index}`] : aliasName }
+	return aliasName;
+}
+
+export const aliasNameForm = (action) => {
+	let aliasNames = [];
+
+	action.length ?
+	aliasNames = action.map(aliasNameFormElement) :
+	aliasNames.push(aliasNameFormElement("", 0));
+
+	return aliasNames;
+}
+
+//===============================================================================================================//
+
+export const websiteForm = (action) => {
+	let websites = [];
+
+	action.length ?
+	websites = action.map(websiteFormElement) :
+	websites.push(feAttrBuilder.feWebsiteObject("personalWebsite"));
+
+	return websites;
 }
 
 //===============================================================================================================//

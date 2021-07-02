@@ -17,7 +17,7 @@ export const feBaseAttributes = (element, type, id, name) => {
 		type: type,
 		name: name,
 		id: id,
-		labelFor: id,
+		labelFor: id
 	}
 }
 
@@ -61,19 +61,9 @@ export const feValidationTrueAttributes = (action, validate, feedback) => {
 
 // Website Form Element Attributes
 
-export const feArtistWebsiteObject = () => {
+export const feWebsiteObject = (customWebsiteLabel) => {
 	return [
-    { name: "Personal Website", url: "" },
-    { name: "Discogs", url: "" },
-    { name: "Bandcamp", url: "" },
-    { name: "Soundcloud", url: "" },
-    { name: "Twitter", url: "" }
-  ]
-}
-
-export const feLabelWebsiteObject = () => {
-	return [
-    { name: "Label Website", url: "" },
+    { name: customWebsiteLabel, url: "" },
     { name: "Discogs", url: "" },
     { name: "Bandcamp", url: "" },
     { name: "Soundcloud", url: "" },
@@ -85,10 +75,10 @@ export const feLabelWebsiteObject = () => {
 
 export const feReleaseFormatObject = () => {
 	return [
-		{ name: "Vinyl", release: "no" },
-    { name: "CD", release: "no" },
-    { name: "Cassette", release: "no" },
-    { name: "Digital", release: "no" }
+		{ name: "Vinyl", released: "no" },
+    { name: "CD", released: "no" },
+    { name: "Cassette", released: "no" },
+    { name: "Digital", released: "no" }
 	]
 }
 
@@ -125,12 +115,12 @@ export const feImageUploadAttributes = (location, filename) => {
 
 // Fuzzy Search Form Element Attributes
 
-export const feFuzzySearchAttributes = (id) => {
+export const feFuzzySearchAttributes = (id, linkedRecord = false) => {
 	return {
 			isFuzzy: true,
 			fuzzyRef: id,
 			matchedRecords: [],
-			linkedRecord: true,
+			linkedRecord: linkedRecord,
 			showDropdown: "false"
 	}
 }

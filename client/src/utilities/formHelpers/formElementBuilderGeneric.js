@@ -18,12 +18,12 @@ export const profileFormElement = (action="", id) => {
 export const websiteFormElement = (element, index) => {
 	const websiteName = Object.assign(
 		{},
-		feAttrBuilder.feBaseAttributes("input", "text", element._id || `website${index}`, `website${index}`),
+		feAttrBuilder.feBaseAttributes("input", "text", element._id || `website${index}`, `website`),
 		feAttrBuilder.feLabelAttribute(element.name || ""),
 		feAttrBuilder.feValueAttribute(element.url || ""),
 		feAttrBuilder.feValidationFalseAttributes(false)
 	);
-	return { [`website${index}`] : websiteName }
+	return websiteName;
 }
 
 export const discogsUrlFormElement = (action="", id) => {
@@ -51,7 +51,7 @@ export const discogsIdFormElement = (action="", id) => {
 export const imageUploadFormElement = (element, index) => {
 	const imageUpload = Object.assign(
 		{},
-		feAttrBuilder.feBaseAttributes("input", "file", element._id || `image${index}`, `image${index}`),
+		feAttrBuilder.feBaseAttributes("input", "file", element._id || `image${index}`, `image`),
 		feAttrBuilder.feValidationFalseAttributes(false),
 		feAttrBuilder.feImageUploadAttributes(element.location, element.filename)
 	);
