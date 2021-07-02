@@ -62,7 +62,7 @@ ReleaseModel.getReleaseById = async (id) => {
 			}
 		} else {
 			//.populate("artist_name", "name")
-			return LabelModel.findById(id).populate("tracks.artist_name", "name").populate("label_name", "name").lean().sort("catalogue").exec();
+			return ReleaseModel.findById(id).populate("tracks.artist_name", "name").populate("label_name", "name").lean().sort("catalogue").exec();
 		}
 
 	} catch (err) {
@@ -103,7 +103,7 @@ ReleaseModel.getReleasesByLabel = async (id) => {
 			}
 		} else {
 			//.populate("artist_name", "name")
-			return LabelModel.findById(id).populate("tracks.artist_name", "name").populate("label_name", "name").lean().sort("catalogue").exec();
+			return ReleaseModel.findById(id).populate("tracks.artist_name", "name").populate("label_name", "name").lean().sort("catalogue").exec();
 		}
 
 	} catch (err) {
