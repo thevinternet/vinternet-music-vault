@@ -228,5 +228,82 @@ TrackModel.getTracksByRelease = async (id) => {
 }
 
 //===============================================================================================================//
+// Create New Track Document
+//===============================================================================================================//
+
+TrackModel.createNewTrack = async (props) => {
+	try {
+		console.log(props);
+		const track = await TrackModel.create({
+			name: props.name,
+			artist_name: props.artist_name,
+			release_title: props.release_title,
+			release_label: props.release_label,
+			release_catalogue: props.release_catalogue,
+			release_picture: props.release_picture,
+			track_number: props.track_number,
+			genre: props.genre,
+			mixkey: props.mixkey,
+			file_location: props.file_location
+		});
+
+		return track;
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
+
+
+//===============================================================================================================//
+// // Remove Track By ID
+//===============================================================================================================//
+
+TrackModel.removeTrackById = async (id) => {
+	try {
+		const track = await TrackModel.findById(id);
+
+		if (track === null) {
+			return {
+				error : {
+					status: "Request Successful: HTTP Status Code 200 (OK)",
+					errors: [
+						{
+							value: id,
+							msg: "The track id provided was not found",
+							param: "id",
+							location: "params"
+						}
+					]
+				}
+			}
+		} else {
+			return TrackModel.deleteOne({ _id: id }).exec();
+		}
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
+
+//===============================================================================================================//
 
 module.exports = TrackModel;

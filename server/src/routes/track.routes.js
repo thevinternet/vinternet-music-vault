@@ -23,5 +23,12 @@ router.get("/label/:id", TrackController.validate("checkTrackId"), TrackControll
 router.get("/release/:id", TrackController.validate("checkTrackId"), TrackController.getTracksByRelease);
 
 //===============================================================================================================//
+// Routes - All Release [DELETE] Routes
+//===============================================================================================================//
+
+// [DELETE] Track By Id
+router.delete("/:id", TrackController.validate("checkTrackId"), TrackController.removeTrackById);
+
+//===============================================================================================================//
 
 module.exports = router;

@@ -1,113 +1,70 @@
 const ReleaseModel = require("../models/release.model");
-const TrackModel = require("../models/track.model");
+const LabelModel = require("../models/label.model");
+const DocumentUtilities = require("../utilities/document.utilities");
+const TrackUtilities = require("../utilities/track.utilities");
 const ReleaseUtilities = {}
 
 //===============================================================================================================//
-// Utility - Create Release Document (Managing Linked Parent & Subsidiary Labels)
+// Utility - Create Release Document (Managing Linked Data & Linked Tracks)
 //===============================================================================================================//
 
-ReleaseUtilities.manageLinkedData = async () => {
+ReleaseUtilities.createReleaseDocument = async (release, tracks) => {
 
-}
+	// Manage linked Label Name data properties
+	const labelNames = await DocumentUtilities.manageLinkedData(release.labelName, LabelModel);
 
-// Helper Function - Manage & Create Linked Data For Artists & Labels
+	// Create new Release Document
+	const newRelease = await ReleaseModel.create({
+		title: release.releaseTitle,
+		label_name: labelNames,
+		catalogue: release.catalogue,
+		year: release.releaseYear,
+		format: release.releaseFormat,
+		discogs_url: release.discogsUrl,
+		discogs_id: release.discogsId,
+	});
 
-manageLinkedData = async (dataArray, dataModel) => {
+	// Grab new Release ID
+	const newReleaseId = newRelease._id;
 
-  let linkedData = [];
+	// Create new Track documents with linked data and return new Track IDs
+	const linkedTracks = await TrackUtilities.createTrackDocuments(tracks, newReleaseId);
 
-  const arrayNames = dataArray.filter(item => item.name);
+	// Append Track IDs array to newRelease object
+	newRelease.tracks = linkedTracks;
 
-  if (arrayNames.length) {
-    try {
-    const linkedArrayNames = await dataModel.create(arrayNames);
-    linkedArrayNames.forEach(name => {
-      linkedData.push({ _id: name._id })
-    })
-    } catch (error) {
-      throw new Error(`Error: ${error}`);
-    }
-  }
-
-  //==================================================//
-
-  const arrayIds = dataArray.filter(item => item._id);
-
-  if (arrayIds.length){
-    arrayIds.forEach(identifier => {
-      linkedData.push({ _id: identifier._id })
-    })
-  }
-
-  return linkedData;
+	return newRelease;
 }
 
 //===============================================================================================================//
+// Utility - Update Existing Release Document (Managing Linked Data & Linked Tracks)
+//===============================================================================================================//
 
-// Helper Function - Create Release Document (Managing Linked Artists & Labels)
+ReleaseUtilities.updateReleaseDocument = async (id, release, tracks) => {
 
-createReleaseDocument = async (release) => {
+	// Create updated Release object
+	const updatedRelease = {
+		title: release.releaseTitle,
+		label_name: [],
+		catalogue: release.catalogue,
+		year: release.releaseYear,
+		format: release.releaseFormat,
+		discogs_url: release.discogsUrl,
+		discogs_id: release.discogsId,
+		picture: release.picture,
+		tracks: []
+	}
 
-  const props = {
-    artistName: [],
-    title: release.releaseTitle,
-    labelName: release.labelName,
-    catalogue: release.catalogue,
-    year: release.releaseYear,
-    format: release.releaseFormat,
-    discogs_url: release.discogsLink,
-    discogs_id: release.discogsId,
-    track: []
-  }
+	// Manage linked Label Name data properties
+	updatedRelease.label_name = await DocumentUtilities.manageLinkedData(release.labelName, LabelModel);
 
-  //==================================================//
+	// Create new Track documents with linked data and return new Track IDs
+	const linkedTracks = await TrackUtilities.createTrackDocuments(tracks, id);
 
-  if (release.artistName.length) {
-    let updatedArtist;
-    try {
-      updatedArtist = await manageLinkedData(release.artistName, "ArtistModel");
-    } catch (error) {
-      throw new Error(`Error: ${error}`);
-    }
-    props.artistName = updatedArtist;
-  }
+	// Append Track IDs array to newRelease object
+	updatedRelease.tracks = linkedTracks;
 
-  //==================================================//
-
-  // if (release.labelName.length) {
-  //   let updatedLabel;
-  //   try {
-  //     updatedLabel = await manageLinkedData(release.labelName, "LabelModel");
-  //   } catch (error) {
-  //     throw new Error(`Error: ${error}`);
-  //   }
-  //   props.labelName = updatedLabel;
-  // }
-
-  //==================================================//
-
-  if (release.tracks.length) {
-    const updatedTracks = await Promise.all(release.tracks.map(async (item) => {
-      try {
-        let track = {
-          track_number: item.trackNumber,
-          artist_name: await manageLinkedData(item.artistName, "ArtistModel"),
-          title: item.trackTitle,
-          catalogue: item.catalogueReference,
-          genre: item.genre,
-          mixkey: item.mixKey,
-          file_location: item.fileLocation
-        }
-        return track;
-      }
-      catch(error) {
-        throw new Error(`Error: ${error}`);
-      }
-    }))
-    props.track = updatedTracks;
-  }
-
-  return props;
+	return updatedRelease;
 }
 
 //===============================================================================================================//

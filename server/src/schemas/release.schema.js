@@ -20,8 +20,7 @@ const ReleaseSchema = new Schema(
 		},
 		year: {
 			type: Number,
-			min: 4,
-			max: 4
+			min: 4
 		},
 		format: [
 			{

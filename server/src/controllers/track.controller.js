@@ -194,5 +194,54 @@ TrackController.getTracksByRelease = async (req, res, next) => {
 }
 
 //===============================================================================================================//
+// Controller - Remove Single Track By Id
+//===============================================================================================================//
+
+TrackController.removeTrackById = async (req, res, next) => {
+	try {
+		// Check for validation errors in request and return error object
+		const errors = validationResult(req);
+
+		if (!errors.isEmpty()) {
+			return res.json({ 
+				error: {
+					status: "Request Failed",
+					response: "HTTP Status Code 422 (Unprocessable Entities)",
+					errors: errors.array()
+				}
+			});
+		}
+
+		// If no validation errors run query request and return result
+		const id = req.params.id;
+		const track = await TrackModel.removeTrackById(id)
+
+		if (res.error) {
+			return res.json({
+				error: {
+					status: res.error.status,
+					errors: res.error.errors
+				}
+			});
+		} else {
+			return res.json({
+				success: {
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
+					feedback: [
+						{
+							msg: `Track removed from database`,
+							value: track
+						}
+					]
+				}
+			});
+		}
+	} catch(err) {
+		return next(err)
+	}
+}
+
+//===============================================================================================================//
 
 module.exports = TrackController;

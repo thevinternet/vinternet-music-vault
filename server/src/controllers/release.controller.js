@@ -36,18 +36,18 @@ ReleaseController.validate = (method) => {
 					.optional().escape().trim(),
 				body("release.catalogue")
 					.optional().escape().trim(),
-				body("release.year")
+				body("release.releaseYear")
 					.optional().escape().trim(),
-				body("release.format")
+				body("release.releaseFormat")
 					.isArray()
 					.withMessage("Format array is malformed and not valid"),
-				body("release.format.*._id")
+				body("release.releaseFormat.*._id")
 					.isMongoId().optional()
 					.withMessage("The value for the Format Id provided is not valid"),
-				body("release.format.*.name")
+				body("release.releaseFormat.*.name")
 					.notEmpty().escape().trim()
 					.withMessage("Please provide the name/type of the media format"),
-				body("release.format.*.released")
+				body("release.releaseFormat.*.released")
 					.optional().escape().trim(),
 				body("label.discogsUrl")
 					.optional().escape().trim(),
@@ -215,7 +215,7 @@ ReleaseController.createNewRelease = async (req, res, next) => {
 		}
 
 		// If release title already exists return error object
-		const releaseCheck = await ReleaseModel.find({ title: req.body.release.releaseTitle }).exec();
+		const releaseCheck = await ReleaseModel.find({ catalogue: req.body.release.catalogue }).exec();
 
 		if (releaseCheck.length) {
 			return res.json({
@@ -225,7 +225,7 @@ ReleaseController.createNewRelease = async (req, res, next) => {
 					errors: [
 						{
 							value: req.body.release.releaseTitle,
-							msg: "The release title provided is already in the database",
+							msg: `This release provided is already in the database | see: ${req.body.release.catalogue}`,
 							param: "releaseTitle",
 							location: "body"
 						}
@@ -235,26 +235,28 @@ ReleaseController.createNewRelease = async (req, res, next) => {
 		}
 
 		// If all checks pass prepare release object with linked properties 
-		const props = await ReleaseUtilties.createReleaseDocument(req.body.release);
+		const props = await ReleaseUtilties.createReleaseDocument(req.body.release, req.body.tracks);
 
-		// Prepare release picture object
-		let file;
+		// Handle picture file props and append to release object
 		if (req.file) {
-			file = {
+			props.picture = {
 				location: req.file.filename,
 				filename: req.file.originalname,
 				format: req.file.mimetype
 			}
 		} else {
-			file = {
+			props.picture = {
 				location: "avatar.jpg",
 				filename: "avatar.jpg",
 				format: "image/jpeg"
 			}
 		}
 
+		// Grab Id from new newly created release object
+		const id = props._id;
+		
 		// Submit release object to model and handle response
-		const release = await ReleaseModel.createNewRelease(props, file);
+		const release = await ReleaseModel.createNewRelease(id, props);
 
 		if (res.error) {
 			return res.json({
@@ -270,7 +272,7 @@ ReleaseController.createNewRelease = async (req, res, next) => {
 					response: "HTTP Status Code 200 (OK)",
 					feedback: [
 						{
-							msg: `${release.title} successfully added`,
+							msg: `${props.catalogue} successfully added`,
 							value: release
 						}
 					]
@@ -323,7 +325,7 @@ ReleaseController.updateExistingReleaseById = async (req, res, next) => {
 		}
 
 		// If all checks pass prepare release object with linked properties 
-		const props = await ReleaseUtilties.createReleaseDocument(req.body.release);
+		const props = await ReleaseUtilties.updateReleaseDocument(id, req.body.release, req.body.tracks);
 
 		// Handle optional picture file and append to release object
 		if (req.file) {
@@ -351,7 +353,7 @@ ReleaseController.updateExistingReleaseById = async (req, res, next) => {
 					response: "HTTP Status Code 200 (OK)",
 					feedback: [
 						{
-							msg: `${props.releaseTitle} successfully updated`,
+							msg: `${props.catalogue} successfully updated`,
 							value: release
 						}
 					]

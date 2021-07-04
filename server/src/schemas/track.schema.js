@@ -39,6 +39,10 @@ const TrackSchema = new Schema(
 				ref: "Release"
 			}
 		],
+		release_ref: {
+			type: Schema.Types.ObjectId,
+			ref: "Release"
+		},
 		track_number: { 
 			type: Number
 		},

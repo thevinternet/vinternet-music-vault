@@ -1,4 +1,5 @@
 const ReleaseModel = require("../schemas/release.schema");
+const TrackModel = require("../schemas/track.schema");
 
 //===============================================================================================================//
 // Return ALL documents in Releases collection
@@ -165,19 +166,29 @@ ReleaseModel.getReleasesByArtist = async (id) => {
 // Create New Release Document
 //===============================================================================================================//
 
-ReleaseModel.createNewRelease = async (props, file) => {
-	try {
-		const release = await ReleaseModel.create({
-			title: props.releaseTitle,
-			label_name: props.labelName,
+ReleaseModel.createNewRelease = async (id, props) => {
+
+	// Create 'Set' Object with Release Props
+	const releaseCreateProps = {
+		$set: {
+			title: props.title,
+			label_name: props.label_name,
 			catalogue: props.catalogue,
 			year: props.year,
 			format: props.format,
 			tracks: props.tracks,
-			discogs_url: props.discogsUrl,
-			discogs_id: props.discogsId,
-			picture: file
-		});
+			discogs_url: props.discogs_url,
+			discogs_id: props.discogs_id,
+			picture: props.picture
+		}
+	}
+	// Submit release object to model and handle response
+	try {
+		const release = await ReleaseModel.updateOne(
+			{ _id: id },
+			releaseCreateProps,
+			{ new: true }
+		);
 
 		return release;
 
@@ -204,14 +215,14 @@ ReleaseModel.updateExistingReleaseById = async (id, props) => {
 	// Create 'Set' Object with updated Release Props and optional Image File
 	const releaseUpdateProps = {
 		$set: {
-			title: props.releaseTitle,
-			label_name: props.labelName,
+			title: props.title,
+			label_name: props.label_name,
 			catalogue: props.catalogue,
 			year: props.year,
 			format: props.format,
 			tracks: props.tracks,
-			discogs_url: props.discogsUrl,
-			discogs_id: props.discogsId
+			discogs_url: props.discogs_url,
+			discogs_id: props.discogs_id
 		}
 	}
 	if (props.picture) {
@@ -246,8 +257,6 @@ ReleaseModel.updateExistingReleaseById = async (id, props) => {
 // // Remove Release By ID
 //===============================================================================================================//
 
-// TODO: Handle Removal of Tracks associated with Release!
-
 ReleaseModel.removeReleaseById = async (id) => {
 	try {
 		const release = await ReleaseModel.findById(id);
@@ -267,7 +276,8 @@ ReleaseModel.removeReleaseById = async (id) => {
 				}
 			}
 		} else {
-			return ReleaseModel.deleteOne({ _id: id }).exec();
+			ReleaseModel.deleteOne({ _id: id }).exec();
+			TrackModel.deleteMany({ release_ref: id }).exec();
 		}
 
 	} catch (err) {
