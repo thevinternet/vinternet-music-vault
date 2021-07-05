@@ -51,7 +51,7 @@ TrackModel.getTrackById = async (id) => {
 	try {
 		const track = await TrackModel.findById(id);
 
-		if (track === null) {
+		if (!track.length) {
 			return {
 				error : {
 					status: "Request Successful: HTTP Status Code 200 (OK)",
@@ -95,9 +95,9 @@ TrackModel.getTrackById = async (id) => {
 
 TrackModel.getTracksByArtist = async (id) => {
 	try {
-		const tracks = await TrackModel.findById({ artist_name: id });
+		const tracks = await TrackModel.find({ artist_name : id });
 
-		if (tracks === null) {
+		if (!tracks.length) {
 			return {
 				error : {
 					status: "Request Successful: HTTP Status Code 200 (OK)",
@@ -112,7 +112,7 @@ TrackModel.getTracksByArtist = async (id) => {
 				}
 			}
 		} else {
-			return TrackModel.findById({ artist_name: id })
+			return TrackModel.find({ artist_name : id })
 				.populate("release_title", "title")
 				.populate("artist_name", "name")
 				.populate("release_label", "name")
@@ -141,9 +141,9 @@ TrackModel.getTracksByArtist = async (id) => {
 
 TrackModel.getTracksByLabel = async (id) => {
 	try {
-		const tracks = await TrackModel.findById({ release_label: id });
+		const tracks = await TrackModel.find({ release_label : id });
 
-		if (tracks === null) {
+		if (!tracks.length) {
 			return {
 				error : {
 					status: "Request Successful: HTTP Status Code 200 (OK)",
@@ -158,7 +158,7 @@ TrackModel.getTracksByLabel = async (id) => {
 				}
 			}
 		} else {
-			return TrackModel.findById({ release_label: id })
+			return TrackModel.find({ release_label : id })
 				.populate("release_title", "title")
 				.populate("artist_name", "name")
 				.populate("release_label", "name")
@@ -187,9 +187,9 @@ TrackModel.getTracksByLabel = async (id) => {
 
 TrackModel.getTracksByRelease = async (id) => {
 	try {
-		const tracks = await TrackModel.findById({ release_title: id });
+		const tracks = await TrackModel.find({ release_title: id });
 
-		if (tracks === null) {
+		if (!tracks.length) {
 			return {
 				error : {
 					status: "Request Successful: HTTP Status Code 200 (OK)",
@@ -204,7 +204,7 @@ TrackModel.getTracksByRelease = async (id) => {
 				}
 			}
 		} else {
-			return TrackModel.findById({ release_title: id })
+			return TrackModel.find({ release_title: id })
 				.populate("release_title", "title")
 				.populate("artist_name", "name")
 				.populate("release_label", "name")
@@ -233,7 +233,6 @@ TrackModel.getTracksByRelease = async (id) => {
 
 TrackModel.createNewTrack = async (props) => {
 	try {
-		console.log(props);
 		const track = await TrackModel.create({
 			name: props.name,
 			artist_name: props.artist_name,
@@ -241,6 +240,7 @@ TrackModel.createNewTrack = async (props) => {
 			release_label: props.release_label,
 			release_catalogue: props.release_catalogue,
 			release_picture: props.release_picture,
+			release_ref: props.release_ref,
 			track_number: props.track_number,
 			genre: props.genre,
 			mixkey: props.mixkey,
@@ -263,6 +263,52 @@ TrackModel.createNewTrack = async (props) => {
 	}
 }
 
+//===============================================================================================================//
+// Update Existing Track Document
+//===============================================================================================================//
+
+TrackModel.updateExistingTrackById = async (id, props) => {
+	
+	// Create 'Set' Object with updated Track Props
+	const trackUpdateProps = {
+		$set: {
+			name: props.name,
+			artist_name: props.artist_name,
+			release_title: props.release_title,
+			release_label: props.release_label,
+			release_catalogue: props.release_catalogue,
+			release_picture: props.release_picture,
+			release_ref: props.release_ref,
+			track_number: props.track_number,
+			genre: props.genre,
+			mixkey: props.mixkey,
+			file_location: props.file_location
+		}
+	}
+
+	// Submit release update object to model and handle response
+	try {
+		const track = await TrackModel.updateOne(
+			{ _id: id },
+			trackUpdateProps,
+			{ new: true }
+		);
+
+		return track;
+
+	} catch (err) {
+		return {
+			error : {
+				status: `Database (Mongoose): ${err.name}`,
+				errors: [
+					{
+						msg: err.message
+					}
+				]
+			}
+		}
+	}
+}
 
 //===============================================================================================================//
 // // Remove Track By ID
@@ -272,7 +318,7 @@ TrackModel.removeTrackById = async (id) => {
 	try {
 		const track = await TrackModel.findById(id);
 
-		if (track === null) {
+		if (!track.length) {
 			return {
 				error : {
 					status: "Request Successful: HTTP Status Code 200 (OK)",

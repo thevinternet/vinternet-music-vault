@@ -5,56 +5,52 @@ const DocumentUtilities = require("../utilities/document.utilities");
 const TrackUtilities = {}
 
 //===============================================================================================================//
-// Utility - Create Track Documents (Managing Linked Data & Release Links)
+// Utility - Create/Update Track Documents (Managing Linked Data & Release Links)
 //===============================================================================================================//
 
 TrackUtilities.createTrackDocuments = async (tracks, releaseId) => {
 
-	let tracksArray = [];
-	let releaseTracksArray = [];
+	const tracksArray = [...tracks];
+	let releaseTrackProps = {
+		trackId: [],
+		artistId: [],
+	};
 
-	// Loop through Tracks array, creating updated track objects with linked properties
-	if(tracks.length) {
-		const updatedTracks = await Promise.all(tracks.map(async (item) => {
-			try {
-				let track = {
-					name: item.name,
-					artist_name: await DocumentUtilities.manageLinkedData(item.artistName, ArtistModel),
-					release_title: [{ _id: releaseId }],
-					release_label: await DocumentUtilities.manageLinkedData(item.labelName, LabelModel),
-					release_catalogue: [{ _id: releaseId }],
-					release_picture: [{ _id: releaseId }],
-					release_ref: releaseId,
-					track_number: item.trackNumber,
-					genre: item.genre,
-					mixkey: item.mixKey,
-					file_location: item.fileLocation
-				}
-				return track;
-			}
-			catch(error) {
-				throw new Error(`Error: ${error}`);
-			}
-		}));
-		tracksArray = updatedTracks;
-	}
-
-	// TODO: ONLY CREATE NEW TRACK DOCUMENT IF TRACK DOES NOT EXIST
-
-	// Loop through Updated Tracks array creating new Track Documents (if applicable) & pushing each ID to seperate array for Release Document object
-	if(tracksArray.length) {
+	if (tracksArray.length) {
 		for (let index = 0; index < tracksArray.length; index++) {
-			if(!tracksArray[index]._id) {
-				let newTrack = await TrackModel.create(tracksArray[index]);
-				releaseTracksArray.push({ _id: newTrack._id });	
+
+			// Loop through tracksArray, updating track object props with linked data
+			tracksArray[index].artist_name = await DocumentUtilities.manageLinkedData(tracksArray[index].artist_name, ArtistModel);
+			tracksArray[index].release_title = [{ _id: releaseId }];
+			tracksArray[index].release_label = await DocumentUtilities.manageLinkedData(tracksArray[index].release_label, LabelModel);
+			tracksArray[index].release_catalogue = [{ _id: releaseId }];
+			tracksArray[index].release_picture = [{ _id: releaseId }];
+			tracksArray[index].release_ref = releaseId;
+
+			// Loop through updated tracksArray handling Track document creation & updating respectively
+			if (!tracksArray[index]._id) {
+
+				// If Track has no existing ID, create new Track Document & push new ID to trackIds array
+				let newTrack = await TrackModel.createNewTrack(tracksArray[index]);
+				releaseTrackProps.trackId.push({ _id: newTrack._id });
+
 			} else {
-				releaseTracksArray.push({ _id: tracksArray[index]._id });
+				// If Track has existing ID, update existing Track Document & push existing ID to trackIds array
+				let updatedTrack = await TrackModel.updateExistingTrackById(tracksArray[index]._id, tracksArray[index]);
+				releaseTrackProps.trackId.push({ _id: tracksArray[index]._id });
+			}
+
+			// Loop through updated artist_name Ids & push to artistId array
+			if (tracksArray[index].artist_name.length) {
+				for (let artistIndex = 0; artistIndex < tracksArray[index].artist_name.length; artistIndex++) {
+					releaseTrackProps.artistId.push(tracksArray[index].artist_name[artistIndex]);
+				}
 			}
 		}
 	}
 
 	// Return Track ID array for Release object
-	return releaseTracksArray;
+	return releaseTrackProps;
 }
 
 //===============================================================================================================//
