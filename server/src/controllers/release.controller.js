@@ -234,7 +234,7 @@ ReleaseController.createNewRelease = async (req, res, next) => {
 			});
 		}
 
-		// If all checks pass prepare release object with linked properties 
+		// If all checks pass prepare release object with linked properties
 		const props = await ReleaseUtilties.createReleaseDocument(req.body.release, req.body.tracks);
 
 		// Handle picture file props and append to release object
@@ -324,7 +324,7 @@ ReleaseController.updateExistingReleaseById = async (req, res, next) => {
 			});
 		}
 
-		// If all checks pass prepare release object with linked properties 
+		// If all checks pass prepare release object with linked properties
 		const props = await ReleaseUtilties.updateReleaseDocument(id, req.body.release, req.body.tracks);
 
 		// Handle optional picture file and append to release object

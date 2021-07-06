@@ -21,8 +21,12 @@ ReleaseModel.getAllReleases = async () => {
 				}
 			}
 		} else {
-			//.populate("artist_name", "name")
-			return ReleaseModel.find({}).populate("label_name", "name").lean().sort("catalogue").exec();
+			return ReleaseModel.find({})
+				.populate("artist_name", "name")
+				.populate("label_name", "name")
+				.lean()
+				.sort("catalogue")
+				.exec();
 		}
 
 	} catch (err) {
@@ -62,8 +66,12 @@ ReleaseModel.getReleaseById = async (id) => {
 				}
 			}
 		} else {
-			//.populate("artist_name", "name")
-			return ReleaseModel.findById(id).populate("tracks.artist_name", "name").populate("label_name", "name").lean().sort("catalogue").exec();
+			return ReleaseModel.findById(id)
+				.populate("artist_name", "name")
+				.populate("label_name", "name")
+				.lean()
+				.sort("catalogue")
+				.exec();
 		}
 
 	} catch (err) {
@@ -86,7 +94,7 @@ ReleaseModel.getReleaseById = async (id) => {
 
 ReleaseModel.getReleasesByLabel = async (id) => {
 	try {
-		const release = await ReleaseModel.findById({ label_name: id });
+		const release = await ReleaseModel.find({ label_name: id });
 
 		if (release === null) {
 			return {
@@ -103,8 +111,12 @@ ReleaseModel.getReleasesByLabel = async (id) => {
 				}
 			}
 		} else {
-			//.populate("artist_name", "name")
-			return ReleaseModel.findById(id).populate("tracks.artist_name", "name").populate("label_name", "name").lean().sort("catalogue").exec();
+			return ReleaseModel.find({ label_name: id })
+				.populate("artist_name", "name")
+				.populate("label_name", "name")
+				.lean()
+				.sort("catalogue")
+				.exec();
 		}
 
 	} catch (err) {
@@ -127,9 +139,9 @@ ReleaseModel.getReleasesByLabel = async (id) => {
 
 ReleaseModel.getReleasesByArtist = async (id) => {
 	try {
-		const release = await ReleaseModel.findById({ tracks: artist_name._id });
+		const release = await ReleaseModel.find({ artist_name : id })
 
-		if (release === null) {
+		if (!release.length) {
 			return {
 				error : {
 					status: "Request Successful: HTTP Status Code 200 (OK)",
@@ -144,10 +156,13 @@ ReleaseModel.getReleasesByArtist = async (id) => {
 				}
 			}
 		} else {
-			//.populate("artist_name", "name")
-			return ReleaseModel.findById({ tracks: artist_name._id }).populate("tracks", "artist_name").populate("label_name", "name").lean().sort("catalogue").exec();
+			return ReleaseModel.find({ artist_name : id })
+				.populate("artist_name", "name")
+				.populate("label_name", "name")
+				.lean()
+				.sort("catalogue")
+				.exec();
 		}
-
 	} catch (err) {
 		return {
 			error : {
@@ -172,6 +187,7 @@ ReleaseModel.createNewRelease = async (id, props) => {
 	const releaseCreateProps = {
 		$set: {
 			title: props.title,
+			artist_name: props.artist_name,
 			label_name: props.label_name,
 			catalogue: props.catalogue,
 			year: props.year,
@@ -216,6 +232,7 @@ ReleaseModel.updateExistingReleaseById = async (id, props) => {
 	const releaseUpdateProps = {
 		$set: {
 			title: props.title,
+			artist_name: props.artist_name,
 			label_name: props.label_name,
 			catalogue: props.catalogue,
 			year: props.year,

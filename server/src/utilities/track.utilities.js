@@ -49,7 +49,6 @@ TrackUtilities.createTrackDocuments = async (tracks, releaseId) => {
 		}
 	}
 
-	// Return Track ID array for Release object
 	return releaseTrackProps;
 }
 

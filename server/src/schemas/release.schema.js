@@ -9,6 +9,12 @@ const ReleaseSchema = new Schema(
 			type: String,
 			required: [true, "Please provide the name of the release"]
 		},
+		artist_name: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: "Artist"
+			}
+		],
 		label_name: [
 			{
 				type: Schema.Types.ObjectId,

@@ -27,12 +27,24 @@ ReleaseUtilities.createReleaseDocument = async (release, tracks) => {
 	// Grab new Release ID
 	const newReleaseId = newRelease._id;
 
-	// Create new Track documents with linked data and return new Track IDs
-	const linkedTracks = await TrackUtilities.createTrackDocuments(tracks, newReleaseId);
+	// Create new Track documents with linked data and return new linked Track & Artist IDs
+	const linkedProps = await TrackUtilities.createTrackDocuments(tracks, newReleaseId);
 
 	// Append Track IDs array to newRelease object
-	newRelease.tracks = linkedTracks;
+	newRelease.tracks = linkedProps.trackId;
 
+	// Remove any duplicate Artist Ids
+	const artistIds = [...linkedProps.artistId];
+
+	const uniqueArtistIds = artistIds.filter((object, index) => 
+		index === artistIds.findIndex(obj => 
+			JSON.stringify(obj) === JSON.stringify(object)
+		)
+	);
+
+	// Append unique Artist IDs array to newRelease object
+	newRelease.artist_name = uniqueArtistIds;
+  
 	return newRelease;
 }
 
@@ -45,6 +57,7 @@ ReleaseUtilities.updateReleaseDocument = async (id, release, tracks) => {
 	// Create updated Release object
 	const updatedRelease = {
 		title: release.releaseTitle,
+		artist_name: [],
 		label_name: [],
 		catalogue: release.catalogue,
 		year: release.releaseYear,
@@ -58,11 +71,23 @@ ReleaseUtilities.updateReleaseDocument = async (id, release, tracks) => {
 	// Manage linked Label Name data properties
 	updatedRelease.label_name = await DocumentUtilities.manageLinkedData(release.labelName, LabelModel);
 
-	// Create new Track documents with linked data and return new Track IDs
-	const linkedTracks = await TrackUtilities.createTrackDocuments(tracks, id);
+	// Create new Track documents with linked data and return new linked Track & Artist IDs
+	const linkedProps = await TrackUtilities.createTrackDocuments(tracks, id);
 
-	// Append Track IDs array to newRelease object
-	updatedRelease.tracks = linkedTracks;
+	// Append Track IDs array to updatedRelease object
+	updatedRelease.tracks = linkedProps.trackId;
+
+	// Remove any duplicate Artist Ids
+	const artistIds = [...linkedProps.artistId];
+
+	const uniqueArtistIds = artistIds.filter((object, index) => 
+		index === artistIds.findIndex(obj => 
+			JSON.stringify(obj) === JSON.stringify(object)
+		)
+	);
+
+	// Append unique Artist IDs array to updatedRelease object
+	updatedRelease.artist_name = uniqueArtistIds;
 
 	return updatedRelease;
 }
