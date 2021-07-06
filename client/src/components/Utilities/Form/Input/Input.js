@@ -1,4 +1,5 @@
 import React from "react";
+import ReactHtmlParser from 'react-html-parser';
 
 import "./Input.scss";
 
@@ -9,27 +10,27 @@ import Auxiliary from "../../../../wrappers/Auxiliary/Auxiliary";
 const input = props => {
   let inputElement = null;
 
-  switch (props.elementType) {
+  switch (props.elementAttributes.type) {
     case "text":
       inputElement = (
         <Auxiliary>
-          <label htmlFor={props.elementLabelFor}>{props.elementLabel}</label>
-          {props.invalid && props.shouldValidate && props.touched ? (
+          <label htmlFor={props.elementAttributes.labelFor}>{props.elementAttributes.label}</label>
+          {props.elementValid && props.elementAttributes.validationRequired && props.elementAttributes.touched ? (
             <p
               className="message--error"
               aria-live="polite"
-              aria-describedby={props.elementId}
+              aria-describedby={props.elementAttributes.id}
             >
-              {props.errorMessage}
+              {props.elementAttributes.validationFeedback}
             </p>
           ) : null}
           <input
-						type={props.elementType}
-						name={props.elementName}
-            id={props.elementId}
-						value={props.elementValue}
+						type={props.elementAttributes.type}
+						name={props.elementAttributes.name}
+            id={props.elementAttributes.id}
+						value={ReactHtmlParser(props.elementAttributes.value)}
             onChange={props.changed}
-            aria-invalid={props.invalid ? "true" : "false"}
+            aria-invalid={props.elementValid ? "true" : "false"}
           />
         </Auxiliary>
       );
@@ -37,22 +38,22 @@ const input = props => {
     case "textarea":
       inputElement = (
         <Auxiliary>
-          <label htmlFor={props.elementLabelFor}>{props.elementLabel}</label>
-          {props.invalid && props.shouldValidate && props.touched ? (
+          <label htmlFor={props.elementAttributes.labelFor}>{props.elementAttributes.label}</label>
+          {props.elementValid && props.elementAttributes.validationRequired && props.elementAttributes.touched ? (
             <p
               className="message--error"
               aria-live="polite"
-              aria-describedby={props.elementId}
+              aria-describedby={props.elementAttributes.id}
             >
-              {props.errorMessage}
+              {props.elementAttributes.validationFeedback}
             </p>
           ) : null}
           <textarea
-						name={props.elementName}
-						id={props.elementId}
-						value={props.elementValue}
+						name={props.elementAttributes.name}
+            id={props.elementAttributes.id}
+						value={ReactHtmlParser(props.elementAttributes.value)}
             onChange={props.changed}
-            aria-invalid={props.invalid ? "true" : "false"}
+            aria-invalid={props.elementValid ? "true" : "false"}
           />
         </Auxiliary>
       );
@@ -60,22 +61,22 @@ const input = props => {
     case "select":
       inputElement = (
         <Auxiliary>
-          <label htmlFor={props.elementLabelFor}>{props.elementLabel}</label>
-          {props.invalid && props.shouldValidate && props.touched ? (
+          <label htmlFor={props.elementAttributes.labelFor}>{props.elementAttributes.label}</label>
+          {props.elementValid && props.elementAttributes.validationRequired && props.elementAttributes.touched ? (
             <p
               className="message--error"
               aria-live="polite"
-              aria-describedby={props.elementId}
+              aria-describedby={props.elementAttributes.id}
             >
-              {props.errorMessage}
+              {props.elementAttributes.validationFeedback}
             </p>
           ) : null}
           <select
             onChange={props.changed}
-            aria-invalid={props.invalid ? "true" : "false"}
+            aria-invalid={props.elementValid ? "true" : "false"}
           >
-            {props.elementAttr.options.map(option => (
-              <option key={option.value} value={option.elementValue}>
+            {props.elementAttributes.options.map(option => (
+              <option key={option.value} value={ReactHtmlParser(option.value)}>
                 {option.option}
               </option>
             ))}
@@ -86,48 +87,75 @@ const input = props => {
 		case "checkbox":
 			inputElement = (
 				<div className="input-group__inline">
-					{props.invalid && props.shouldValidate && props.touched ? (
+					{props.elementValid && props.elementAttributes.validationRequired && props.elementAttributes.touched ? (
 						<p
 							className="message--error"
 							aria-live="polite"
-							aria-describedby={props.elementId}
+							aria-describedby={props.elementAttributes.id}
 						>
-							{props.errorMessage}
+              {props.elementAttributes.validationFeedback}
 						</p>
 					) : null}
 					<input
-						type={props.elementType}
-						name={props.elementName}
-						id={props.elementId}
-						value={props.elementValue}
+						type={props.elementAttributes.type}
+						name={props.elementAttributes.name}
+            id={props.elementAttributes.id}
+						value={props.elementAttributes.value}
 						onChange={props.changed}
-						aria-invalid={props.invalid ? "true" : "false"}
-						//checked={props.elementValue === "yes" ? true : false }
+						aria-invalid={props.elementValid ? "true" : "false"}
+						checked={props.elementAttributes.value === "yes" ? true : false }
 					/>
-					<label htmlFor={props.elementLabelFor}>{props.elementLabel}</label>
+          <label htmlFor={props.elementAttributes.labelFor}>{props.elementAttributes.label}</label>
 				</div>
 			);
+		break;
+    case "number":
+      inputElement = (
+        <Auxiliary>
+          <label htmlFor={props.elementAttributes.labelFor}>{props.elementAttributes.label}</label>
+          {props.elementValid && props.elementAttributes.validationRequired && props.elementAttributes.touched ? (
+            <p
+              className="message--error"
+              aria-live="polite"
+              aria-describedby={props.elementAttributes.id}
+            >
+              {props.elementAttributes.validationFeedback}
+            </p>
+          ) : null}
+          <input
+						type={props.elementAttributes.type}
+						name={props.elementAttributes.name}
+            id={props.elementAttributes.id}
+						value={props.elementAttributes.value}
+						min={props.elementAttributes.min}
+						max={props.elementAttributes.max}
+						onChange={props.changed}
+						size={20}
+            aria-invalid={props.elementValid ? "true" : "false"}
+          />
+        </Auxiliary>
+      );
     break;
     default:
       inputElement = (
         <Auxiliary>
-          <label htmlFor={props.elementLabelFor}>{props.elementLabel}</label>
-          {props.invalid && props.shouldValidate && props.touched ? (
+          <label htmlFor={props.elementAttributes.labelFor}>{props.elementAttributes.label}</label>
+          {props.elementValid && props.elementAttributes.validationRequired && props.elementAttributes.touched ? (
             <p
               className="message--error"
               aria-live="polite"
-              aria-describedby={props.elementId}
+              aria-describedby={props.elementAttributes.id}
             >
-              {props.errorMessage}
+              {props.elementAttributes.validationFeedback}
             </p>
           ) : null}
           <input
-						type={props.elementType}
-						name={props.elementName}
-						id={props.elementId}
-            value={props.elementValue}
+						type={props.elementAttributes.type}
+						name={props.elementAttributes.name}
+            id={props.elementAttributes.id}
+						value={props.elementAttributes.value}
             onChange={props.changed}
-            aria-invalid={props.invalid ? "true" : "false"}
+            aria-invalid={props.elementValid ? "true" : "false"}
           />
         </Auxiliary>
       );

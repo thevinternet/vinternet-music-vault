@@ -9,6 +9,7 @@ const button = props => (
     className={["btn", ["btn--" + props.type]].join(" ")}
     onClick={props.clicked}
     disabled={props.disabled}
+		ref={props.elmRef}
   >
     {props.children}
   </button>

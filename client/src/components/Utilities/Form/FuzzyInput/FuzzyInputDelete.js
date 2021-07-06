@@ -1,11 +1,12 @@
 import React from "react";
 import ReactHtmlParser from 'react-html-parser';
 
+import Button from "../../UI/Button/Button";
 import "./FuzzyInput.scss";
 
 //===============================================================================================================//
 
-const fuzzyInput = props => {
+const fuzzyInputDelete = props => {
 	return (
     <div className="input-group__dropdown">
       <label htmlFor={props.elementAttributes.labelFor}>{props.elementAttributes.label}</label>
@@ -18,15 +19,22 @@ const fuzzyInput = props => {
           {props.elementAttributes.validationFeedback}
         </p>
       ) : null}
-      <input
-				type={props.elementAttributes.type}
-				name={props.elementAttributes.name}
-				id={props.elementAttributes.id}
-        value={ReactHtmlParser(props.elementAttributes.value)}
-        onChange={props.changed}
-        lists={`${props.elementAttributes.labelFor}List`}
-        aria-invalid={props.elementValid ? "true" : "false"}
-      />
+			<div className="input-group">
+				<input
+					type={props.elementAttributes.type}
+					name={props.elementAttributes.name}
+					id={props.elementAttributes.id}
+					value={ReactHtmlParser(props.elementAttributes.value)}
+					onChange={props.changed}
+					lists={`${props.elementAttributes.labelFor}List`}
+					aria-invalid={props.elementValid ? "true" : "false"}
+				/>
+				{props.elementIndex !== 0 ? (
+					<Button type={"warning"} clicked={props.delete} >
+						Delete {props.elementAttributes.label}
+					</Button>
+				) : null }
+			</div>
       <datalist
         id={`${props.elementAttributes.labelFor}List`}
         style={{ display: props.elementAttributes.showDropdown === "true" ? "block" : "none" }}
@@ -52,4 +60,4 @@ const fuzzyInput = props => {
 
 //===============================================================================================================//
 
-export default fuzzyInput;
+export default fuzzyInputDelete;

@@ -1,4 +1,5 @@
 @import "../../../assets/scss/settings.scss";
+@import "../../../assets/scss/components/highlight.scss";
 
 .modal {
   position: fixed;
@@ -9,7 +10,7 @@
   background-color: $white;
   border: 1px solid $grey-3;
   box-shadow: 1px 1px 1px $black;
-  padding: $base-spacing-unit-small;
+  padding: $base-spacing-unit-small $base-spacing-unit-small 0 $base-spacing-unit-small;
   color: $grey-2;
   transition: all 0.3s ease-out;
   @include media($medium) {

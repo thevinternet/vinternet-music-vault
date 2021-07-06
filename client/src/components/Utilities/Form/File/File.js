@@ -9,37 +9,40 @@ import Auxiliary from "../../../../wrappers/Auxiliary/Auxiliary";
 const file = props => {
   return (
     <Auxiliary>
-      <div className="card">
-        <figure>
-          <picture>
-            <img
-              src={
-                props.hasUpload
-                  ? props.imageUpload
-                  : require(`../../../../assets/images/${props.elementImage}`)
-              }
-              alt={props.title}
-              height="100px"
-              width="100px"
-            />
-          </picture>
-        </figure>
-        <div className="card__details">
-          <input
-						{...props.elementAttr}
-						type={props.elementType}
-						name={props.elementName}
-            id={props.elementId}
-            onChange={props.changed}
-          />
-          <label htmlFor={props.elementLabelFor} className="btn--primary">
-            {props.elementLabel}
-          </label>
-          <p>
-            {props.hasUpload ? props.imageNameUpload : props.elementImageName}
-          </p>
-        </div>
-      </div>
+			<fieldset>
+				<legend>Profile Image</legend>
+				<div className="card">
+					<figure>
+						<picture>
+							<img
+								src={
+									props.hasUpload
+										? props.imageUpload
+										//: require(`../../../../assets/images/${props.elementImage}`).default
+										: process.env.PUBLIC_URL + `/assets/images/${props.elementImage}`
+								}
+								alt={props.title}
+								height="100px"
+								width="100px"
+							/>
+						</picture>
+					</figure>
+					<div className="card__details">
+						<input
+							type={props.elementAttributes.type}
+							name={props.elementAttributes.name}
+							id={props.elementAttributes.id}
+							onChange={props.changed}
+						/>
+						<label htmlFor={props.elementAttributes.labelFor} className="btn--primary">
+							{props.elementAttributes.label}
+						</label>
+						<p>
+							{props.hasUpload ? props.imageNameUpload : props.elementImageName}
+						</p>
+					</div>
+				</div>
+			</fieldset>
     </Auxiliary>
   );
 };
