@@ -1,83 +1,83 @@
 version: '3.8'
 
 services:
-	# Setup Server Container
-	server:
-		build:
-			context: ./server/
-			dockerfile: Dockerfile
-		image: vmv-server
-		container_name: vmv-server-dev
-		volumes:
-			- ./server:/usr/app/server
-			- ./client/public/assets/images/artists:/usr/app/client/public/assets/images/artists
-			- ./client/public/assets/images/labels:/usr/app/client/public/assets/images/labels
-			- ./client/public/assets/images/releases:/usr/app/client/public/assets/images/releases
-		environment:
-			- NODE_ENV=${NODE_ENV}
-			- CHOKIDAR_USEPOLLING='true'
-		env_file: ./server/.env
-		ports:
-			- ${SERVER_PORT}:${SERVER_PORT}
-		expose:
-			- ${SERVER_PORT}
-		networks:
-			- vmv-app-network
-		depends_on:
-			- mongo
-		command: npm run development
-	# Setup Database Container
-	mongo:
-		image: mongo
-		container_name: vmv-mongodb-dev
-		volumes:
-			- vmv-data:/data/db
-		env_file: ./server/.env
-		ports:
-			- ${MONGO_PORT}:${MONGO_PORT}
-		expose:
-			- ${MONGO_PORT}
-		networks:
-			- vmv-app-network
-	mongo-express:
-		image: mongo-express
-		container_name: vmv-mongoex-dev
-		env_file: ./server/.env
-		ports:
-			- ${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}
-		networks:
-			- vmv-app-network
-		depends_on:
-			- mongo
-	# Setup Client Container
-	client:
-		build:
-			context: ./client/
-			dockerfile: Dockerfile
-		image: vmv-client
-		container_name: vmv-client-dev
-		volumes:
-			- ./client:/usr/app/client
-		environment:
-			- NODE_ENV=${NODE_ENV}
-			- CHOKIDAR_USEPOLLING='true'
-		stdin_open: true
-		tty: true
-		env_file: ./client/.env
-		ports:
-			- ${CLIENT_PORT}:${CLIENT_PORT}
-		expose:
-			- ${CLIENT_PORT}
-		networks:
-			- vmv-app-network
-		depends_on:
-			- server 
-		command: yarn start
+  # Setup Server Container
+  server:
+    build:
+      context: ./server/
+      dockerfile: Dockerfile
+    image: vmv-server
+    container_name: vmv-server-dev
+    volumes:
+      - ./server:/usr/app/server
+      - ./client/public/assets/images/artists:/usr/app/client/public/assets/images/artists
+      - ./client/public/assets/images/labels:/usr/app/client/public/assets/images/labels
+      - ./client/public/assets/images/releases:/usr/app/client/public/assets/images/releases
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - CHOKIDAR_USEPOLLING='true'
+    env_file: ./server/.env
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    expose:
+      - ${SERVER_PORT}
+    networks:
+      - vmv-app-network
+    depends_on:
+      - mongo
+    command: npm run development
+  # Setup Database Container
+  mongo:
+    image: mongo
+    container_name: vmv-mongodb-dev
+    volumes:
+      - vmv-data:/data/db
+    env_file: ./server/.env
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    expose:
+      - ${MONGO_PORT}
+    networks:
+      - vmv-app-network
+  mongo-express:
+    image: mongo-express
+    container_name: vmv-mongoex-dev
+    env_file: ./server/.env
+    ports:
+      - ${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}
+    networks:
+      - vmv-app-network
+    depends_on:
+      - mongo
+  # Setup Client Container
+  client:
+    build:
+      context: ./client/
+      dockerfile: Dockerfile
+    image: vmv-client
+    container_name: vmv-client-dev
+    volumes:
+      - ./client:/usr/app/client
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - CHOKIDAR_USEPOLLING='true'
+    stdin_open: true
+    tty: true
+    env_file: ./client/.env
+    ports:
+      - ${CLIENT_PORT}:${CLIENT_PORT}
+    expose:
+      - ${CLIENT_PORT}
+    networks:
+      - vmv-app-network
+    depends_on:
+      - server 
+    command: yarn start
 
 networks:
-	vmv-app-network:
-		driver: bridge
+  vmv-app-network:
+    driver: bridge
 
 volumes:
-	vmv-data:
-		driver: local
+  vmv-data:
+    driver: local
