@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 
 import "./Layout.scss";
@@ -9,27 +9,25 @@ import Footer from "../../components/Structure/Footer/Footer";
 
 //===============================================================================================================//
 
-class Layout extends Component {
-  state = {
-    isAuthenticated: false
-  };
+const Layout = props => {
+  
+	//const [AuthenticatedStatus, setAutenticatedStatus] = useState(false);
+	//<Header isAuthenticated={AuthenticatedStatus} />
 
-  render() {
-    return (
-      <Auxiliary>
-        <Link
-          to={{ hash: "#content" }}
-          className="skip-to-content"
-          id="skiplink"
-        >
-          Skip to main content
-        </Link>
-        <Header isAuthenticated={this.state.isAuthenticated} />
-        <main id="content">{this.props.children}</main>
-        <Footer />
-      </Auxiliary>
-    );
-  }
+	return (
+		<Auxiliary>
+			<Link
+				to={{ hash: "#content" }}
+				className="skip-to-content"
+				id="skiplink"
+			>
+				Skip to main content
+			</Link>
+			<Header />
+			<main id="content">{props.children}</main>
+			<Footer />
+		</Auxiliary>
+	);
 }
 
 //===============================================================================================================//

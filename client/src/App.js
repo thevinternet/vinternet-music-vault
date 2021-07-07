@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { Route, Switch, withRouter } from "react-router-dom";
 
 import "./App.scss";
@@ -17,31 +17,33 @@ import Release from "./containers/Releases/Release/Release";
 import ReleaseAdd from "./containers/Releases/ReleaseAdd/ReleaseAdd";
 import ReleaseEdit from "./containers/Releases/ReleaseEdit/ReleaseEdit";
 import ReleaseList from "./containers/Releases/ReleaseList/ReleaseList";
+import Track from "./containers/Tracks/Track/Track";
+import TrackList from "./containers/Tracks/TrackList/TrackList";
 import Dashboard from "./containers/Dashboard/Dashboard";
 
 //===============================================================================================================//
 
-class App extends Component {
-  render() {
-    let appRoutes = (
-      <Switch>
-        <Route path={"/artists"} exact component={ArtistList} />
-        <Route path={"/artists/new"} exact component={ArtistAdd} />
-        <Route path={"/artists/:id"} exact component={withRouter(Artist)} />
-        <Route path={"/artists/:id/edit"} exact component={ArtistEdit} />
-        <Route path={"/labels"} exact component={LabelList} />
-        <Route path={"/labels/new"} exact component={LabelAdd} />
-        <Route path={"/labels/:id"} exact component={withRouter(Label)} />
-        <Route path={"/labels/:id/edit"} exact component={LabelEdit} />
-        <Route path={"/releases"} exact component={ReleaseList} />
-        <Route path={"/releases/new"} exact component={ReleaseAdd} />
-        <Route path={"/releases/:id"} exact component={withRouter(Release)} />
-        <Route path={"/releases/:id/edit"} exact component={ReleaseEdit} />
-        <Route path={"/"} exact component={Dashboard} />
-      </Switch>
-    );
-    return <Layout>{appRoutes}</Layout>;
-  }
+const App = props => {
+	let appRoutes = (
+		<Switch>
+			<Route path={"/artists"} exact component={withRouter(ArtistList)} />
+			<Route path={"/artists/new"} exact component={ArtistAdd} />
+			<Route path={"/artists/:id"} exact component={withRouter(Artist)} />
+			<Route path={"/artists/:id/edit"} exact component={ArtistEdit} />
+			<Route path={"/labels"} exact component={withRouter(LabelList)} />
+			<Route path={"/labels/new"} exact component={LabelAdd} />
+			<Route path={"/labels/:id"} exact component={withRouter(Label)} />
+			<Route path={"/labels/:id/edit"} exact component={LabelEdit} />
+			<Route path={"/releases"} exact component={withRouter(ReleaseList)} />
+			<Route path={"/releases/new"} exact component={ReleaseAdd} />
+			<Route path={"/releases/:id"} exact component={withRouter(Release)} />
+			<Route path={"/releases/:id/edit"} exact component={ReleaseEdit} />
+			<Route path={"/tracks"} exact component={withRouter(TrackList)} />
+			<Route path={"/tracks/:id"} exact component={withRouter(Track)} />
+			<Route path={"/"} component={Dashboard} />
+		</Switch>
+	);
+	return <Layout>{appRoutes}</Layout>;
 }
 
 //===============================================================================================================//

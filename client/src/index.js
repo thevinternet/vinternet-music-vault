@@ -13,8 +13,9 @@ import * as serviceWorker from "./serviceWorker";
 import artistReducer from "./store/reducers/artist";
 import labelReducer from "./store/reducers/label";
 import releaseReducer from "./store/reducers/release";
+import trackReducer from "./store/reducers/track";
 
-import { watchArtist, watchLabel, watchRelease } from "./store/sagas";
+import { watchArtist, watchLabel, watchRelease, watchTrack } from "./store/sagas";
 
 //===============================================================================================================//
 
@@ -22,7 +23,8 @@ import { watchArtist, watchLabel, watchRelease } from "./store/sagas";
 const rootReducer = combineReducers({
   artist: artistReducer,
   label: labelReducer,
-  release: releaseReducer
+	release: releaseReducer,
+	track: trackReducer
 });
 
 // Setup Redux Saga middleware
@@ -44,6 +46,7 @@ const store = createStore(
 sagaMiddleware.run(watchArtist);
 sagaMiddleware.run(watchLabel);
 sagaMiddleware.run(watchRelease);
+sagaMiddleware.run(watchTrack);
 
 //===============================================================================================================//
 
