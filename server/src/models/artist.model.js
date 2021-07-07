@@ -47,7 +47,7 @@ ArtistModel.getArtistById = async (id) => {
 	try {
 		const artist = await ArtistModel.findById(id);
 
-		if (!artist.length) {
+		if (artist === null) {
 			return {
 				error : {
 					status: "Request Successful",
@@ -168,7 +168,7 @@ ArtistModel.removeArtistById = async (id) => {
 	try {
 		const artist = await ArtistModel.findById(id);
 
-		if (!artist.length) {
+		if (artist === null) {
 			return {
 				error : {
 					status: "Request Successful",

@@ -53,7 +53,7 @@ ReleaseModel.getReleaseById = async (id) => {
 	try {
 		const release = await ReleaseModel.findById(id);
 
-		if (!release.length) {
+		if (release === null) {
 			return {
 				error : {
 					status: "Request Successful",
@@ -288,7 +288,7 @@ ReleaseModel.removeReleaseById = async (id) => {
 	try {
 		const release = await ReleaseModel.findById(id);
 
-		if (!release.length) {
+		if (release === null) {
 			return {
 				error : {
 					status: "Request Successful",

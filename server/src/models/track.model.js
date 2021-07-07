@@ -53,9 +53,9 @@ TrackModel.getAllTracks = async () => {
 
 TrackModel.getTrackById = async (id) => {
 	try {
-		const track = await TrackModel.find({ _id: id });
+		const track = await TrackModel.findById(id);
 
-		if (!track.length) {
+		if (track === null) {
 			return {
 				error : {
 					status: "Request Successful",
@@ -71,7 +71,7 @@ TrackModel.getTrackById = async (id) => {
 				}
 			}
 		} else {
-			return TrackModel.find({ _id: id })
+			return TrackModel.findById(id)
 				.populate("release_title", "title")
 				.populate("artist_name", "name")
 				.populate("release_label", "name")
@@ -339,7 +339,7 @@ TrackModel.removeTrackById = async (id) => {
 	try {
 		const track = await TrackModel.findById(id);
 
-		if (!track.length) {
+		if (track === null) {
 			return {
 				error : {
 					status: "Request Successful",

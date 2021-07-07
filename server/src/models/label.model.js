@@ -47,7 +47,7 @@ LabelModel.getLabelById = async (id) => {
 	try {
 		const label = await LabelModel.findById(id);
 
-		if (!label.length) {
+		if (label === null) {
 			return {
 				error : {
 					status: "Request Successful",
@@ -171,7 +171,7 @@ LabelModel.removeLabelById = async (id) => {
 	try {
 		const label = await LabelModel.findById(id);
 
-		if (!label.length) {
+		if (label === null) {
 			return {
 				error : {
 					status: "Request Successful",
