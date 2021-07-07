@@ -11,7 +11,8 @@ TrackModel.getAllTracks = async () => {
 		if (!tracks.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							msg: "No track results found"
@@ -26,13 +27,16 @@ TrackModel.getAllTracks = async () => {
 				.populate("release_label", "name")
 				.populate("release_catalogue", "catalogue")
 				.populate("release_picture", "picture")
-				.lean().sort("release_catalogue").exec();
+				.lean()
+				.sort("release_catalogue")
+				.exec();
 		}
 
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -49,12 +53,13 @@ TrackModel.getAllTracks = async () => {
 
 TrackModel.getTrackById = async (id) => {
 	try {
-		const track = await TrackModel.findById(id);
+		const track = await TrackModel.find({ _id: id });
 
 		if (!track.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -66,19 +71,21 @@ TrackModel.getTrackById = async (id) => {
 				}
 			}
 		} else {
-			return TrackModel.findById(id)
+			return TrackModel.find({ _id: id })
 				.populate("release_title", "title")
 				.populate("artist_name", "name")
 				.populate("release_label", "name")
 				.populate("release_catalogue", "catalogue")
 				.populate("release_picture", "picture")
-				.lean().exec();
+				.lean()
+				.exec();
 		}
 
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -100,7 +107,8 @@ TrackModel.getTracksByArtist = async (id) => {
 		if (!tracks.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -118,13 +126,16 @@ TrackModel.getTracksByArtist = async (id) => {
 				.populate("release_label", "name")
 				.populate("release_catalogue", "catalogue")
 				.populate("release_picture", "picture")
-				.sort("release_catalogue").lean().exec();
+				.lean()
+				.sort("release_catalogue")
+				.exec();
 		}
 
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -146,7 +157,8 @@ TrackModel.getTracksByLabel = async (id) => {
 		if (!tracks.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -164,13 +176,16 @@ TrackModel.getTracksByLabel = async (id) => {
 				.populate("release_label", "name")
 				.populate("release_catalogue", "catalogue")
 				.populate("release_picture", "picture")
-				.sort("release_catalogue").lean().exec();
+				.lean()
+				.sort("release_catalogue")
+				.exec();
 		}
 
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -192,7 +207,8 @@ TrackModel.getTracksByRelease = async (id) => {
 		if (!tracks.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -210,13 +226,16 @@ TrackModel.getTracksByRelease = async (id) => {
 				.populate("release_label", "name")
 				.populate("release_catalogue", "catalogue")
 				.populate("release_picture", "picture")
-				.sort("release_catalogue").lean().exec();
+				.lean()
+				.sort("release_catalogue")
+				.exec();
 		}
 
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -252,7 +271,8 @@ TrackModel.createNewTrack = async (props) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -299,7 +319,8 @@ TrackModel.updateExistingTrackById = async (id, props) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -321,7 +342,8 @@ TrackModel.removeTrackById = async (id) => {
 		if (!track.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -339,7 +361,8 @@ TrackModel.removeTrackById = async (id) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message

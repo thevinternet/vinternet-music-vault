@@ -11,7 +11,8 @@ ArtistModel.getAllArtists = async () => {
 		if (!artists.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							msg: "No artist results found"
@@ -26,7 +27,8 @@ ArtistModel.getAllArtists = async () => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -45,10 +47,11 @@ ArtistModel.getArtistById = async (id) => {
 	try {
 		const artist = await ArtistModel.findById(id);
 
-		if (artist === null) {
+		if (!artist.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -60,13 +63,14 @@ ArtistModel.getArtistById = async (id) => {
 				}
 			}
 		} else {
-			return ArtistModel.findById(id).lean().populate("alias_name", "name").exec();
+			return ArtistModel.findById(id).populate("alias_name", "name").lean().exec();
 		}
 
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -98,7 +102,8 @@ ArtistModel.createNewArtist = async (props, file) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -143,7 +148,8 @@ ArtistModel.updateExistingArtistById = async (id, props) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -162,10 +168,11 @@ ArtistModel.removeArtistById = async (id) => {
 	try {
 		const artist = await ArtistModel.findById(id);
 
-		if (artist === null) {
+		if (!artist.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -183,7 +190,8 @@ ArtistModel.removeArtistById = async (id) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message

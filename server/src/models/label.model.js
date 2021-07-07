@@ -11,7 +11,8 @@ LabelModel.getAllLabels = async () => {
 		if (!labels.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							msg: "No label results found"
@@ -26,7 +27,8 @@ LabelModel.getAllLabels = async () => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -45,10 +47,11 @@ LabelModel.getLabelById = async (id) => {
 	try {
 		const label = await LabelModel.findById(id);
 
-		if (label === null) {
+		if (!label.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -60,13 +63,17 @@ LabelModel.getLabelById = async (id) => {
 				}
 			}
 		} else {
-			return LabelModel.findById(id).lean().populate("parent_label", "name").populate("subsidiary_label", "name").exec();
+			return LabelModel.findById(id)
+				.populate("parent_label", "name")
+				.populate("subsidiary_label", "name")
+				.lean().exec();
 		}
 
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -98,7 +105,8 @@ LabelModel.createNewLabel = async (props, file) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -143,7 +151,8 @@ LabelModel.updateExistingLabelById = async (id, props) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -162,10 +171,11 @@ LabelModel.removeLabelById = async (id) => {
 	try {
 		const label = await LabelModel.findById(id);
 
-		if (label === null) {
+		if (!label.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -183,7 +193,8 @@ LabelModel.removeLabelById = async (id) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message

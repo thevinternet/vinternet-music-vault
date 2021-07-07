@@ -12,7 +12,8 @@ ReleaseModel.getAllReleases = async () => {
 		if (!releases.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							msg: "No release results found"
@@ -32,7 +33,8 @@ ReleaseModel.getAllReleases = async () => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -51,10 +53,11 @@ ReleaseModel.getReleaseById = async (id) => {
 	try {
 		const release = await ReleaseModel.findById(id);
 
-		if (release === null) {
+		if (!release.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -77,7 +80,8 @@ ReleaseModel.getReleaseById = async (id) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -96,10 +100,11 @@ ReleaseModel.getReleasesByLabel = async (id) => {
 	try {
 		const release = await ReleaseModel.find({ label_name: id });
 
-		if (release === null) {
+		if (!release.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -122,7 +127,8 @@ ReleaseModel.getReleasesByLabel = async (id) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -144,7 +150,8 @@ ReleaseModel.getReleasesByArtist = async (id) => {
 		if (!release.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -166,7 +173,8 @@ ReleaseModel.getReleasesByArtist = async (id) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -211,7 +219,8 @@ ReleaseModel.createNewRelease = async (id, props) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -259,7 +268,8 @@ ReleaseModel.updateExistingReleaseById = async (id, props) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
@@ -278,10 +288,11 @@ ReleaseModel.removeReleaseById = async (id) => {
 	try {
 		const release = await ReleaseModel.findById(id);
 
-		if (release === null) {
+		if (!release.length) {
 			return {
 				error : {
-					status: "Request Successful: HTTP Status Code 200 (OK)",
+					status: "Request Successful",
+					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
 							value: id,
@@ -300,7 +311,8 @@ ReleaseModel.removeReleaseById = async (id) => {
 	} catch (err) {
 		return {
 			error : {
-				status: `Database (Mongoose): ${err.name}`,
+				status: `Database Error (Mongoose): ${err.name}`,
+				response: "HTTP Status Code 200 (OK)",
 				errors: [
 					{
 						msg: err.message
