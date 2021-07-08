@@ -17,9 +17,15 @@ export const releaseReturnFailure = error => {
   };
 };
 
-export const releaseResetReturnStatus = () => {
+export const releaseResetStatus = () => {
   return {
-    type: actionTypes.RELEASE_RESET_RETURN_STATUS
+    type: actionTypes.RELEASE_RESET_STATUS
+  };
+};
+
+export const releaseResetResults = () => {
+  return {
+    type: actionTypes.RELEASE_RESET_RESULTS
   };
 };
 

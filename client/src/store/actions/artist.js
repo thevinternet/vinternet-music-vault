@@ -17,9 +17,9 @@ export const artistReturnFailure = error => {
   };
 };
 
-export const artistResetReturnStatus = () => {
+export const artistResetStatus = () => {
   return {
-    type: actionTypes.ARTIST_RESET_RETURN_STATUS
+    type: actionTypes.ARTIST_RESET_STATUS
   };
 };
 

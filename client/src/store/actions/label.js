@@ -17,9 +17,9 @@ export const labelReturnFailure = error => {
   };
 };
 
-export const labelResetReturnStatus = () => {
+export const labelResetStatus = () => {
   return {
-    type: actionTypes.LABEL_RESET_RETURN_STATUS
+    type: actionTypes.LABEL_RESET_STATUS
   };
 };
 

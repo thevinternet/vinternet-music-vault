@@ -1,7 +1,7 @@
 export {
   artistStartLoading,
   artistReturnFailure,
-  artistResetReturnStatus,
+  artistResetStatus,
   fetchArtistsSend,
   fetchArtistsSuccess,
   fetchArtistSend,
@@ -20,7 +20,7 @@ export {
 export {
   labelStartLoading,
   labelReturnFailure,
-  labelResetReturnStatus,
+  labelResetStatus,
   fetchLabelsSend,
   fetchLabelsSuccess,
   fetchLabelSend,
@@ -39,7 +39,8 @@ export {
 export {
   releaseStartLoading,
   releaseReturnFailure,
-  releaseResetReturnStatus,
+  releaseResetStatus,
+	releaseResetResults,
   fetchReleasesSend,
   fetchReleasesSuccess,
   fetchReleaseSend,
@@ -58,3 +59,23 @@ export {
   deleteReleaseSend,
   deleteReleaseSuccess
 } from "./release";
+
+export {
+  trackStartLoading,
+  trackReturnFailure,
+  trackResetStatus,
+	trackResetResults,
+  fetchTracksSend,
+  fetchTracksSuccess,
+  fetchTrackSend,
+  fetchTrackSuccess,
+  fetchTracksByArtistSend,
+  fetchTracksByArtistSuccess,
+  fetchTracksByLabelSend,
+	fetchTracksByLabelSuccess,
+	fetchTracksByReleaseSend,
+	fetchTracksByReleaseSuccess,
+	addTrackClientPrep,
+	editTrackClientPrep,
+  editTrackClientInput,
+} from "./track";
