@@ -16,8 +16,8 @@ export function* fetchLabelsSendSaga(action) {
         id: key
       });
     }
-    response.data.failure
-      ? yield put(actions.labelReturnFailure(response.data.failure))
+    response.data.error
+      ? yield put(actions.labelReturnFailure(response.data.error))
       : yield put(actions.fetchLabelsSuccess(fetchedLabels));
   } catch (error) {
     yield put(actions.labelReturnFailure(error.message));
@@ -30,12 +30,14 @@ export function* fetchLabelSendSaga(action) {
   yield put(actions.labelStartLoading());
   try {
     const response = yield axios.get("/api/label/" + action.id);
-    if (response.data.failure) {
-      yield put(actions.labelReturnFailure(response.data.failure));
+    if (response.data.error) {
+      yield put(actions.labelReturnFailure(response.data.error));
     }
-    action.edit === true
+		else {
+			action.edit === true
       ? yield put(actions.editLabelClientPrep(response.data))
       : yield put(actions.fetchLabelSuccess(response.data));
+		}
   } catch (error) {
     yield put(actions.labelReturnFailure(error.message));
   }
@@ -52,7 +54,7 @@ export function* addLabelSendSaga(action) {
       : (response = yield axios.post("/api/label/new/text", action.label));
     response.data.success
       ? yield put(actions.addLabelSuccess(response.data.success))
-      : yield put(actions.labelReturnFailure(response.data.failure));
+      : yield put(actions.labelReturnFailure(response.data.error));
   } catch (error) {
     yield put(actions.labelReturnFailure(error.message));
   }
@@ -75,7 +77,7 @@ export function* updateLabelSendSaga(action) {
         ));
     response.data.success
       ? yield put(actions.updateLabelSuccess(response.data.success))
-      : yield put(actions.labelReturnFailure(response.data.failure));
+      : yield put(actions.labelReturnFailure(response.data.error));
   } catch (error) {
     yield put(actions.labelReturnFailure(error.message));
   }
@@ -89,7 +91,7 @@ export function* deleteLabelSendSaga(action) {
     const response = yield axios.delete("/api/label/" + action.id);
     response.data.success
       ? yield put(actions.deleteLabelSuccess(response.data.success))
-      : yield put(actions.labelReturnFailure(response.data.failure));
+      : yield put(actions.labelReturnFailure(response.data.error));
   } catch (error) {
     yield put(actions.labelReturnFailure(error.message));
   }

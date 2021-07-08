@@ -16,8 +16,8 @@ export function* fetchReleasesSendSaga(action) {
         id: key
       });
     }
-    response.data.failure
-      ? yield put(actions.releaseReturnFailure(response.data.failure))
+    response.data.error
+      ? yield put(actions.releaseReturnFailure(response.data.error))
       : yield put(actions.fetchReleasesSuccess(fetchedReleases));
   } catch (error) {
     yield put(actions.releaseReturnFailure(error.message));
@@ -30,8 +30,8 @@ export function* fetchReleaseSendSaga(action) {
   yield put(actions.releaseStartLoading());
   try {
     const response = yield axios.get("/api/release/" + action.id);
-    if (response.data.failure) {
-      yield put(actions.releaseReturnFailure(response.data.failure));
+    if (response.data.error) {
+      yield put(actions.releaseReturnFailure(response.data.error));
     }
     action.edit === true
       ? yield put(actions.editReleaseClientPrep(response.data))
@@ -54,8 +54,8 @@ export function* fetchReleasesByArtistSendSaga(action) {
         id: key
       });
     }
-    response.data.failure
-      ? yield put(actions.releaseReturnFailure(response.data.failure))
+    response.data.error
+      ? yield put(actions.releaseReturnFailure(response.data.error))
       : yield put(actions.fetchReleasesByArtistSuccess(fetchedReleases));
   } catch (error) {
     yield put(actions.releaseReturnFailure(error.message));
@@ -75,8 +75,8 @@ export function* fetchReleasesByLabelSendSaga(action) {
         id: key
       });
     }
-    response.data.failure
-      ? yield put(actions.releaseReturnFailure(response.data.failure))
+    response.data.error
+      ? yield put(actions.releaseReturnFailure(response.data.error))
       : yield put(actions.fetchReleasesByLabelSuccess(fetchedReleases));
   } catch (error) {
     yield put(actions.releaseReturnFailure(error.message));
@@ -94,7 +94,7 @@ export function* addReleaseSendSaga(action) {
       : (response = yield axios.post("/api/release/new/text", action.label));
     response.data.success
       ? yield put(actions.addReleaseSuccess(response.data.success))
-      : yield put(actions.releaseReturnFailure(response.data.failure));
+      : yield put(actions.releaseReturnFailure(response.data.error));
   } catch (error) {
     yield put(actions.releaseReturnFailure(error.message));
   }
@@ -117,7 +117,7 @@ export function* updateReleaseSendSaga(action) {
         ));
     response.data.success
       ? yield put(actions.updateReleaseSuccess(response.data.success))
-      : yield put(actions.releaseReturnFailure(response.data.failure));
+      : yield put(actions.releaseReturnFailure(response.data.error));
   } catch (error) {
     yield put(actions.releaseReturnFailure(error.message));
   }
@@ -131,7 +131,7 @@ export function* deleteReleaseSendSaga(action) {
     const response = yield axios.delete("/api/release/" + action.id);
     response.data.success
       ? yield put(actions.deleteReleaseSuccess(response.data.success))
-      : yield put(actions.releaseReturnFailure(response.data.failure));
+      : yield put(actions.releaseReturnFailure(response.data.error));
   } catch (error) {
     yield put(actions.releaseReturnFailure(error.message));
   }

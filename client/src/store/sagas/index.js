@@ -36,6 +36,16 @@ import {
 
 //===============================================================================================================//
 
+import {
+  fetchTracksSendSaga,
+  fetchTrackSendSaga,
+  fetchTracksByArtistSendSaga,
+	fetchTracksByLabelSendSaga,
+	fetchTracksByReleaseSendSaga
+} from "./track";
+
+//===============================================================================================================//
+
 export function* watchArtist() {
   yield takeEvery(actionTypes.FETCH_ARTISTS_SEND, fetchArtistsSendSaga);
   yield takeEvery(actionTypes.FETCH_ARTIST_SEND, fetchArtistSendSaga);
@@ -65,3 +75,15 @@ export function* watchRelease() {
   yield takeEvery(actionTypes.UPDATE_RELEASE_SEND, updateReleaseSendSaga);
   yield takeEvery(actionTypes.DELETE_RELEASE_SEND, deleteReleaseSendSaga);
 }
+
+//===============================================================================================================//
+
+export function* watchTrack() {
+  yield takeEvery(actionTypes.FETCH_TRACKS_SEND, fetchTracksSendSaga);
+  yield takeEvery(actionTypes.FETCH_TRACK_SEND, fetchTrackSendSaga);
+  yield takeEvery(actionTypes.FETCH_TRACKS_BY_ARTIST_SEND, fetchTracksByArtistSendSaga);
+	yield takeEvery(actionTypes.FETCH_TRACKS_BY_LABEL_SEND, fetchTracksByLabelSendSaga);
+	yield takeEvery(actionTypes.FETCH_TRACKS_BY_RELEASE_SEND, fetchTracksByReleaseSendSaga);
+}
+
+//===============================================================================================================//

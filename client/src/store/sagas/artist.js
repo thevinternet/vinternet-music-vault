@@ -16,8 +16,8 @@ export function* fetchArtistsSendSaga(action) {
         id: key
       });
     }
-    response.data.failure
-      ? yield put(actions.artistReturnFailure(response.data.failure))
+    response.data.error
+      ? yield put(actions.artistReturnFailure(response.data.error))
       : yield put(actions.fetchArtistsSuccess(fetchedArtists));
   } catch (error) {
     yield put(actions.artistReturnFailure(error.message));
@@ -30,12 +30,14 @@ export function* fetchArtistSendSaga(action) {
   yield put(actions.artistStartLoading());
   try {
     const response = yield axios.get("/api/artist/" + action.id);
-    if (response.data.failure) {
-      yield put(actions.artistReturnFailure(response.data.failure));
-    }
-    action.edit === true
+    if (response.data.error) {
+      yield put(actions.artistReturnFailure(response.data.error));
+    } 
+		else {
+			action.edit === true
       ? yield put(actions.editArtistClientPrep(response.data))
       : yield put(actions.fetchArtistSuccess(response.data));
+		}
   } catch (error) {
     yield put(actions.artistReturnFailure(error.message));
   }
@@ -52,7 +54,7 @@ export function* addArtistSendSaga(action) {
       : (response = yield axios.post("/api/artist/new/text", action.artist));
     response.data.success
       ? yield put(actions.addArtistSuccess(response.data.success))
-      : yield put(actions.artistReturnFailure(response.data.failure));
+      : yield put(actions.artistReturnFailure(response.data.error));
   } catch (error) {
     yield put(actions.artistReturnFailure(error.message));
   }
@@ -75,7 +77,7 @@ export function* updateArtistSendSaga(action) {
         ));
     response.data.success
       ? yield put(actions.updateArtistSuccess(response.data.success))
-      : yield put(actions.artistReturnFailure(response.data.failure));
+      : yield put(actions.artistReturnFailure(response.data.error));
   } catch (error) {
     yield put(actions.artistReturnFailure(error.message));
   }
@@ -89,7 +91,7 @@ export function* deleteArtistSendSaga(action) {
     const response = yield axios.delete("/api/artist/" + action.id);
     response.data.success
       ? yield put(actions.deleteArtistSuccess(response.data.success))
-      : yield put(actions.artistReturnFailure(response.data.failure));
+      : yield put(actions.artistReturnFailure(response.data.error));
   } catch (error) {
     yield put(actions.artistReturnFailure(error.message));
   }
