@@ -1,7 +1,6 @@
 import * as actionTypes from "../actions/actionTypes";
 import { updateObject } from "../../utilities/helpers";
 import { createReleaseForm } from "../../utilities/formHelpers/formBuilderRelease";
-import { createTrackForm } from "../../utilities/formHelpers/formBuilderTrack";
 import * as feBuilderRelease from "../../utilities/formHelpers/formElementBuilderRelease";
 import * as feBuilderGeneric from "../../utilities/formHelpers/formElementBuilderGeneric";
 
@@ -14,7 +13,9 @@ const initialState = {
   releaseForm: "",
   loading: false,
   error: null,
-  success: null
+  success: null,
+	response: null,
+	feedback: null
 };
 
 //===============================================================================================================//
@@ -26,11 +27,15 @@ const releaseStartLoading = (state, action) => {
 };
 
 const releaseReturnFailure = (state, action) => {
-  return updateObject(state, { error: action.error, loading: false });
+  return updateObject(state, { error: action.error.status, response: action.error.response, feedback: action.error.errors, loading: false });
 };
 
-const releaseResetReturnStatus = (state, action) => {
-  return updateObject(state, { error: null, success: null });
+const releaseResetStatus = (state, action) => {
+  return updateObject(state, { error: null, success: null, response: null, feedback: null });
+};
+
+const releaseResetResults = (state, action) => {
+  return updateObject(state, { releases: [], release: "" });
 };
 
 //===============================================================================================================//
@@ -67,7 +72,6 @@ const fetchReleasesByLabelSuccess = (state, action) => {
 
 //===============================================================================================================//
 
-
 // Add Release Reducer Functions
 
 const addReleaseClientPrep = (state, action) => {
@@ -76,7 +80,7 @@ const addReleaseClientPrep = (state, action) => {
 };
 
 const addReleaseSuccess = (state, action) => {
-  return updateObject(state, { success: action.success, loading: false });
+  return updateObject(state, { success: action.success.status, response: action.success.response, feedback: action.success.feedback, loading: false });
 };
 
 //===============================================================================================================//
@@ -85,44 +89,26 @@ const addReleaseSuccess = (state, action) => {
 
 const editReleaseClientPrep = (state, action) => {
 
+	const formType = { releaseForm : true }; 
 	const releaseTitle = feBuilderRelease.releaseTitleFormElement(action.release.title, "releaseTitle");
-
-	let releaseLabel = [];
-
-	action.release.label_name.length ?
-	releaseLabel = action.release.label_name.map(feBuilderRelease.releaseLabelFormElement) :
-	releaseLabel.push(feBuilderRelease.releaseLabelFormElement("", 0));
-	
+	const releaseLabel = { label : feBuilderRelease.releaseLabelForm(action.release.label_name) };	
 	const releaseCatalogue = feBuilderRelease.releaseCatalogueFormElement(action.release.catalogue, "catalogue");
-	
 	const releaseYear = feBuilderRelease.releaseYearFormElement(action.release.year, "releaseYear");
-
-	let releaseFormat = [];
-
-	action.release.format.length ?
-	releaseFormat = action.release.format.map(feBuilderRelease.releaseFormatFormElement) :
-	releaseFormat.push(feBuilderRelease.releaseFormatFormElement("", 0));
-
 	const releaseDiscogsId = feBuilderGeneric.discogsIdFormElement(action.release.discogs_id, "discogsId");
-
 	const releaseDiscogsUrl = feBuilderGeneric.discogsUrlFormElement(action.release.discogs_url, "discogsLink");
-
+	const releaseFormat = { formats : feBuilderRelease.releaseFormatForm(action.release.format) };
 	const releasePicture = action.release.picture.map(feBuilderGeneric.imageUploadFormElement);
 
-	const releaseTracks = { tracks: createTrackForm(action.release.track) };
-
-	//=========================================================//
-
-	const updatedReleaseForm = Object.assign({}, 
+	const updatedReleaseForm = Object.assign({},
+		formType,
 		releaseTitle,
-		...releaseLabel,
+		releaseLabel,
 		releaseCatalogue,
 		releaseYear,
-		...releaseFormat,
 		releaseDiscogsId,
 		releaseDiscogsUrl,
+		releaseFormat,
 		...releasePicture,
-		releaseTracks
 	);
 
   //=========================================================//
@@ -143,7 +129,7 @@ const editReleaseClientInput = (state, action) => {
 // Update Release Reducer Functions
 
 const updateReleaseSuccess = (state, action) => {
-  return updateObject(state, { success: action.success, loading: false });
+  return updateObject(state, { success: action.success.status, response: action.success.response, feedback: action.success.feedback, loading: false });
 };
 
 //===============================================================================================================//
@@ -151,7 +137,7 @@ const updateReleaseSuccess = (state, action) => {
 // Delete Release Reducer Functions
 
 const deleteReleaseSuccess = (state, action) => {
-  return updateObject(state, { success: action.success, loading: false });
+  return updateObject(state, { success: action.success.status, response: action.success.response, feedback: action.success.feedback, loading: false });
 };
 
 //===============================================================================================================//
@@ -162,8 +148,10 @@ const reducer = (state = initialState, action) => {
         return releaseStartLoading(state, action);
       case actionTypes.RELEASE_RETURN_FAILURE:
         return releaseReturnFailure(state, action);
-      case actionTypes.RELEASE_RESET_RETURN_STATUS:
-        return releaseResetReturnStatus(state, action);
+      case actionTypes.RELEASE_RESET_STATUS:
+        return releaseResetStatus(state, action);
+			case actionTypes.RELEASE_RESET_RESULTS:
+				return releaseResetResults(state, action);
       case actionTypes.FETCH_RELEASES_SUCCESS:
         return fetchReleasesSuccess(state, action);
       case actionTypes.FETCH_RELEASE_SUCCESS:

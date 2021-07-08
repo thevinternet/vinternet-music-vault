@@ -4,7 +4,6 @@ import { createLabelForm } from "../../utilities/formHelpers/formBuilderLabel";
 import * as feBuilderLabel from "../../utilities/formHelpers/formElementBuilderLabel";
 import * as feBuilderGeneric from "../../utilities/formHelpers/formElementBuilderGeneric";
 
-
 //===============================================================================================================//
 
 const initialState = {
@@ -13,7 +12,9 @@ const initialState = {
   labelForm: "",
   loading: false,
   error: null,
-  success: null
+  success: null,
+	response: null,
+	feedback: null
 };
 
 //===============================================================================================================//
@@ -25,16 +26,16 @@ const labelStartLoading = (state, action) => {
 };
 
 const labelReturnFailure = (state, action) => {
-  return updateObject(state, { error: action.error, loading: false });
+  return updateObject(state, { error: action.error.status, response: action.error.response, feedback: action.error.errors, loading: false });
 };
 
-const labelResetReturnStatus = (state, action) => {
-  return updateObject(state, { error: null, success: null });
+const labelResetStatus = (state, action) => {
+  return updateObject(state, { error: null, success: null, response: null, feedback: null });
 };
 
 //===============================================================================================================//
 
-// Fetch Label Reducer Functions
+// Fetch Labels Reducer Functions
 
 const fetchLabelsSuccess = (state, action) => {
   return updateObject(state, { labels: action.labels, loading: false });
@@ -58,7 +59,7 @@ const addLabelClientPrep = (state, action) => {
 };
 
 const addLabelSuccess = (state, action) => {
-  return updateObject(state, { success: action.success, loading: false });
+  return updateObject(state, { success: action.success.status, response: action.success.response, feedback: action.success.feedback, loading: false });
 };
 
 //===============================================================================================================//
@@ -67,38 +68,24 @@ const addLabelSuccess = (state, action) => {
 
 const editLabelClientPrep = (state, action) => {
 
-  const labelName = feBuilderLabel.labelNameFormElement(action.label.name, "labelName");
-
-	let parentLabel = [];
-
-	action.label.parent_label.length ?
-	parentLabel = action.label.parent_label.map(feBuilderLabel.parentLabelFormElement) :
-	parentLabel.push(feBuilderLabel.parentLabelFormElement("", 0));
-
-	let subsidiaryLabel = [];
-
-	action.label.subsidiary_label.length ?
-	subsidiaryLabel = action.label.subsidiary_label.map(feBuilderLabel.subsidiaryLabelFormElement) :
-	subsidiaryLabel.push(feBuilderLabel.subsidiaryLabelFormElement("", 0));
-
+	const formType = { labelForm : true }; 
+	const labelName = feBuilderLabel.labelNameFormElement(action.label.name, "labelName");
 	const labelProfile = feBuilderGeneric.profileFormElement(action.label.profile, "profile");
-
-	const labelWebsite = action.label.website.map(feBuilderGeneric.websiteFormElement);
-
-  const labelDiscogsId = feBuilderGeneric.discogsIdFormElement(action.label.discogs_id, "discogsId");
-	
+	const parentLabel = { parentLabel : feBuilderLabel.parentLabelForm(action.label.parent_label) };
+	const subsidiaryLabel = { subsidiaryLabels : feBuilderLabel.subsidiaryLabelForm(action.label.subsidiary_label) };
+	const labelWebsite = { websites : feBuilderLabel.websiteForm(action.label.website) };
 	const labelPicture = action.label.picture.map(feBuilderGeneric.imageUploadFormElement);
+  const labelDiscogsId = feBuilderGeneric.discogsIdFormElement(action.label.discogs_id, "discogsId");
 
-  //=========================================================//
-
-	const updatedLabelForm = Object.assign({}, 
+	const updatedLabelForm = Object.assign({},
+		formType, 
 		labelName,
-		...parentLabel,
-		...subsidiaryLabel,
 		labelProfile,
-		...labelWebsite,
-		labelDiscogsId,
-		...labelPicture
+		parentLabel,
+		subsidiaryLabel,		
+		labelWebsite,
+		...labelPicture,
+		labelDiscogsId
 	);
 
   return updateObject(state, {
@@ -117,7 +104,7 @@ const editLabelClientInput = (state, action) => {
 // Update Label Reducer Functions
 
 const updateLabelSuccess = (state, action) => {
-  return updateObject(state, { success: action.success, loading: false });
+  return updateObject(state, { success: action.success.status, response: action.success.response, feedback: action.success.feedback, loading: false });
 };
 
 //===============================================================================================================//
@@ -125,7 +112,7 @@ const updateLabelSuccess = (state, action) => {
 // Delete Label Reducer Functions
 
 const deleteLabelSuccess = (state, action) => {
-  return updateObject(state, { success: action.success, loading: false });
+  return updateObject(state, { success: action.success.status, response: action.success.response, feedback: action.success.feedback, loading: false });
 };
 
 //===============================================================================================================//
@@ -136,8 +123,8 @@ const reducer = (state = initialState, action) => {
       return labelStartLoading(state, action);
     case actionTypes.LABEL_RETURN_FAILURE:
       return labelReturnFailure(state, action);
-    case actionTypes.LABEL_RESET_RETURN_STATUS:
-      return labelResetReturnStatus(state, action);
+    case actionTypes.LABEL_RESET_STATUS:
+      return labelResetStatus(state, action);
     case actionTypes.FETCH_LABELS_SUCCESS:
       return fetchLabelsSuccess(state, action);
     case actionTypes.FETCH_LABEL_SUCCESS:

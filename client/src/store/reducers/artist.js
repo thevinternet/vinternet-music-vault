@@ -12,7 +12,9 @@ const initialState = {
   artistForm: "",
   loading: false,
   error: null,
-  success: null
+  success: null,
+	response: null,
+	feedback: null
 };
 
 //===============================================================================================================//
@@ -24,11 +26,11 @@ const artistStartLoading = (state, action) => {
 };
 
 const artistReturnFailure = (state, action) => {
-  return updateObject(state, { error: action.error, loading: false });
+  return updateObject(state, { error: action.error.status, response: action.error.response, feedback: action.error.errors, loading: false });
 };
 
-const artistResetReturnStatus = (state, action) => {
-  return updateObject(state, { error: null, success: null });
+const artistResetStatus = (state, action) => {
+  return updateObject(state, { error: null, success: null, response: null, feedback: null });
 };
 
 //===============================================================================================================//
@@ -57,7 +59,7 @@ const addArtistClientPrep = (state, action) => {
 };
 
 const addArtistSuccess = (state, action) => {
-  return updateObject(state, { success: action.success, loading: false });
+  return updateObject(state, { success: action.success.status, response: action.success.response, feedback: action.success.feedback, loading: false });
 };
 
 //===============================================================================================================//
@@ -66,34 +68,24 @@ const addArtistSuccess = (state, action) => {
 
 const editArtistClientPrep = (state, action) => {
 
+	const formType = { artistForm : true }; 
 	const artistName = feBuilderArtist.artistNameFormElement(action.artist.name, "artistName");
-	
   const realName = feBuilderArtist.realNameFormElement(action.artist.real_name, "realName");
-
-	let aliasName = [];
-
-	action.artist.alias_name.length ?
-	aliasName = action.artist.alias_name.map(feBuilderArtist.aliasNameFormElement) :
-	aliasName.push(feBuilderArtist.aliasNameFormElement("", 0));
-
 	const artistProfile = feBuilderGeneric.profileFormElement(action.artist.profile, "profile");
-
-	const artistWebsite = action.artist.website.map(feBuilderGeneric.websiteFormElement);
-
-  const artistDiscogsId = feBuilderGeneric.discogsIdFormElement(action.artist.discogs_id, "discogsId");
-	
+	const artistAlias = { aliasNames : feBuilderArtist.aliasNameForm(action.artist.alias_name) };
+	const artistWebsite = { websites : feBuilderArtist.websiteForm(action.artist.website) };
 	const artistPicture = action.artist.picture.map(feBuilderGeneric.imageUploadFormElement);
+	const artistDiscogsId = feBuilderGeneric.discogsIdFormElement(action.artist.discogs_id, "discogsId");
 
-  //=========================================================//
-
-	const updatedArtistForm = Object.assign({}, 
+	const updatedArtistForm = Object.assign({},
+		formType,
 		artistName,
 		realName,
-		...aliasName,
 		artistProfile,
-		...artistWebsite,
-		artistDiscogsId,
-		...artistPicture
+		artistAlias,
+		artistWebsite,
+		...artistPicture,
+		artistDiscogsId
 	);
 
   return updateObject(state, {
@@ -112,7 +104,7 @@ const editArtistClientInput = (state, action) => {
 // Update Artist Reducer Functions
 
 const updateArtistSuccess = (state, action) => {
-  return updateObject(state, { success: action.success, loading: false });
+  return updateObject(state, { success: action.success.status, response: action.success.response, feedback: action.success.feedback, loading: false });
 };
 
 //===============================================================================================================//
@@ -120,7 +112,7 @@ const updateArtistSuccess = (state, action) => {
 // Delete Artist Reducer Functions
 
 const deleteArtistSuccess = (state, action) => {
-  return updateObject(state, { success: action.success, loading: false });
+  return updateObject(state, { success: action.success.status, response: action.success.response, feedback: action.success.feedback, loading: false });
 };
 
 //===============================================================================================================//
@@ -131,8 +123,8 @@ const reducer = (state = initialState, action) => {
       return artistStartLoading(state, action);
     case actionTypes.ARTIST_RETURN_FAILURE:
       return artistReturnFailure(state, action);
-    case actionTypes.ARTIST_RESET_RETURN_STATUS:
-      return artistResetReturnStatus(state, action);
+    case actionTypes.ARTIST_RESET_STATUS:
+      return artistResetStatus(state, action);
     case actionTypes.FETCH_ARTISTS_SUCCESS:
       return fetchArtistsSuccess(state, action);
     case actionTypes.FETCH_ARTIST_SUCCESS:
