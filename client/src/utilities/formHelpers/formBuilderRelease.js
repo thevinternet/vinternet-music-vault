@@ -13,6 +13,7 @@ export const createReleaseForm = () => {
 
   //===============================================================================================================//
 
+	const formType = { releaseForm : true }
 	const releaseTitle = feBuilderRelease.releaseTitleFormElement("", "releaseTitle");
 	const releaseLabel = { label : feBuilderRelease.releaseLabelForm([]) };
 	const releaseCatalogue = feBuilderRelease.releaseCatalogueFormElement("", "catalogue");
@@ -25,6 +26,7 @@ export const createReleaseForm = () => {
   //===============================================================================================================//
 
   const releaseForm = Object.assign({},
+		formType,
     releaseTitle,
     releaseLabel,
     releaseCatalogue,

@@ -11,6 +11,7 @@ export const createTrackForm = (action) => {
 
 	action.forEach((track, trackIndex) => {
 
+		const formType = { trackForm : true }
 		const trackId = { trackId: { value : track._id || "" } };
 		const trackArtist = { artists : feBuilderTrack.trackArtistForm(track.artist_name) };
 		const trackTitle = feBuilderTrack.trackTitleFormElement(track.name, "trackTitle");
@@ -19,6 +20,7 @@ export const createTrackForm = (action) => {
 		const trackMixKey = feBuilderTrack.trackMixKeyFormElement(track.mixkey, "mixKey");
 
 		trackObj[trackIndex] = Object.assign({},
+			formType,
 			trackId,
 			trackArtist,
 			trackTitle,

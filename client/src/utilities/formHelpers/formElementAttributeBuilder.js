@@ -86,6 +86,7 @@ export const feReleaseFormatObject = () => {
 
 export const feTrackObject = (trackNumber = "") => {
 	return [{
+		trackForm : true,
 		track_number: trackNumber || 1,
 		artist_name: "",
 		title: "",

@@ -13,6 +13,7 @@ export const createLabelForm = () => {
 
   //===============================================================================================================//
 
+	const formType = { labelForm : true }
 	const labelName = feBuilderLabel.labelNameFormElement("", "labelName");
 	const profile = feBuilderGeneric.profileFormElement("", "profile");
   const parentLabel = { parentLabel : feBuilderLabel.parentLabelForm([]) };
@@ -24,6 +25,7 @@ export const createLabelForm = () => {
   //===============================================================================================================//
 
   const labelForm = Object.assign({},
+		formType,
 		labelName,
 		profile,
     parentLabel,

@@ -13,6 +13,7 @@ export const createArtistForm = () => {
 
   //===============================================================================================================//
 
+	const formType = { artistForm : true }
   const artistName = feBuilderArtist.artistNameFormElement("", "artistName");
 	const realName = feBuilderArtist.realNameFormElement("", "realName");
 	const profile = feBuilderGeneric.profileFormElement("", "profile");
@@ -24,6 +25,7 @@ export const createArtistForm = () => {
   //===============================================================================================================//
 
   const artistForm = Object.assign({},
+		formType,
     artistName,
 		realName,
 		profile,
