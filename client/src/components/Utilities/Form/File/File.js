@@ -7,8 +7,8 @@ import Auxiliary from "../../../../wrappers/Auxiliary/Auxiliary";
 //===============================================================================================================//
 
 const file = props => {
-  return (
-    <Auxiliary>
+	return (
+		<Auxiliary>
 			<fieldset>
 				<legend>Profile Image</legend>
 				<div className="card">
@@ -18,7 +18,6 @@ const file = props => {
 								src={
 									props.hasUpload
 										? props.imageUpload
-										//: require(`../../../../assets/images/${props.elementImage}`).default
 										: process.env.PUBLIC_URL + `/assets/images/${props.elementImage}`
 								}
 								alt={props.title}
@@ -43,8 +42,8 @@ const file = props => {
 					</div>
 				</div>
 			</fieldset>
-    </Auxiliary>
-  );
+		</Auxiliary>
+	);
 };
 
 //===============================================================================================================//

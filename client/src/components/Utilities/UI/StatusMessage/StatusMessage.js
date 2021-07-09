@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import ReactHtmlParser from 'react-html-parser';
+import he from "he";
 
 import "./StatusMessage.scss";
 
@@ -20,15 +20,15 @@ const StatusMessage = props => {
 			aria-live="polite"
 			role="status"
 		>
-			<h2>{ReactHtmlParser(props.headline)}</h2>
+			<h2>{he.decode(props.headline)}</h2>
 			{props.message.length ? (
 				<ul>
 					{props.message.map((message, index) =>
 						<li key={index}>
-							{ReactHtmlParser(`${message.msg} | value passed = '${message.value}'`)}
+							{he.decode(`${message.msg} | value passed = '${message.value}'`)}
 						</li>
 					)}
-					<li>{ReactHtmlParser(props.response)}</li>
+					<li>{he.decode(props.response)}</li>
 				</ul>
 			) : null }
 			<Button type={props.status} clicked={props.action} elmRef={statusMessageButton}>

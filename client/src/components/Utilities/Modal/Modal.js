@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import ReactHtmlParser from 'react-html-parser';
+import he from "he";
 
 import "./Modal.scss";
 
@@ -31,20 +31,20 @@ const Modal = props => {
 			>
 				<Auxiliary>
 					<div className={["status--highlight", ["theme--" + props.status]].join(" ")}>
-						<h2>{ReactHtmlParser(props.headline)}</h2>
+						<h2>{he.decode(props.headline)}</h2>
 						{props.message && props.message.length ? (
 							<ul>
 								{props.message.map((message, index) =>
 									<li key={index}>
-										{ReactHtmlParser(message.msg)}
+										{he.decode(message.msg)}
 									</li>
 								)}
 								<Auxiliary>
-									{ props.response ? <li>{ReactHtmlParser(props.response)}</li> : null }
+									{ props.response ? <li>{he.decode(props.response)}</li> : null }
 								</Auxiliary>
 							</ul>
 						)	: null }
-						{ props.bespokeText ? <p>{ ReactHtmlParser(props.bespokeText) }</p> : null }
+						{ props.bespokeText ? <p>{ he.decode(props.bespokeText) }</p> : null }
 					</div>
 					<Button type={props.status} clicked={props.action} elmRef={modalButton}>
 						{props.buttonText}
