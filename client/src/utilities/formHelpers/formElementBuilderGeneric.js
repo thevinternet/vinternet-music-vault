@@ -1,6 +1,7 @@
 //===============================================================================================================//
 
 import * as feAttrBuilder from './formElementAttributeBuilder.js';
+import he from "he";
 
 //===============================================================================================================//
 
@@ -9,7 +10,7 @@ export const profileFormElement = (action="", id) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "textarea", id, id),
 		feAttrBuilder.feLabelAttribute(id),
-		feAttrBuilder.feValueAttribute(action),
+		feAttrBuilder.feValueAttribute(he.decode(action)),
 		feAttrBuilder.feValidationTrueAttributes(action, true, "Please enter a profile summary")
 	);
 	return { [id] : profile }
@@ -19,8 +20,8 @@ export const websiteFormElement = (element, index) => {
 	const websiteName = Object.assign(
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", element._id || `website${index}`, `website`),
-		feAttrBuilder.feLabelAttribute(element.name || ""),
-		feAttrBuilder.feValueAttribute(element.url || ""),
+		feAttrBuilder.feLabelAttribute(he.decode(element.name) || ""),
+		feAttrBuilder.feValueAttribute(he.decode(element.url) || ""),
 		feAttrBuilder.feValidationFalseAttributes(false)
 	);
 	return websiteName;
@@ -31,7 +32,7 @@ export const discogsUrlFormElement = (action="", id) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", id, id),
 		feAttrBuilder.feLabelAttribute(id),
-		feAttrBuilder.feValueAttribute(action),
+		feAttrBuilder.feValueAttribute(he.decode(action)),
 		feAttrBuilder.feValidationFalseAttributes(false)
 	);
 	return { [id] : discogsUrl }
@@ -42,7 +43,7 @@ export const discogsIdFormElement = (action="", id) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", id, id),
 		feAttrBuilder.feLabelAttribute(id),
-		feAttrBuilder.feValueAttribute(action),
+		feAttrBuilder.feValueAttribute(he.decode(action)),
 		feAttrBuilder.feValidationFalseAttributes(false)
 	);
 	return { [id] : discogsId }

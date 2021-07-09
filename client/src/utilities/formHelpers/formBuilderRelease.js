@@ -1,5 +1,3 @@
-//===============================================================================================================//
-
 import { feReleaseFormatObject, feImageUploadObject } from './formElementAttributeBuilder.js'
 import * as feBuilderRelease from "./formElementBuilderRelease";
 import * as feBuilderGeneric from "./formElementBuilderGeneric";

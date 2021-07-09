@@ -1,5 +1,3 @@
-//===============================================================================================================//
-
 import { feWebsiteObject, feImageUploadObject } from './formElementAttributeBuilder.js'
 import * as feBuilderLabel from "./formElementBuilderLabel";
 import * as feBuilderGeneric from "./formElementBuilderGeneric";

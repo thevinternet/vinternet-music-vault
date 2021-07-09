@@ -1,7 +1,6 @@
-//===============================================================================================================//
-
 import * as feAttrBuilder from './formElementAttributeBuilder.js';
 import { websiteFormElement } from './formElementBuilderGeneric.js';
+import he from "he";
 
 //===============================================================================================================//
 
@@ -10,7 +9,7 @@ export const labelNameFormElement = (action="", id) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", id, id),
 		feAttrBuilder.feLabelAttribute(id),
-		feAttrBuilder.feValueAttribute(action),
+		feAttrBuilder.feValueAttribute(he.decode(action)),
 		feAttrBuilder.feValidationTrueAttributes(action, true, "Please enter the name of the label"),
 		feAttrBuilder.feFuzzySearchAttributes(id)
 	);
@@ -24,7 +23,7 @@ export const parentLabelFormElement = (element, index) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", element._id || "parentLabel", "parentLabel"),
 		feAttrBuilder.feLabelAttribute("parentLabel"),
-		feAttrBuilder.feValueAttribute(element.name || ""),
+		feAttrBuilder.feValueAttribute(element.name ? he.decode(element.name) : ""),
 		feAttrBuilder.feValidationFalseAttributes(false),
 		feAttrBuilder.feFuzzySearchAttributes(element._id || "parentLabel", element._id ? true : false)
 	);
@@ -48,7 +47,7 @@ export const subsidiaryLabelFormElement = (element, index) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", element._id || `subsidiaryLabel${index}`, `subsidiaryLabel`),
 		feAttrBuilder.feLabelAttribute("subsidiaryLabel"),
-		feAttrBuilder.feValueAttribute(element.name || ""),
+		feAttrBuilder.feValueAttribute(element.name ? he.decode(element.name) : ""),
 		feAttrBuilder.feValidationFalseAttributes(false),
 		feAttrBuilder.feFuzzySearchAttributes(element._id || `subsidiaryLabel${index}`)
 	);

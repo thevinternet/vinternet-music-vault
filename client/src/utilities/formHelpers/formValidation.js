@@ -1,22 +1,31 @@
+//===============================================================================================================//
+
+// Rules For Form Input Validity
+
 export const checkInputValidity = (value, rules) => {
-  let isValid = true;
+	let isValid = true;
 
-  if (rules) {
-    isValid = value.trim() !== "" && isValid;
-  }
+	// Input Is Not Empty
+	if (rules) {
+		isValid = value.trim() !== "" && isValid;
+	}
 
-  // if (rules.minLength) {
-  //   isValid = value.length >= rules.minLength && isValid;
-  // }
+	// Input Has Minimum Number Of Characters
+	// if (rules.minLength) {
+	//   isValid = value.length >= rules.minLength && isValid;
+	// }
 
-  // if (rules.maxLength) {
-  //   isValid = value.length <= rules.maxLength && isValid;
-  // }
+	// Input Does Not Exceed Maximum Number Of Characters
+	// if (rules.maxLength) {
+	//   isValid = value.length <= rules.maxLength && isValid;
+	// }
 
-  return isValid;
+	return isValid;
 };
 
 //===============================================================================================================//
+
+// Check Entire User Form Passes Input Validity Check
 
 export const checkFormValidity = (formObject) => {
 	let isValid = true;
@@ -35,3 +44,5 @@ export const checkFormValidity = (formObject) => {
 
 	return isValid;
 };
+
+//===============================================================================================================//

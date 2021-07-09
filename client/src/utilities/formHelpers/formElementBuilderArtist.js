@@ -1,7 +1,6 @@
-//===============================================================================================================//
-
 import * as feAttrBuilder from './formElementAttributeBuilder.js';
 import { websiteFormElement } from './formElementBuilderGeneric.js';
+import he from "he";
 
 //===============================================================================================================//
 
@@ -10,7 +9,7 @@ export const artistNameFormElement = (action="", id) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", id, id),
 		feAttrBuilder.feLabelAttribute(id),
-		feAttrBuilder.feValueAttribute(action),
+		feAttrBuilder.feValueAttribute(he.decode(action)),
 		feAttrBuilder.feValidationTrueAttributes(action, true, "Please enter the name of the artist"),
 		feAttrBuilder.feFuzzySearchAttributes(id)
 	);
@@ -24,7 +23,7 @@ export const realNameFormElement = (action="", id) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", id, id),
 		feAttrBuilder.feLabelAttribute(id),
-		feAttrBuilder.feValueAttribute(action),
+		feAttrBuilder.feValueAttribute(he.decode(action)),
 		feAttrBuilder.feValidationFalseAttributes(false)
 	);
 	return { [id] : realName }
@@ -37,7 +36,7 @@ export const aliasNameFormElement = (element, index) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", element._id || `aliasName${index}`, `aliasName`),
 		feAttrBuilder.feLabelAttribute("aliasName"),
-		feAttrBuilder.feValueAttribute(element.name || ""),
+		feAttrBuilder.feValueAttribute(element.name ? he.decode(element.name) : ""),
 		feAttrBuilder.feValidationFalseAttributes(false),
 		feAttrBuilder.feFuzzySearchAttributes(element._id || `aliasName${index}`)
 	);

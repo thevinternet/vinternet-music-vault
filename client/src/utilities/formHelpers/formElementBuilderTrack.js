@@ -1,6 +1,5 @@
-//===============================================================================================================//
-
 import * as feAttrBuilder from './formElementAttributeBuilder.js';
+import he from "he";
 
 //===============================================================================================================//
 
@@ -22,7 +21,7 @@ export const trackArtistFormElement = (element, index) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", `trackArtist${index}`, "trackArtist"),
 		feAttrBuilder.feLabelAttribute("artistName"),
-		feAttrBuilder.feValueAttribute(element.name || ""),
+		feAttrBuilder.feValueAttribute(element.name ? he.decode(element.name) : ""),
 		feAttrBuilder.feValidationTrueAttributes(element.name, true, "Please enter the name of the artist"),
 		feAttrBuilder.feFuzzySearchAttributes(element._id || `trackArtist${index}`, element._id ? true : false)
 	);
@@ -36,8 +35,6 @@ export const trackArtistForm = (action) => {
 	trackArtists = action.map(trackArtistFormElement) :
 	trackArtists.push(trackArtistFormElement("", 0));
 
-	//console.log(trackArtists);
-
 	return trackArtists;
 }
 
@@ -48,7 +45,7 @@ export const trackTitleFormElement = (action="", id) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", id, id),
 		feAttrBuilder.feLabelAttribute(id),
-		feAttrBuilder.feValueAttribute(action),
+		feAttrBuilder.feValueAttribute(he.decode(action)),
 		feAttrBuilder.feValidationTrueAttributes(action, true, "Please enter the title of the track"),
 	);
 	return { [id] : trackTitle }
@@ -61,7 +58,7 @@ export const trackGenreFormElement = (action="", id) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", id, id),
 		feAttrBuilder.feLabelAttribute(id),
-		feAttrBuilder.feValueAttribute(action),
+		feAttrBuilder.feValueAttribute(he.decode(action)),
 		feAttrBuilder.feValidationFalseAttributes(false)
 	);
 	return { [id] : trackGenre }
@@ -74,7 +71,7 @@ export const trackMixKeyFormElement = (action="", id) => {
 		{},
 		feAttrBuilder.feBaseAttributes("input", "text", id, id),
 		feAttrBuilder.feLabelAttribute(id),
-		feAttrBuilder.feValueAttribute(action),
+		feAttrBuilder.feValueAttribute(he.decode(action)),
 		feAttrBuilder.feValidationFalseAttributes(false)
 	);
 	return { [id] : trackMixKey }

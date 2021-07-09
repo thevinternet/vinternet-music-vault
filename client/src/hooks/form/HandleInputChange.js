@@ -16,9 +16,18 @@ const useHandleInputChange = () => {
 
 	const inputChangeHandler = useCallback((event, inputLocation, inputLocationString, baseState) => {
 		
-		const inputValue = event.target.value;
-		const updatedElement = updateElementValidation(inputLocation, inputValue);
 		let formIsValid = true;
+		let inputValue;
+
+		switch (event.target.type) {
+			case "checkbox":
+				event.target.checked ? inputValue = "yes" : inputValue = "no";
+			break;
+			default:
+				inputValue = event.target.value;
+		}
+
+		const updatedElement = updateElementValidation(inputLocation, inputValue);
 		
 		// Use Immer 'produce' helper for immutable object creation
 		// Use Lodash 'set' helper to set object references from a string
