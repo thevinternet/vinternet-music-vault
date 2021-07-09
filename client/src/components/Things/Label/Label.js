@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ReactHtmlParser from 'react-html-parser';
+import he from "he";
 
 import "./Label.scss";
 
@@ -13,19 +13,19 @@ const label = props => {
 		<Auxiliary>
 			<div className="profile__picture">
 				<img
-					key={ReactHtmlParser(props.labelName)}
+					key={he.decode(props.labelName)}
 					src={props.picture.map(picture =>
 						picture.location
 							? process.env.PUBLIC_URL + `/assets/images/labels/${picture.location}`
 							: process.env.PUBLIC_URL + "/assets/images/labels/avatar.jpg"
 					)}
-					alt={ReactHtmlParser(props.labelName)}
+					alt={he.decode(props.labelName)}
 					height="200px"
 					width="200px"
 				/>
 			</div>
 			<div className="profile__details">
-				<h1>{ReactHtmlParser(props.labelName)}</h1>
+				<h1>{he.decode(props.labelName)}</h1>
 				{props.parentLabel.length || props.subsidiaryLabel.length ? (
 					<dl>
 						{props.parentLabel.length ? (
@@ -34,7 +34,7 @@ const label = props => {
 								<dd>
 									{props.parentLabel.map(parent => (
 										<Link key={parent._id} to={`/labels/${parent._id}`}>
-											{ReactHtmlParser(parent.name)}
+											{he.decode(parent.name)}
 										</Link>
 									))}
 								</dd>
@@ -48,13 +48,13 @@ const label = props => {
 										arr.length - 1 === index ? (
 											<span key={subsidiary.name}>
 												<Link to={`/labels/${subsidiary._id}`}>
-													{ReactHtmlParser(subsidiary.name)}
+													{he.decode(subsidiary.name)}
 												</Link>
 											</span>
 										) : (
 											<span key={subsidiary.name}>
 												<Link to={`/labels/${subsidiary._id}`}>
-													{ReactHtmlParser(subsidiary.name)}
+													{he.decode(subsidiary.name)}
 												</Link>
 												,{" "}
 											</span>
@@ -66,20 +66,20 @@ const label = props => {
 					</dl>
 				) : null}
 				<h2>Profile</h2>
-				<p>{ReactHtmlParser(props.profile)}</p>
+				<p>{he.decode(props.profile)}</p>
 				{props.website.length ? (
 					<Auxiliary>
 						<h3>Websites</h3>
 						<ul>
 							{props.website.map(site =>
 								site.url ? (
-									<li key={ReactHtmlParser(site.name)}>
+									<li key={he.decode(site.name)}>
 										<a
-											href={ReactHtmlParser(site.url)}
+											href={he.decode(site.url)}
 											target="_blank"
 											rel="noopener noreferrer"
 										>
-											{ReactHtmlParser(site.name)}
+											{he.decode(site.name)}
 										</a>
 									</li>
 								) : null
@@ -89,7 +89,7 @@ const label = props => {
 				) : null}
 				<div className="profile__actions">
 					<Link
-						to={{ pathname: "/labels/" + props.labelId + "/edit" }}
+						to={{ pathname: `/labels/${props.labelId}/edit` }}
 						className="btn btn--primary"
 					>
 						Edit Label

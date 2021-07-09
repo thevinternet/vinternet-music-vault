@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ReactHtmlParser from 'react-html-parser';
+import he from "he";
 
 import "./ArtistListItem.scss";
 
@@ -13,13 +13,13 @@ const artistListItem = props => {
 				<figure>
 					<picture>
 						<img
-							key={ReactHtmlParser(props.artistName)}
+							key={he.decode(props.artistName)}
 							src={props.picture.map(picture =>
 								picture.location
 									? process.env.PUBLIC_URL + `/assets/images/artists/${picture.location}`
 									: process.env.PUBLIC_URL + "/assets/images/artists/avatar.jpg"
 							)}
-							alt={ReactHtmlParser(props.artistName)}
+							alt={he.decode(props.artistName)}
 							width="60px"
 							height="60px"
 						/>
@@ -27,8 +27,8 @@ const artistListItem = props => {
 				</figure>
 				<div className="card__details">
 					<h2>
-						<Link to={{ pathname: "/artists/" + props.artistId }}>
-							{ReactHtmlParser(props.artistName)}
+						<Link to={{ pathname: `/artists/${props.artistId}` }}>
+							{he.decode(props.artistName)}
 						</Link>
 					</h2>
 				</div>

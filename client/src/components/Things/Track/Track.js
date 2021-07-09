@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ReactHtmlParser from 'react-html-parser';
+import he from "he";
 
 import "./Track.scss";
 
@@ -13,7 +13,7 @@ const track = props => {
     <Auxiliary>
       <div className="profile__picture">
         <img
-					key={ReactHtmlParser(props.trackName)}
+					key={he.decode(props.trackName)}
 					src={props.trackPicture.map(pictures =>
 						pictures.picture.map(picture =>
 							picture.location
@@ -21,13 +21,13 @@ const track = props => {
 								: process.env.PUBLIC_URL + "/assets/images/releases/avatar.jpg"
 						)
           )}
-          alt={ReactHtmlParser(props.trackName)}
+          alt={he.decode(props.trackName)}
           height="200px"
           width="200px"
         />
       </div>
       <div className="profile__details">
-        <h1>{ReactHtmlParser(props.trackName)}</h1>
+        <h1>{he.decode(props.trackName)}</h1>
         <dl>
           {props.trackArtist.length ? (
             <Auxiliary>
@@ -35,15 +35,15 @@ const track = props => {
               <dd>
                 {props.trackArtist.map((artist, index, array) =>
                   array.length - 1 === index ? (
-                    <span key={ReactHtmlParser(artist.name)}>
+                    <span key={he.decode(artist.name)}>
                       <Link to={`/artists/${artist._id}`}>
-                        {ReactHtmlParser(artist.name)}
+                        {he.decode(artist.name)}
                       </Link>
                     </span>
                   ) : (
-                    <span key={ReactHtmlParser(artist.name)}>
+                    <span key={he.decode(artist.name)}>
                       <Link to={`/artists/${artist._id}`}>
-                        {ReactHtmlParser(artist.name)}
+                        {he.decode(artist.name)}
                       </Link>
                       ,{" "}
                     </span>
@@ -57,8 +57,8 @@ const track = props => {
               <dt>Label</dt>
               <dd>
                 {props.trackLabel.map((label) =>
-                  <Link key={ReactHtmlParser(label.name)} to={`/labels/${label._id}`}>
-                    {ReactHtmlParser(label.name)}
+                  <Link key={he.decode(label.name)} to={`/labels/${label._id}`}>
+                    {he.decode(label.name)}
                   </Link>
                 )}
               </dd>
@@ -70,7 +70,7 @@ const track = props => {
               <dd>
                 {props.trackCat.map((catalogue) =>
                   <Link key={catalogue.catalogue_id} to={`/releases/${catalogue._id}`}>
-										{ReactHtmlParser(catalogue.catalogue)}
+										{he.decode(catalogue.catalogue)}
 									</Link>
 								)}
               </dd>
@@ -78,9 +78,9 @@ const track = props => {
           ) : null}
 					<Auxiliary>
 						<dt>Genre</dt>
-						<dd>{ReactHtmlParser(props.trackGenre)}</dd>
+						<dd>{he.decode(props.trackGenre)}</dd>
 						<dt>Key</dt>
-						<dd>{ReactHtmlParser(props.trackMixkey)}</dd>
+						<dd>{he.decode(props.trackMixkey)}</dd>
 					</Auxiliary>
         </dl>
       </div>

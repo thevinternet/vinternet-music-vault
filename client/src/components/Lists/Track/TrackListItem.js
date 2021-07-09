@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ReactHtmlParser from 'react-html-parser';
+import he from "he";
 
 import "./TrackListItem.scss";
 
@@ -15,7 +15,7 @@ const trackListItem = props => {
 				<figure>
 					<picture>
 						<img
-							key={ReactHtmlParser(props.trackName)}
+							key={he.decode(props.trackName)}
 							src={props.trackPicture.map(pictures =>
 								pictures.picture.map(picture =>
 									picture.location
@@ -23,7 +23,7 @@ const trackListItem = props => {
 										: process.env.PUBLIC_URL + "/assets/images/releases/avatar.jpg"
 								)
 							)}
-							alt={ReactHtmlParser(props.trackName)}
+							alt={he.decode(props.trackName)}
 							width="60px"
 							height="60px"
 						/>
@@ -31,42 +31,42 @@ const trackListItem = props => {
 				</figure>
 				<div className="card__details">
 					<h2>
-						{props.trackArtist.map((artist, index, array) =>
+						{ props.trackArtist.map((artist, index, array) =>
 							array.length - 1 === index ? (
 								<span key={artist._id}>
 									<Link to={`/artists/${artist._id}`}>
-										{ReactHtmlParser(artist.name)}
+										{he.decode(artist.name)}
 									</Link>
 									{" - "}
 								</span>
 							) : (
 								<span key={artist._id}>
 									<Link to={`/artists/${artist._id}`}>
-										{ReactHtmlParser(artist.name)}
+										{he.decode(artist.name)}
 									</Link>
 									{" & "}
 								</span>
 							)
-						)}
-						<Link to={{ pathname: "/tracks/" + props.trackId }}>
-							{ReactHtmlParser(props.trackName)}
+						) }
+						<Link to={`/tracks/${props.trackId}`}>
+							{he.decode(props.trackName)}
 						</Link>
 					</h2>
-					{props.trackCat.length ? (
+					{ props.trackCat.length ? (
 						<Auxiliary>
 							<ul className="details--inline">
-								{props.trackCat.map((catalogue) =>
+								{ props.trackCat.map((catalogue) =>
 									<li key={catalogue._id}>
 										<span>
 											<Link to={`/releases/${catalogue._id}`}>
-												{ReactHtmlParser(catalogue.catalogue)}
+												{he.decode(catalogue.catalogue)}
 											</Link>
 										</span>
 									</li>
-								)}
+								) }
 							</ul>
 						</Auxiliary>
-					) : null}
+					) : null }
 				</div>
 			</div>
 		</li>

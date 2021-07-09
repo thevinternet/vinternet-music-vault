@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ReactHtmlParser from 'react-html-parser';
+import he from "he";
 
 import "./Release.scss";
 
@@ -13,19 +13,19 @@ const release = props => {
 		<Auxiliary>
 			<div className="profile__picture">
 				<img
-					key={ReactHtmlParser(props.releaseTitle)}
+					key={he.decode(props.releaseTitle)}
 					src={props.releasePicture.map(picture =>
 						picture.location
 							? process.env.PUBLIC_URL + `/assets/images/releases/${picture.location}`
 							: process.env.PUBLIC_URL + "/assets/images/releases/avatar.jpg"
 					)}
-					alt={ReactHtmlParser(props.releaseTitle)}
+					alt={he.decode(props.releaseTitle)}
 					height="200px"
 					width="200px"
 				/>
 			</div>
 			<div className="profile__details">
-				<h1>{ReactHtmlParser(props.releaseTitle)}</h1>
+				<h1>{he.decode(props.releaseTitle)}</h1>
 				<dl>
 					{props.releaseArtist.length ? (
 						<Auxiliary>
@@ -33,15 +33,15 @@ const release = props => {
 							<dd>
 								{props.releaseArtist.map((artist, index, arr) =>
 									arr.length - 1 === index ? (
-										<span key={ReactHtmlParser(artist.name) + index}>
-											<Link to={`/artists/${artist.id}`}>
-												{ReactHtmlParser(artist.name)}
+										<span key={he.decode(artist.name) + index}>
+											<Link to={`/artists/${artist._id}`}>
+												{he.decode(artist.name)}
 											</Link>
 										</span>
 									) : (
-										<span key={ReactHtmlParser(artist.name) + index}>
-											<Link to={`/artists/${artist.id}`}>
-												{ReactHtmlParser(artist.name)}
+										<span key={he.decode(artist.name) + index}>
+											<Link to={`/artists/${artist._id}`}>
+												{he.decode(artist.name)}
 											</Link>
 											,{" "}
 										</span>
@@ -55,15 +55,15 @@ const release = props => {
 							<dt>Label</dt>
 							<dd>
 								{props.releaseLabel.map((label, index, arr) =>
-									<Link key={ReactHtmlParser(label.name)} to={`/labels/${label._id}`}>
-										{ReactHtmlParser(label.name)}
+									<Link key={he.decode(label.name)} to={`/labels/${label._id}`}>
+										{he.decode(label.name)}
 									</Link>
 								)}
 							</dd>
 							<dt>Catalogue</dt>
-							<dd>{ReactHtmlParser(props.releaseCat)}</dd>
+							<dd>{he.decode(props.releaseCat)}</dd>
 							<dt>Year</dt>
-							<dd>{ReactHtmlParser(props.releaseYear)}</dd>
+							<dd>{props.releaseYear}</dd>
 						</Auxiliary>
 					) : null }
 					{props.releaseFormat.length ? (
@@ -71,15 +71,17 @@ const release = props => {
 							<dt>Format</dt>
 							<dd>
 								{props.releaseFormat.map((format, index, arr) =>
-									arr.length - 1 === index ? (
-										<span key={ReactHtmlParser(format)}>
-											{ReactHtmlParser(format)}
-										</span>
-									) : (
-										<span key={ReactHtmlParser(format)}>
-											{ReactHtmlParser(format)}{", "}
-										</span>
-									)
+									format.released === "yes" ? (
+										arr.length - 1 === index ? (
+											<span key={he.decode(format.name)}>
+												{he.decode(format.name)}
+											</span>
+										) : (
+											<span key={he.decode(format.name)}>
+												{he.decode(format.name)}{", "}
+											</span>
+										)
+									) : null
 								)}
 							</dd>
 						</Auxiliary>
@@ -88,7 +90,7 @@ const release = props => {
 						<Auxiliary>
 							<dt>Reference Website</dt>
 							<dd>
-								<a href={ReactHtmlParser(props.releaseLink)} target="_blank" rel="noopener noreferrer">Discogs</a>
+								<a href={he.decode(props.releaseLink)} target="_blank" rel="noopener noreferrer">Discogs</a>
 							</dd>
 						</Auxiliary>
 					) : null }
@@ -97,7 +99,7 @@ const release = props => {
 				{props.releaseTracks.length ? (
 					<ol className={"list--block"}>
 						{props.releaseTracks.map((track, index) =>
-							<li key={ReactHtmlParser(track.name)}>
+							<li key={he.decode(track.name)}>
 								<div className="card--small">
 									<figure>
 										<picture>
@@ -107,7 +109,7 @@ const release = props => {
 														? process.env.PUBLIC_URL + `/assets/images/releases/${picture.location}`
 														: process.env.PUBLIC_URL + "/assets/images/releases/avatar.jpg"
 												)}
-												alt={ReactHtmlParser(track.track_number)}
+												alt={track.track_number}
 												width="60px"
 												height="60px"
 											/>
@@ -117,31 +119,33 @@ const release = props => {
 										<h2>
 											{track.artist_name.map((artist, index, array) =>
 												array.length - 1 === index ? (
-													<span key={ReactHtmlParser(artist.name)}>
-														{ReactHtmlParser(artist.name)}
+													<span key={he.decode(artist.name)}>
+														{he.decode(artist.name)}
 													</span>
 												) : (
-													<span key={ReactHtmlParser(artist.name)}>
-														{ReactHtmlParser(artist.name)}{" & "}
+													<span key={he.decode(artist.name)}>
+														{he.decode(artist.name)}{" & "}
 													</span>
 												)
 											)}
-											{" - "}{ReactHtmlParser(track.name)}
+											{" - "}{he.decode(track.name)}
 										</h2>
 										<ul className="details--inline">
-											<li><strong>Track:</strong> {ReactHtmlParser(track.track_number)}</li>
-											<li><strong>Genre:</strong> {ReactHtmlParser(track.genre)}</li>
-											<li><strong>Key:</strong> {ReactHtmlParser(track.mixkey)}</li>
+											<li><strong>Track:</strong> {track.track_number}</li>
+											<li><strong>Genre:</strong> {he.decode(track.genre)}</li>
+											<li><strong>Key:</strong> {he.decode(track.mixkey)}</li>
 										</ul>
 									</div>
 								</div>
 							</li>
 						)}
 					</ol>
-				) : null }
+				) : (
+					<p className="list--block">There are currently no tracks associated with this release.</p>
+				)}
 				<div className="profile__actions">
 					<Link
-						to={{ pathname: "/releases/" + props.releaseId + "/edit" }}
+						to={{ pathname: `/releases/${props.releaseId}/edit` }}
 						className="btn btn--primary"
 					>
 						Edit Release

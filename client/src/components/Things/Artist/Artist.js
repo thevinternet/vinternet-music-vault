@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ReactHtmlParser from 'react-html-parser';
+import he from "he";
 
 import "./Artist.scss";
 
@@ -13,25 +13,25 @@ const artist = props => {
 		<Auxiliary>
 			<div className="profile__picture">
 				<img
-					key={ReactHtmlParser(props.artistName)}
+					key={he.decode(props.artistName)}
 					src={props.picture.map(picture =>
 						picture.location
 						? process.env.PUBLIC_URL + `/assets/images/artists/${picture.location}`
 						: process.env.PUBLIC_URL + "/assets/images/artists/avatar.jpg"
 					)}
-					alt={ReactHtmlParser(props.artistName)}
+					alt={he.decode(props.artistName)}
 					height="200px"
 					width="200px"
 				/>
 			</div>
 			<div className="profile__details">
-				<h1>{ReactHtmlParser(props.artistName)}</h1>
+				<h1>{he.decode(props.artistName)}</h1>
 				{props.realName || props.aliasName.length ? (
 					<dl>
 						{props.realName ? (
 							<Auxiliary>
 								<dt>Real Name</dt>
-								<dd>{ReactHtmlParser(props.realName)}</dd>
+								<dd>{he.decode(props.realName)}</dd>
 							</Auxiliary>
 						) : null }
 						{props.aliasName.length ? (
@@ -40,15 +40,15 @@ const artist = props => {
 								<dd>
 									{props.aliasName.map((alias, index, arr) =>
 										arr.length - 1 === index ? (
-											<span key={ReactHtmlParser(alias.name)}>
+											<span key={he.decode(alias.name)}>
 												<Link to={`/artists/${alias._id}`}>
-													{ReactHtmlParser(alias.name)}
+													{he.decode(alias.name)}
 												</Link>
 											</span>
 										) : (
-											<span key={ReactHtmlParser(alias.name)}>
+											<span key={he.decode(alias.name)}>
 												<Link to={`/artists/${alias._id}`}>
-													{ReactHtmlParser(alias.name)}
+													{he.decode(alias.name)}
 												</Link>
 												,{" "}
 											</span>
@@ -60,20 +60,20 @@ const artist = props => {
 					</dl>
 				) : null }
 				<h2>Profile</h2>
-				<p>{ReactHtmlParser(props.profile)}</p>
+				<p>{he.decode(props.profile)}</p>
 				{props.website.length ? (
 					<Auxiliary>
 						<h3>Websites</h3>
 						<ul>
 							{props.website.map(site =>
 								site.url ? (
-									<li key={ReactHtmlParser(site.name)}>
+									<li key={he.decode(site.name)}>
 										<a
-											href={ReactHtmlParser(site.url)}
+											href={he.decode(site.url)}
 											target="_blank"
 											rel="noopener noreferrer"
 										>
-											{ReactHtmlParser(site.name)}
+											{he.decode(site.name)}
 										</a>
 									</li>
 								) : null
@@ -83,7 +83,7 @@ const artist = props => {
 				) : null }
 				<div className="profile__actions">
 					<Link
-						to={{ pathname: "/artists/" + props.artistId + "/edit" }}
+						to={{ pathname: `/artists/${props.artistId}/edit` }}
 						className="btn btn--primary"
 					>
 						Edit Artist
