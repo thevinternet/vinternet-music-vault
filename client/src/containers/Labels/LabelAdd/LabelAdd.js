@@ -1,6 +1,5 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import Fuse from "fuse.js";
 
 import "./LabelAdd.scss";
 
@@ -9,439 +8,465 @@ import Auxiliary from "../../../wrappers/Auxiliary/Auxiliary";
 import Input from "../../../components/Utilities/Form/Input/Input";
 import FileInput from "../../../components/Utilities/Form/File/File";
 import FuzzyInput from "../../../components/Utilities/Form/FuzzyInput/FuzzyInput";
+import FuzzyInputDelete from "../../../components/Utilities/Form/FuzzyInput/FuzzyInputDelete";
 
 import Button from "../../../components/Utilities/UI/Button/Button";
 import Loader from "../../../components/Utilities/UI/Loader/Loader";
 import StatusMessage from "../../../components/Utilities/UI/StatusMessage/StatusMessage";
 
-import { updateObject } from "../../../utilities/helpers";
-import { checkValidity } from "../../../utilities/formHelpers/formValidation";
+import * as objBuilderLabel from "../../../utilities/objectHelpers/objectBuilderLabel"
+import { dropdownDatalistSetup } from "../../../utilities/formHelpers/formFuzzyDropdown";
+
+import useHandleInputChange from "../../../hooks/form/HandleInputChange";
+import useHandleFuzzyInputChange from "../../../hooks/form/HandleFuzzyInputChange";
+import useHandleInputAddition from "../../../hooks/form/HandleInputAddition";
+import useHandleInputDeletion from "../../../hooks/form/HandleInputDeletion";
+import useHandleDropdownItemSelect from "../../../hooks/form/HandleDropdownItemSelect";
 
 import * as labelActions from "../../../store/actions/index";
 
 //===============================================================================================================//
 
-class LabelAdd extends Component {
-  state = {
-    avatar: "labels/avatar.jpg",
-    avatarName: "No file(s) selected",
-    avatarFile: "",
-    formIsValid: false,
-    dataListId: "",
-    defaultFuseConfigs: {
-      shouldSort: true,
-      threshold: 0,
-			ignoreLocation: true,
-			minMatchCharLength: 3,
-      keys: ["name"]
-    }
-  };
+const LabelAdd = props => {
 
-  //===============================================================================================================//
+	//===============================================================================================================//
+	// Set Up Component STATE & Initialise HOOKS
+	//===============================================================================================================//
 
-  componentDidMount() {
-    this.props.onCreateLabelForm();
-    this.props.onFetchLabels();
-  }
+	const [getAvatar, setAvatar] = useState("labels/avatar.jpg");
+	const [getAvatarName, setAvatarName] = useState("No file(s) selected");
+	const [getAvatarFile, setAvatarFile] = useState("");
+	const [getFormIsValid, setFormIsValid] = useState(false);
 
-  componentDidUpdate() {
-    this.fuse = new Fuse(this.props.stateLabels, this.state.defaultFuseConfigs);
-    if (this.state.dataListId) {
-      this.dropdownDatalistSetup(this.state.dataListId);
-    }
-  }
+	const { onCreateLabelForm, onFetchLabels, onEditLocalLabel, stateSuccess, history } = props;
+	const { updatedFormStd, formIsValidStd, inputChangeHandler } = useHandleInputChange();
+	const { updatedFormFzy, formIsValidFzy, dataListIdFzy, fuzzyInputChangeHandler } = useHandleFuzzyInputChange();
+	const { updatedFormAdd, inputAddHandler } = useHandleInputAddition();
+	const { updatedFormDel, inputDeleteHandler } = useHandleInputDeletion();
+	const { updatedFormDds, dropdownItemSelectHandler } = useHandleDropdownItemSelect();
+	
+	//===============================================================================================================//
+	// Setup useEffect Functions
+	//===============================================================================================================//
 
-  //===============================================================================================================//
+	useEffect(() => {
+		console.log("Initial Get Labels & Create Form Effect Running!");
+		onCreateLabelForm();
+		onFetchLabels();
+	}, [onCreateLabelForm, onFetchLabels]);
 
-  labelCreateHandler = event => {
-    event.preventDefault();
+	//===============================================================================================================//
 
-    const labelDataArray = Object.values(this.props.stateLabelForm);
-    const labelDataObject = {};
-    labelDataObject["parentLabel"] = [];
-    labelDataObject["subsidiaryLabel"] = [];
-    labelDataObject["website"] = [];
+	useEffect(() => {
+		console.log("Standard Input Effect Initialised!");
+		if (updatedFormStd) {
+			console.log("Handle Standard Input Effect Running!");
+			setFormIsValid(formIsValidStd);
+			onEditLocalLabel(updatedFormStd);
+		}
+	}, [formIsValidStd, updatedFormStd, onEditLocalLabel]);
 
-    labelDataArray.forEach(function(element) {
-      if (element.elementAttr.name === "parentLabel") {
-        element.linkedRecord
-          ? labelDataObject.parentLabel.push({ _id: element.id })
-          : labelDataObject.parentLabel.push({ name: element.value });
-      } else if (element.elementAttr.name === "subsidiaryLabel") {
-        element.linkedRecord
-          ? labelDataObject.subsidiaryLabel.push({ _id: element.id })
-          : labelDataObject.subsidiaryLabel.push({ name: element.value });
-      } else if (element.elementAttr.name === "website") {
-        labelDataObject.website.push({
-          name: element.label,
-          url: element.value
-        });
-      } else {
-        labelDataObject[element.elementAttr.name] = element.value;
-      }
-    });
+	//===============================================================================================================//
 
-    const labelId = this.props.stateLabel._id;
-    let newLabelData;
-    let fileFlag;
+	useEffect(() => {
+		console.log("Fuzzy Input Effect Initialised!");
+		if (updatedFormFzy && dataListIdFzy) {
+			console.log("Handle Fuzzy Input Effect Running!");
+			dropdownDatalistSetup(dataListIdFzy);
+			setFormIsValid(formIsValidFzy);
+			onEditLocalLabel(updatedFormFzy);
+		}
+	}, [dataListIdFzy, formIsValidFzy, updatedFormFzy, onEditLocalLabel]);
 
-    if (this.state.avatarFile) {
-      fileFlag = true;
-      let labelData = JSON.stringify(labelDataObject);
+	//===============================================================================================================//
 
-      newLabelData = new FormData();
-      newLabelData.append("id", labelId);
-      newLabelData.append("image", this.state.avatarFile);
-      newLabelData.append("label", labelData);
-    } else {
-      fileFlag = false;
-      newLabelData = {
-        id: labelId,
-        label: labelDataObject
-      };
-    }
+	useEffect(() => {
+		console.log("Add / Delete / DropDown Effect Initialised!");
+		if (updatedFormAdd) {
+			console.log("Handle Add Input Effect Running!");
+			onEditLocalLabel(updatedFormAdd); 
+		}
+		if (updatedFormDel) {
+			console.log("Handle Delete Input Effect Running!");
+			onEditLocalLabel(updatedFormDel); 
+		}
+		if (updatedFormDds) {
+			console.log("Handle Fuzzy DropDown Select Effect Running!");
+			onEditLocalLabel(updatedFormDds); 
+		}
+	}, [updatedFormAdd, updatedFormDel, updatedFormDds, onEditLocalLabel]);
 
-		console.log(newLabelData);
-		console.log(fileFlag);
+	//===============================================================================================================//
 
-    // this.props.onAddLabel(newLabelData, fileFlag);
-    // this.props.history.replace({ pathname: "/labels" });
-  };
+	useEffect(() => {
+		console.log("POST Form Effect Initialised!");
+		if (stateSuccess !== null) {
+			console.log("Successful POST Effect Running!");
+			history.push({ pathname: "/labels/" });
+		}
+	}, [stateSuccess, history]);
 
-  //===============================================================================================================//
+	//===============================================================================================================//
+	// Create & Handle Form Submission Object
+	//===============================================================================================================//
 
-  inputChangeHandler = (event, inputIdentifier) => {
-    const updatedLabelElement = updateObject(
-      this.props.stateLabelForm[inputIdentifier],
-      {
-        value: event.target.value,
-        valid: checkValidity(
-          event.target.value,
-          this.props.stateLabelForm[inputIdentifier].validationRequired
-        ),
-        touched: true
-      }
-    );
+	const labelCreateHandler = event => {
+		event.preventDefault();
+		
+		const labelDataObject = objBuilderLabel.baseLabelObject();
+		let fileFlag = false;
 
-    const updatedLabelForm = updateObject(this.props.stateLabelForm, {
-      [inputIdentifier]: updatedLabelElement
-    });
+		const labelDataMap = new Map(Object.entries(props.stateLabelForm));
+		//console.log(labelDataMap);
 
-    let formIsValid = true;
-    for (let inputIdentifier in updatedLabelForm) {
-      formIsValid = updatedLabelForm[inputIdentifier].valid && formIsValid;
-    }
+		labelDataMap.forEach(function(value, key) {
+			switch (key) {
+				case "parentLabel":
+					value.forEach(function(element) {
+						element.linkedRecord ?
+						labelDataObject.parentLabel.push({ _id: element.fuzzyRef }) :
+						labelDataObject.parentLabel.push({ name: element.value });
+					});
+				break;
+				case "subsidiaryLabels": 
+					value.forEach(function(element) {
+						element.linkedRecord ?
+						labelDataObject.subsidiaryLabel.push({ _id: element.fuzzyRef }) :
+						labelDataObject.subsidiaryLabel.push({ name: element.value });
+					});
+				break;
+				case "websites":
+					value.forEach(function(element) {
+						labelDataObject.website.push({
+							name: element.label,
+							url: element.value
+						});
+					});
+				break;
+				default : 
+					labelDataObject[key] = value.value;		
+			}
+		});
 
-    updatedLabelForm[inputIdentifier] = updatedLabelElement;
-    this.setState({
-      formIsValid: formIsValid
-    });
+		const labelData = { label: labelDataObject };
+		let newLabelData = labelData;
 
-    this.props.onEditLocalLabel(updatedLabelForm);
-  };
+		if (getAvatarFile) { 
+			newLabelData = new FormData();
+			newLabelData.append("image", getAvatarFile);
+			newLabelData.append("label", JSON.stringify(labelData));
+			fileFlag = true;
+		}
 
-  //===============================================================================================================//
+		//console.log(newLabelData)
+		props.onAddLabel(newLabelData, fileFlag);
+	};
 
-  imageUploadPreviewHandler = event => {
-    this.setState({
-      avatar: URL.createObjectURL(event.target.files[0]),
-      avatarName: event.target.files[0].name,
-      avatarFile: event.target.files[0]
-    });
-  };
+	//===============================================================================================================//
+	// Prepare HTML Form Using Processed LabelForm Object Array From Redux Store
+	//===============================================================================================================//
 
-  //===============================================================================================================//
+	const labelFormRender = (arrayElement, arrayIndex) => {
+		switch (arrayElement.id) {
+			case "labelForm":
+				break;
+			case "imageUpload": 
+				return <FileInput
+					key={arrayIndex}
+					elementAttributes={arrayElement.attributes}
+					elementImage={getAvatar}
+					elementImageName={getAvatarName}
+					hasUpload={getAvatarFile ? true : false}
+					imageUpload={getAvatar}
+					imageNameUpload={getAvatarName}
+					title={""}
+					changed={event => imageUploadPreviewHandler(event)}
+				/>
+			case "labelName":
+				return <FuzzyInput
+					key={arrayIndex}
+					elementAttributes={arrayElement.attributes}
+					elementValid={!arrayElement.attributes.valid}
+					clicked={event =>
+						dropdownItemSelectHandler(
+							event,
+							props.stateLabelForm[arrayElement.id],
+							`${arrayElement.id}`,
+							props.stateLabelForm
+						)
+					}
+					changed={event =>
+						fuzzyInputChangeHandler(
+							event,
+							props.stateLabelForm[arrayElement.id],
+							`${arrayElement.id}`,
+							props.stateLabelForm,
+							`${arrayElement.attributes.labelFor}List`,
+							props.stateLabels
+						)
+					}
+					keyup={event =>
+						dropdownItemSelectHandler(
+							event,
+							props.stateLabelForm[arrayElement.id],
+							`${arrayElement.id}`,
+							props.stateLabelForm,
+							`${arrayElement.attributes.labelFor}List`
+						)
+					}
+				/>
+			case "parentLabel":
+				return <Auxiliary key={arrayIndex}>
+				{arrayElement.attributes.map((labelElement, labelIndex) =>
+					<FuzzyInput
+						key={labelIndex}
+						elementIndex={labelIndex}
+						elementAttributes={labelElement}
+						elementValid={!labelElement.valid}
+						clicked={event =>
+							dropdownItemSelectHandler(
+								event,
+								props.stateLabelForm[arrayElement.id][labelIndex],
+								`${arrayElement.id}[${labelIndex}]`,
+								props.stateLabelForm
+							)
+						}
+						changed={event =>
+							fuzzyInputChangeHandler(
+								event,
+								props.stateLabelForm[arrayElement.id][labelIndex],
+								`${arrayElement.id}[${labelIndex}]`,
+								props.stateLabelForm,
+								`${labelElement.labelFor}List`,
+								props.stateLabels
+							)
+						}
+						keyup={event =>
+							dropdownItemSelectHandler(
+								event,
+								props.stateLabelForm[arrayElement.id][labelIndex],
+								`${arrayElement.id}[${labelIndex}]`,
+								props.stateLabelForm,
+								`${labelElement.labelFor}List`
+							)
+						}
+					/>
+					)}
+				</Auxiliary>
+			case "subsidiaryLabels":
+				return <fieldset key={arrayIndex}>
+					<legend>Subsidiary Labels</legend>
+					{arrayElement.attributes.map((labelElement, labelIndex) =>
+						<FuzzyInputDelete
+							key={labelIndex}
+							elementIndex={labelIndex}
+							elementAttributes={labelElement}
+							elementValid={!labelElement.valid}
+							clicked={event =>
+								dropdownItemSelectHandler(
+									event,
+									props.stateLabelForm[arrayElement.id][labelIndex],
+									`${arrayElement.id}[${labelIndex}]`,
+									props.stateLabelForm
+								)
+							}
+							changed={event =>
+								fuzzyInputChangeHandler(
+									event,
+									props.stateLabelForm[arrayElement.id][labelIndex],
+									`${arrayElement.id}[${labelIndex}]`,
+									props.stateLabelForm,
+									`${labelElement.labelFor}List`,
+									props.stateLabels
+								)
+							}
+							keyup={event =>
+								dropdownItemSelectHandler(
+									event,
+									props.stateLabelForm[arrayElement.id][labelIndex],
+									`${arrayElement.id}[${labelIndex}]`,
+									props.stateLabelForm,
+									`${labelElement.labelFor}List`
+								)
+							}
+							delete={event => 
+								inputDeleteHandler(
+									event,
+									props.stateLabelForm[arrayElement.id],
+									`${arrayElement.id}`,
+									props.stateLabelForm,
+									labelIndex
+								)
+							}
+						/>
+					)}
+					<Button 
+						type={"primary"}
+						clicked={event => 
+							inputAddHandler(
+								event,
+								props.stateLabelForm[arrayElement.id],
+								`${arrayElement.id}`,
+								props.stateLabelForm,
+								`subsidiaryLabels`
+							)
+						}
+					>
+						Add Subsidiary Label
+					</Button>
+				</fieldset>
+			case "websites":
+				return <fieldset key={arrayIndex}>
+					<legend>Websites</legend>
+					{arrayElement.attributes.map((websiteElement, websiteIndex) =>
+						<Input
+							key={websiteIndex}
+							elementAttributes={websiteElement}
+							elementValid={!websiteElement.valid}
+							changed={event =>
+								inputChangeHandler(
+									event,
+									props.stateLabelForm[arrayElement.id][websiteIndex],
+									`${arrayElement.id}[${websiteIndex}]`,
+									props.stateLabelForm
+								)
+							}
+						/>
+					)}
+				</fieldset>
+			default:
+			return <Input
+				key={arrayIndex}
+				elementAttributes={arrayElement.attributes}
+				elementValid={!arrayElement.attributes.valid}
+				changed={event =>
+					inputChangeHandler(
+						event,
+						props.stateLabelForm[arrayElement.id],
+						`${arrayElement.id}`,
+						props.stateLabelForm
+					)
+				}
+			/>
+		}
+	}
 
-  fuzzyInputChangeHandler = (event, inputIdentifier, inputId) => {
-    const inputValue = event.target.value;
-    const matchedRecords = this.fuse.search(inputValue);
+	//===============================================================================================================//
 
-    const updatedLabelElement = updateObject(
-      this.props.stateLabelForm[inputIdentifier],
-      {
-        id: inputIdentifier,
-        value: inputValue,
-				valid: checkValidity(
-          inputValue,
-          this.props.stateLabelForm[inputIdentifier].validationRequired
-        ),
-        touched: true,
-        matchedRecords: matchedRecords,
-        linkedRecord: false,
-        showDropdown: "true"
-      }
-    );
+	const imageUploadPreviewHandler = event => {
+		setAvatar(URL.createObjectURL(event.target.files[0]));
+		setAvatarName(event.target.files[0].name);
+		setAvatarFile(event.target.files[0]);
+	};
 
-    const updatedLabelForm = updateObject(this.props.stateLabelForm, {
-      [inputIdentifier]: updatedLabelElement
-    });
+	//===============================================================================================================//
+	// Label Action Helpers
+	//===============================================================================================================//
 
-		let formIsValid = true;
-    for (let inputIdentifier in updatedLabelForm) {
-      formIsValid = updatedLabelForm[inputIdentifier].valid && formIsValid;
-    }
+	const labelRedirectHandler = event => {
+		event.preventDefault();
+		props.onResetStatus();
+		props.history.push({ pathname: "/" });
+	};
 
-    this.setState({
-			dataListId: inputId,
-			formIsValid: formIsValid
-    });
+	const labelMessageHandler = event => {
+		event.preventDefault();
+		props.onResetStatus();
+	};
 
-    this.props.onEditLocalLabel(updatedLabelForm);
-  };
+	//===============================================================================================================//
+	// Render Add Label Form
+	//===============================================================================================================//
 
-  //===============================================================================================================//
+	let formElements = [];
 
-  dropdownDatalistSetup = dataListId => {
-    const dataList = document.getElementById(dataListId);
+	if (!props.stateLoading && props.stateLabelForm) {
+		for (let key in props.stateLabelForm) {
+			formElements.push({
+				id: key,
+				attributes: props.stateLabelForm[key]
+			});
+		}
+	}
 
-    if (dataList.hasChildNodes()) {
-      dataList.setAttribute("aria-expanded", true);
-      dataList.setAttribute("aria-live", "polite");
-    } else {
-      dataList.setAttribute("aria-expanded", false);
-      dataList.removeAttribute("aria-live");
-    }
-  };
+	//===============================================================================================================//
 
-  //===============================================================================================================//
-
-  dropdownItemKeyUpHandler = (event, inputIdentifier, dataListId) => {
-    const dataList = document.getElementById(dataListId);
-    const moveUp = "ArrowUp";
-    const moveDown = "ArrowDown";
-    const selectOption = "Enter";
-
-    if (dataList.hasChildNodes()) {
-      const dataOptions = [].slice.call(
-        dataList.getElementsByTagName("option")
-      );
-
-      switch (event.key) {
-        case moveUp:
-          this.focusNextDataOption(moveUp, dataOptions);
-          return;
-        case moveDown:
-          this.focusNextDataOption(moveDown, dataOptions);
-          return;
-        case selectOption:
-          this.dropdownItemSelectHandler(event, inputIdentifier);
-          return;
-        default:
-          return;
-      }
-    }
-  };
-
-  //===============================================================================================================//
-
-  focusNextDataOption = (direction, dataOptions) => {
-    const activeElement = document.activeElement;
-    const currentActiveElement = dataOptions.indexOf(activeElement);
-
-    if (direction === "ArrowDown") {
-      const lastOptionCheck = currentActiveElement < dataOptions.length - 1;
-
-      if (lastOptionCheck) {
-        const nextDataOption = dataOptions[currentActiveElement + 1];
-        nextDataOption.focus();
-      }
-    } else if (direction === "ArrowUp") {
-      const firstOptionCheck = currentActiveElement > 0;
-
-      if (firstOptionCheck) {
-        const nextDataOption = dataOptions[currentActiveElement - 1];
-        nextDataOption.focus();
-      }
-    }
-  };
-
-  //===============================================================================================================//
-
-  dropdownItemSelectHandler = (event, inputIdentifier) => {
-    const updatedLabelElement = updateObject(
-      this.props.stateLabelForm[inputIdentifier],
-      {
-        id: event.target.id,
-        value: event.target.value,
-        linkedRecord: true,
-        showDropdown: "false"
-      }
-    );
-
-    const updatedLabelForm = updateObject(this.props.stateLabelForm, {
-      [inputIdentifier]: updatedLabelElement
-    });
-
-    this.props.onEditLocalLabel(updatedLabelForm);
-  };
-
-  //===============================================================================================================//
-
-  labelProfileHandler = event => {
-    event.preventDefault();
-    this.props.onResetStatus();
-    this.props.history.replace({ pathname: "/" });
-  };
-
-  //===============================================================================================================//
-
-  render() {
-    let formElements = [];
-    if (!this.props.stateLoading && this.props.stateLabelForm) {
-      for (let key in this.props.stateLabelForm) {
-        formElements.push({
-          id: key,
-          attributes: this.props.stateLabelForm[key]
-        });
-      }
-    }
-
-    //===============================================================================================================//
-
-    let labelForm = <Loader />;
-    if (!this.props.stateLoading && this.props.stateError) {
-      labelForm = (
-        <StatusMessage status={"warning"} message={this.props.stateError} />
-      );
-    }
-    if (!this.props.stateLoading && this.props.stateLabelForm) {
-      labelForm = (
-        <Auxiliary>
-          <h1>Add New Label</h1>
-          {this.props.stateSuccess ? (
-            <StatusMessage
-              status={"success"}
-              message={this.props.stateSuccess}
-            />
-          ) : null}
-          {this.props.stateError ? (
-            <StatusMessage status={"warning"} message={this.props.stateError} />
-          ) : null}
-          <div className="userform">
-            <form onSubmit={this.labelCreateHandler}>
-              <div className="input-wrapper">
-                {formElements.map((formElement, index) =>
-                  formElement.attributes.type === "file" ? (
-                    <FileInput
-                      key={index}
-											elementType={formElement.attributes.type}
-											elementId={formElement.attributes.id}
-											elementName={formElement.attributes.name}
-                      elementLabel={formElement.attributes.label}
-                      elementLabelFor={formElement.attributes.labelFor}
-                      elementImage={this.state.avatar}
-                      elementImageName={this.state.avatarName}
-                      hasUpload={this.state.avatarFile ? true : false}
-                      imageUpload={this.state.avatar}
-                      imageNameUpload={this.state.avatarName}
-                      title={""}
-                      changed={event => this.imageUploadPreviewHandler(event)}
-                    />
-                  ) : formElement.attributes.isFuzzy ? (
-                    <FuzzyInput
-											key={index}
-											elementType={formElement.attributes.type}
-											elementId={formElement.attributes.id}
-											elementName={formElement.attributes.name}
-                      elementLabel={formElement.attributes.label}
-                      elementLabelFor={formElement.attributes.labelFor}
-											elementValue={formElement.attributes.value}
-											invalid={!formElement.attributes.valid}
-                      shouldValidate={formElement.attributes.validationRequired}
-                      errorMessage={formElement.attributes.validationFeedback}
-                      touched={formElement.attributes.touched}
-                      data={this.props.stateLabels}
-                      dataListId={`${formElement.attributes.labelFor}List`}
-                      matches={formElement.attributes.matchedRecords}
-                      showDropdown={formElement.attributes.showDropdown}
-                      clicked={event =>
-                        this.dropdownItemSelectHandler(event, formElement.id)
-                      }
-                      changed={event =>
-                        this.fuzzyInputChangeHandler(
-                          event,
-                          formElement.id,
-                          `${formElement.attributes.labelFor}List`
-                        )
-                      }
-                      keyup={event =>
-                        this.dropdownItemKeyUpHandler(
-                          event,
-                          formElement.id,
-                          `${formElement.attributes.labelFor}List`
-                        )
-                      }
-                    />
-                  ) : (
-                    <Input
-                      key={index}
-											element={formElement.attributes.element}
-											elementType={formElement.attributes.type}
-											elementId={formElement.attributes.id}
-											elementName={formElement.attributes.name}
-                      elementLabel={formElement.attributes.label}
-                      elementLabelFor={formElement.attributes.labelFor}
-											elementValue={formElement.attributes.value}
-											invalid={!formElement.attributes.valid}
-                      shouldValidate={formElement.attributes.validationRequired}
-                      errorMessage={formElement.attributes.validationFeedback}
-                      touched={formElement.attributes.touched}
-                      changed={event =>
-                        this.inputChangeHandler(event, formElement.id)
-                      }
-                    />
-                  )
-                )}
-              </div>
-              <div className={"userform--actions"}>
-                <Button
-                  type={this.state.formIsValid ? "primary" : "disabled"}
-                  disabled={!this.state.formIsValid}
-                >
-                  Save
-                </Button>
-                <Button type={"warning"} clicked={this.labelProfileHandler}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </div>
-        </Auxiliary>
-      );
-    }
-    return <div className="container">{labelForm}</div>;
-  }
+	let labelForm = <Loader />;
+	if (!props.stateLoading && props.stateLabelForm) {
+		labelForm = (
+			<div className="container">
+				<h1>Add New Label</h1>
+				{ props.stateError ? (
+					<Auxiliary>
+						<StatusMessage
+							status={"warning"}
+							headline={props.stateError}
+							response={props.stateResponse}
+							message={props.stateFeedback}
+							action={labelMessageHandler}
+							buttonText={`Close`}
+						/>
+					</Auxiliary>
+				) : null }
+				<div className="userform">
+					<form onSubmit={labelCreateHandler}>
+						<div className="input-wrapper">
+							{formElements.map((element, index) =>
+								labelFormRender(element, index)
+							)}
+						</div>
+						<div className={"userform--actions"}>
+							<Button
+								type={getFormIsValid ? "primary" : "disabled"}
+								disabled={!getFormIsValid}
+							>
+								Save
+							</Button>
+							<Button
+								type={"warning"}
+								clicked={labelRedirectHandler}>
+								Cancel
+							</Button>
+						</div>
+					</form>
+				</div>
+			</div>
+		);
+	}
+	return labelForm;
 }
 
 //===============================================================================================================//
-
-// ******* REDUX STATE MANAGEMENT ******* //
+// Redux STATE Management
+//===============================================================================================================//
 
 const mapStateToProps = state => {
-  return {
-    stateLabelForm: state.label.labelForm,
-    stateLabels: state.label.labels,
-    stateLoading: state.label.loading,
-    stateError: state.label.error,
-    stateSuccess: state.label.success
-  };
+	return {
+		stateLabelForm: state.label.labelForm,
+		stateLabels: state.label.labels,
+		stateLoading: state.label.loading,
+		stateError: state.label.error,
+		stateSuccess: state.label.success,
+		stateResponse: state.label.response,
+		stateFeedback: state.label.feedback
+	};
 };
 
 const mapDispatchToProps = dispatch => {
-  return {
-    onCreateLabelForm: () => dispatch(labelActions.addLabelClientPrep()),
-    onFetchLabels: () => dispatch(labelActions.fetchLabelsSend()),
-    onEditLocalLabel: updatedLabelForm =>
-      dispatch(labelActions.editLabelClientInput(updatedLabelForm)),
-    onAddLabel: (newLabelData, fileFlag) =>
-      dispatch(labelActions.addLabelSend(newLabelData, fileFlag)),
-    onResetStatus: () => dispatch(labelActions.labelResetReturnStatus())
-  };
+	return {
+		onCreateLabelForm: () => dispatch(labelActions.addLabelClientPrep()),
+		onFetchLabels: () => dispatch(labelActions.fetchLabelsSend()),
+		onEditLocalLabel: updatedLabelForm =>
+			dispatch(labelActions.editLabelClientInput(updatedLabelForm)),
+		onAddLabel: (newLabelData, fileFlag) =>
+			dispatch(labelActions.addLabelSend(newLabelData, fileFlag)),
+		onResetStatus: () => dispatch(labelActions.labelResetStatus())
+	};
 };
 
 //===============================================================================================================//
 
 export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+	mapStateToProps,
+	mapDispatchToProps
 )(LabelAdd);
