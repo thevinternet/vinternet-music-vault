@@ -1,6 +1,5 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import Fuse from "fuse.js";
 
 import "./ArtistEdit.scss";
 
@@ -9,465 +8,488 @@ import Auxiliary from "../../../wrappers/Auxiliary/Auxiliary";
 import Input from "../../../components/Utilities/Form/Input/Input";
 import FileInput from "../../../components/Utilities/Form/File/File";
 import FuzzyInput from "../../../components/Utilities/Form/FuzzyInput/FuzzyInput";
+import FuzzyInputDelete from "../../../components/Utilities/Form/FuzzyInput/FuzzyInputDelete";
 
 import Button from "../../../components/Utilities/UI/Button/Button";
 import Loader from "../../../components/Utilities/UI/Loader/Loader";
 import Modal from "../../../components/Utilities/Modal/Modal";
 import StatusMessage from "../../../components/Utilities/UI/StatusMessage/StatusMessage";
 
-import { updateObject } from "../../../utilities/helpers";
-import { checkValidity } from "../../../utilities/formHelpers/formValidation";
-import { dropdownDatalistSetup, focusNextDataOption } from "../../../utilities/formHelpers/formFuzzyDropdown";
+import * as objBuilderArtist from "../../../utilities/objectHelpers/objectBuilderArtist";
+import { dropdownDatalistSetup } from "../../../utilities/formHelpers/formFuzzyDropdown";
 
+import useHandleInputChange from "../../../hooks/form/HandleInputChange";
+import useHandleFuzzyInputChange from "../../../hooks/form/HandleFuzzyInputChange";
+import useHandleInputAddition from "../../../hooks/form/HandleInputAddition";
+import useHandleInputDeletion from "../../../hooks/form/HandleInputDeletion";
+import useHandleDropdownItemSelect from "../../../hooks/form/HandleDropdownItemSelect";
 
 import * as artistActions from "../../../store/actions/index";
 
 //===============================================================================================================//
 
-class ArtistEdit extends Component {
-  state = {
-    avatar: "avatar.jpg",
-    avatarName: "No file(s) selected",
-    avatarFile: "",
-    deleting: false,
-    formIsValid: true,
-    dataListId: "",
-    defaultFuseConfigs: {
-      shouldSort: true,
-      threshold: 0.1,
-			ignoreLocation: true,
-      minMatchCharLength: 2,
-      keys: ["name"]
-    }
-  };
+const ArtistEdit = props => {
 
-  //===============================================================================================================//
+	//===============================================================================================================//
+	// Set Up Component STATE & Initialise HOOKS
+	//===============================================================================================================//
 
-  componentDidMount() {
-    this.props.onFetchArtist(this.props.match.params.id, true);
-    this.props.onFetchArtists();
-  }
+	const [getAvatar, setAvatar] = useState("artists/avatar.jpg");
+	const [getAvatarName, setAvatarName] = useState("No file(s) selected");
+	const [getAvatarFile, setAvatarFile] = useState("");
+	const [getFormIsValid, setFormIsValid] = useState(true);
+	const [getShowModal, setShowModal] = useState(false);
 
-  componentDidUpdate() {
-    this.fuse = new Fuse(
-      this.props.stateArtists,
-      this.state.defaultFuseConfigs
-    );
-    if (this.state.dataListId) {
-      dropdownDatalistSetup(this.state.dataListId);
-    }
-  }
+	const { onFetchArtist, onFetchArtists, onEditLocalArtist, stateArtist, stateSuccess, history, match } = props;
+	const { updatedFormStd, formIsValidStd, inputChangeHandler } = useHandleInputChange();
+	const { updatedFormFzy, formIsValidFzy, dataListIdFzy, fuzzyInputChangeHandler } = useHandleFuzzyInputChange();
+	const { updatedFormAdd, inputAddHandler } = useHandleInputAddition();
+	const { updatedFormDel, inputDeleteHandler } = useHandleInputDeletion();
+	const { updatedFormDds, dropdownItemSelectHandler } = useHandleDropdownItemSelect();
 
-  //===============================================================================================================//
+	//===============================================================================================================//
+	// Setup useEffect Functions
+	//===============================================================================================================//
 
-  artistUpdateHandler = event => {
-    event.preventDefault();
+	useEffect(() => {
+		console.log("Initial Get Single Artist & All Artists Effect Running!");
+		onFetchArtist(match.params.id, true);
+		onFetchArtists();
+	}, [onFetchArtist, onFetchArtists, match]);
 
-    const artistDataArray = Object.values(this.props.stateArtistForm);
+	//===============================================================================================================//
 
-    const artistDataObject = {};
-    artistDataObject["aliasName"] = [];
-    artistDataObject["website"] = [];
+	useEffect(() => {
+		console.log("Standard Input Effect Initialised!");
+		if (updatedFormStd) {
+			console.log("Handle Standard Input Effect Running!");
+			setFormIsValid(formIsValidStd);
+			onEditLocalArtist(updatedFormStd);
+		}
+	}, [formIsValidStd, updatedFormStd, onEditLocalArtist]);
 
-    artistDataArray.forEach(function(element) {
-      if (element.elementAttr.name === "aliasName") {
-        if (element.linkedRecord) {
-          artistDataObject.aliasName.push({ _id: element.id });
-        } else if (element.value) {
-          artistDataObject.aliasName.push({ name: element.value });
-        }
-      } else if (element.elementAttr.name === "website") {
-        artistDataObject.website.push({
-          name: element.label,
-          url: element.value
-        });
-      } else {
-        artistDataObject[element.elementAttr.name] = element.value;
-      }
-    });
+	//===============================================================================================================//
 
-    const artistId = this.props.stateArtist._id;
-    let updatedArtistData;
-    let fileFlag;
+	useEffect(() => {
+		console.log("Fuzzy Input Effect Initialised!");
+		if (updatedFormFzy && dataListIdFzy) {
+			console.log("Handle Fuzzy Input Effect Running!");
+			dropdownDatalistSetup(dataListIdFzy);
+			setFormIsValid(formIsValidFzy);
+			onEditLocalArtist(updatedFormFzy);
+		}
+	}, [dataListIdFzy, formIsValidFzy, updatedFormFzy, onEditLocalArtist]);
 
-    if (this.state.avatarFile) {
-      fileFlag = true;
-      let artistData = JSON.stringify(artistDataObject);
+	//===============================================================================================================//
 
-      updatedArtistData = new FormData();
-      updatedArtistData.append("id", artistId);
-      updatedArtistData.append("image", this.state.avatarFile);
-      updatedArtistData.append("artist", artistData);
-    } else {
-      fileFlag = false;
-      updatedArtistData = {
-        id: artistId,
-        artist: artistDataObject
-      };
-    }
+	useEffect(() => {
+		console.log("Add / Delete / DropDown Effect Initialised!");
+		if (updatedFormAdd) {
+			console.log("Handle Add Input Effect Running!");
+			onEditLocalArtist(updatedFormAdd); 
+		}
+		if (updatedFormDel) {
+			console.log("Handle Delete Input Effect Running!");
+			onEditLocalArtist(updatedFormDel); 
+		}
+		if (updatedFormDds) {
+			console.log("Handle Fuzzy DropDown Select Effect Running!");
+			onEditLocalArtist(updatedFormDds); 
+		}
+	}, [updatedFormAdd, updatedFormDel, updatedFormDds, onEditLocalArtist]);
 
-    this.setState({
-      dataListId: ""
-    });
+	//===============================================================================================================//
 
-    this.props.onUpdateArtist(artistId, updatedArtistData, fileFlag);
-  };
+	useEffect(() => {
+		console.log("POST Form Effect Initialised!");
+		if (stateSuccess !== null) {
+			console.log("Successful POST Effect Running!");
+			history.push({ pathname: "/artists/" + stateArtist._id });
+		}
+	}, [stateArtist, stateSuccess, history]);
 
-  //===============================================================================================================//
+	//===============================================================================================================//
+	// Create & Handle Form Submission Object
+	//===============================================================================================================//
 
-  inputChangeHandler = (event, inputIdentifier) => {
-    const updatedArtistElement = updateObject(
-      this.props.stateArtistForm[inputIdentifier],
-      {
-        value: event.target.value,
-        valid: checkValidity(
-          event.target.value,
-          this.props.stateArtistForm[inputIdentifier].validationRequired
-        ),
-        touched: true
-      }
-    );
+	const artistUpdateHandler = (event) => {
+		event.preventDefault();
+		
+		const artistDataObject = objBuilderArtist.baseArtistObject();
+		const artistId = props.stateArtist._id;
+		let fileFlag = false;
 
-    const updatedArtistForm = updateObject(this.props.stateArtistForm, {
-      [inputIdentifier]: updatedArtistElement
-    });
+		const artistDataMap = new Map(Object.entries(props.stateArtistForm));
 
-    let formIsValid = true;
-    for (let inputIdentifier in updatedArtistForm) {
-      formIsValid = updatedArtistForm[inputIdentifier].valid && formIsValid;
-    }
-
-    updatedArtistForm[inputIdentifier] = updatedArtistElement;
-    this.setState({
-      formIsValid: formIsValid
-    });
-
-    this.props.onEditLocalArtist(updatedArtistForm);
-  };
-
-  //===============================================================================================================//
-
-  imageUploadPreviewHandler = event => {
-    this.setState({
-      avatar: URL.createObjectURL(event.target.files[0]),
-      avatarName: event.target.files[0].name,
-      avatarFile: event.target.files[0]
-    });
-  };
-
-  //===============================================================================================================//
-
-  fuzzyInputChangeHandler = (event, inputIdentifier, inputId) => {
-    const inputValue = event.target.value;
-    const matchedRecords = this.fuse.search(inputValue);
-
-    const updatedArtistElement = updateObject(
-      this.props.stateArtistForm[inputIdentifier],
-      {
-        id: inputIdentifier,
-        value: inputValue,
-				valid: checkValidity(
-          inputValue,
-          this.props.stateArtistForm[inputIdentifier].validationRequired
-        ),
-        touched: true,
-        matchedRecords: matchedRecords,
-        linkedRecord: false,
-        showDropdown: "true"
-      }
-    );
-
-    const updatedArtistForm = updateObject(this.props.stateArtistForm, {
-      [inputIdentifier]: updatedArtistElement
-    });
-
-		let formIsValid = true;
-    for (let inputIdentifier in updatedArtistForm) {
-      formIsValid = updatedArtistForm[inputIdentifier].valid && formIsValid;
-    }
-
-    this.setState({
-			dataListId: inputId,
-			formIsValid: formIsValid
-    });
-
-    this.props.onEditLocalArtist(updatedArtistForm);
-  };
-
-  //===============================================================================================================//
-
-  dropdownItemKeyUpHandler = (event, inputIdentifier, dataListId) => {
-    const dataList = document.getElementById(dataListId);
-    const moveUp = "ArrowUp";
-    const moveDown = "ArrowDown";
-    const selectOption = "Enter";
-
-    if (dataList.hasChildNodes()) {
-      const dataOptions = [].slice.call(
-        dataList.getElementsByTagName("option")
-      );
-
-      switch (event.key) {
-        case moveUp:
-          focusNextDataOption(moveUp, dataOptions);
-          return;
-        case moveDown:
-          focusNextDataOption(moveDown, dataOptions);
-          return;
-        case selectOption:
-          this.dropdownItemSelectHandler(event, inputIdentifier);
-          return;
-        default:
-          return;
-      }
-    }
-  };
-
-  //===============================================================================================================//
-
-  dropdownItemSelectHandler = (event, inputIdentifier) => {
-    const updatedArtistElement = updateObject(
-      this.props.stateArtistForm[inputIdentifier],
-      {
-        id: event.target.id,
-        value: event.target.value,
-        linkedRecord: true,
-        showDropdown: "false"
-      }
-    );
-
-    const updatedArtistForm = updateObject(this.props.stateArtistForm, {
-      [inputIdentifier]: updatedArtistElement
-    });
-
-    this.props.onEditLocalArtist(updatedArtistForm);
-  };
-    
-  //===============================================================================================================//
-
-  artistProfileHandler = event => {
-    event.preventDefault();
-    this.props.onResetStatus();
-    this.props.history.replace({
-      pathname: "/artists/" + this.props.stateArtist._id
-    });
-  };
-
-  //===============================================================================================================//
-
-  artistDeleteCheckHandler = event => {
-    event.preventDefault();
-    this.setState({ deleting: true });
-  };
-
-  artistDeleteCancelHandler = event => {
-    event.preventDefault();
-    this.setState({ deleting: false });
-  };
-
-  artistDeleteConfirmHandler = event => {
-    event.preventDefault();
-    this.props.onDeleteArtist(this.props.stateArtist._id);
-    this.props.history.replace({ pathname: "/artists/" });
-  };
-
-  //===============================================================================================================//
-
-  render() {
-    let formElements = [];
-    if (!this.props.stateLoading && this.props.stateArtist) {
-      for (let key in this.props.stateArtistForm) {
-        formElements.push({
-          id: key,
-          attributes: this.props.stateArtistForm[key]
-        });
+		artistDataMap.forEach(function(value, key) {
+			switch (key) {
+				case "aliasNames": 
+					value.forEach(function(element) {
+						element.linkedRecord ?
+						artistDataObject.aliasName.push({ _id: element.id }) :
+						artistDataObject.aliasName.push({ name: element.value });
+					});
+				break;
+				case "websites":
+					value.forEach(function(element) {
+						artistDataObject.website.push({
+							name: element.label,
+							url: element.value
+						});
+					});
+				break;
+				default : 
+					artistDataObject[key] = value.value;		
 			}
-    }
+		});
 
-    //===============================================================================================================//
+		const artistData = { artist : artistDataObject }
+		let updatedArtistData = artistData;
 
-    let artistForm = <Loader />;
-    if (!this.props.stateLoading && this.props.stateError) {
-      artistForm = (
-        <StatusMessage status={"warning"} message={this.props.stateError} />
-      );
-    }
-    if (!this.props.stateLoading && this.props.stateArtist) {
-      artistForm = (
-        <Auxiliary>
-          <h1>{this.props.stateArtist.artist_name}</h1>
-          <h2>Update Artist Details</h2>
-          {this.props.stateSuccess ? (
-            <StatusMessage
-              status={"success"}
-              message={this.props.stateSuccess}
-            />
-          ) : null}
-          <div className="userform">
-            <form onSubmit={this.artistUpdateHandler}>
-              <div className="input-wrapper">
-                {formElements.map((formElement, index) =>
-                  formElement.attributes.type === "file" ? (
-                    <FileInput
-                      key={index}
-											elementType={formElement.attributes.type}
-											elementId={formElement.attributes.id}
-											elementName={formElement.attributes.name}
-                      elementLabel={formElement.attributes.label}
-                      elementLabelFor={formElement.attributes.labelFor}                     
-                      elementImage={
-                        formElement.attributes.pictureLocation
-                          ? `artists/${formElement.attributes.pictureLocation}`
-                          : `artists/${this.state.avatar}`
-                      }
-                      elementImageName={
-                        formElement.attributes.pictureName
-                          ? formElement.attributes.pictureName
-                          : this.state.avatarName
-                      }
-                      hasUpload={this.state.avatarFile ? true : false}
-                      imageUpload={`${this.state.avatar}`}
-                      imageNameUpload={this.state.avatarName}
-                      title={this.props.stateArtist.artist_name}
-                      changed={event => this.imageUploadPreviewHandler(event)}
-                    />
-                    ) : formElement.attributes.isFuzzy ? (
-                      <FuzzyInput
-                        key={index}
-												elementType={formElement.attributes.type}
-												elementId={formElement.attributes.id}
-												elementName={formElement.attributes.name}
-												elementLabel={formElement.attributes.label}
-												elementLabelFor={formElement.attributes.labelFor}                     
-												elementValue={formElement.attributes.value}
-												invalid={!formElement.attributes.valid}
-												shouldValidate={formElement.attributes.validationRequired}
-												errorMessage={formElement.attributes.validationFeedback}
-												touched={formElement.attributes.touched}
-												data={this.props.stateArtists}
-                        dataListId={`${formElement.attributes.labelFor}List`}
-                        matches={formElement.attributes.matchedRecords}
-                        showDropdown={formElement.attributes.showDropdown}
-                        clicked={event =>
-                          this.dropdownItemSelectHandler(event, formElement.id)
-                        }
-                        changed={event =>
-                          this.fuzzyInputChangeHandler(
-                            event,
-                            formElement.id,
-                            `${formElement.attributes.labelFor}List`
-                          )
-                        }
-                        keyup={event =>
-                          this.dropdownItemKeyUpHandler(
-                            event,
-                            formElement.id,
-                            `${formElement.attributes.labelFor}List`
-                          )
-                        }
-                      />
-                    ) : (
-                      <Input
-											key={index}
-											element={formElement.attributes.element}
-											elementType={formElement.attributes.type}
-											elementId={formElement.attributes.id}
-											elementName={formElement.attributes.name}
-                      elementLabel={formElement.attributes.label}
-                      elementLabelFor={formElement.attributes.labelFor}
-                      elementValue={formElement.attributes.value}
-                      invalid={!formElement.attributes.valid}
-                      shouldValidate={formElement.attributes.validationRequired}
-                      errorMessage={formElement.attributes.validationFeedback}
-                      touched={formElement.attributes.touched}
-                      changed={event =>
-                        this.inputChangeHandler(event, formElement.id)
-                      }
-                    />
-                  )
-                )}
-              </div>
-              <div className={"userform--actions"}>
-                <Button
-                  type={this.state.formIsValid ? "primary" : "disabled"}
-                  disabled={!this.state.formIsValid}
-                >
-                  Save
-                </Button>
+		if (getAvatarFile) { 
+			updatedArtistData = new FormData();
+			updatedArtistData.append("image", getAvatarFile);
+			updatedArtistData.append("artist", JSON.stringify(artistData));
+			fileFlag = true;
+		}
 
-                <Button type={"grey"} clicked={this.artistProfileHandler}>
-                  Cancel
-                </Button>
-                <Button
-                  type={"warning"}
-                  clicked={this.artistDeleteCheckHandler}
-                >
-                  Delete Artist
-                </Button>
-              </div>
-            </form>
-          </div>
-          <Modal
-            show={this.state.deleting}
-            hide={this.artistDeleteCancelHandler}
-          >
-            <h2>Delete Artist Details</h2>
-            <p>
-              Please confirm you wish to delete
-              <strong> {this.props.stateArtist.name} </strong>
-              from the database.
-            </p>
-            <Button type={"warning"} clicked={this.artistDeleteConfirmHandler}>
-              Delete Artist
-            </Button>
-            <Button type={"primary"} clicked={this.artistDeleteCancelHandler}>
-              Cancel
-            </Button>
-          </Modal>
-        </Auxiliary>
-      );
-    }
-    return <div className="container">{artistForm}</div>;
-  }
+		props.onUpdateArtist(artistId, updatedArtistData, fileFlag);
+	};
+
+	//===============================================================================================================//
+	// Prepare HTML Form Using Processed ArtistForm Object Array From Redux Store
+	//===============================================================================================================//
+	
+	const artistFormRender = (arrayElement, arrayIndex) => {
+		switch (arrayElement.id) {
+			case "artistForm":
+				break;
+			case "imageUpload": 
+				return <FileInput
+					key={arrayIndex}
+					elementAttributes={arrayElement.attributes}
+					elementImage={
+						arrayElement.attributes.pictureLocation
+							? `artists/${arrayElement.attributes.pictureLocation}`
+							: getAvatar
+					}
+					elementImageName={
+						arrayElement.attributes.pictureName
+							? arrayElement.attributes.pictureName
+							: getAvatarName
+					}
+					hasUpload={getAvatarFile ? true : false}
+					imageUpload={`${getAvatar}`}
+					imageNameUpload={getAvatarName}
+					title={props.stateArtist.name}
+					changed={event => imageUploadPreviewHandler(event)}
+				/>
+			case "artistName":
+				return <FuzzyInput
+					key={arrayIndex}
+					elementAttributes={arrayElement.attributes}
+					elementValid={!arrayElement.attributes.valid}
+					clicked={event =>
+						dropdownItemSelectHandler(
+							event,
+							props.stateArtistForm[arrayElement.id],
+							`${arrayElement.id}`,
+							props.stateArtistForm
+						)
+					}
+					changed={event =>
+						fuzzyInputChangeHandler(
+							event,
+							props.stateArtistForm[arrayElement.id],
+							`${arrayElement.id}`,
+							props.stateArtistForm,
+							`${arrayElement.attributes.labelFor}List`,
+							props.stateArtists
+						)
+					}
+					keyup={event =>
+						dropdownItemSelectHandler(
+							event,
+							props.stateArtistForm[arrayElement.id],
+							`${arrayElement.id}`,
+							props.stateArtistForm,
+							`${arrayElement.attributes.labelFor}List`
+						)
+					}
+				/>
+			case "aliasNames":
+				return <fieldset key={arrayIndex}>
+					<legend>Alias Names</legend>
+					{arrayElement.attributes.map((aliasElement, aliasIndex) =>
+						<FuzzyInputDelete
+							key={aliasIndex}
+							elementIndex={aliasIndex}
+							elementAttributes={aliasElement}
+							elementValid={!aliasElement.valid}
+							clicked={event =>
+								dropdownItemSelectHandler(
+									event,
+									props.stateArtistForm[arrayElement.id][aliasIndex],
+									`${arrayElement.id}[${aliasIndex}]`,
+									props.stateArtistForm
+								)
+							}
+							changed={event =>
+								fuzzyInputChangeHandler(
+									event,
+									props.stateArtistForm[arrayElement.id][aliasIndex],
+									`${arrayElement.id}[${aliasIndex}]`,
+									props.stateArtistForm,
+									`${aliasElement.labelFor}List`
+								)
+							}
+							keyup={event =>
+								dropdownItemSelectHandler(
+									event,
+									props.stateArtistForm[arrayElement.id][aliasIndex],
+									`${arrayElement.id}[${aliasIndex}]`,
+									props.stateArtistForm,
+									`${aliasElement.labelFor}List`
+								)
+							}
+							delete={event =>
+								inputDeleteHandler(
+									event,
+									props.stateArtistForm[arrayElement.id],
+									`${arrayElement.id}`,
+									props.stateArtistForm,
+									aliasIndex
+								)
+							}
+						/>
+					)}
+					<Button 
+						type={"primary"}
+						clicked={event =>
+							inputAddHandler(
+								event,
+								props.stateArtistForm[arrayElement.id],
+								`${arrayElement.id}`,
+								props.stateArtistForm,
+								`aliasNames`
+							)
+						}
+					>
+						Add Alias Name
+					</Button>
+				</fieldset>
+			case "websites":
+				return <fieldset key={arrayIndex}>
+					<legend>Websites</legend>
+					{arrayElement.attributes.map((websiteElement, websiteIndex) =>
+						<Input
+							key={websiteIndex}
+							elementAttributes={websiteElement}
+							elementValid={!websiteElement.valid}
+							changed={event =>
+								inputChangeHandler(
+									event,
+									props.stateArtistForm[arrayElement.id][websiteIndex],
+									`${arrayElement.id}[${websiteIndex}]`,
+									props.stateArtistForm
+								)
+							}
+						/>
+					)}
+				</fieldset>
+			default:
+				return <Input
+					key={arrayIndex}
+					elementAttributes={arrayElement.attributes}
+					elementValid={!arrayElement.attributes.valid}
+					changed={event =>
+						inputChangeHandler(
+							event,
+							props.stateArtistForm[arrayElement.id],
+							`${arrayElement.id}`,
+							props.stateArtistForm
+						)
+					}
+				/>
+		}
+	};
+
+	//===============================================================================================================//
+
+	const imageUploadPreviewHandler = event => {
+		setAvatar(URL.createObjectURL(event.target.files[0]));
+		setAvatarName(event.target.files[0].name);
+		setAvatarFile(event.target.files[0]);
+	};
+
+	//===============================================================================================================//
+	// Artist Action Helpers
+	//===============================================================================================================//
+
+	const artistRedirectHandler = event => {
+		event.preventDefault();
+		props.onResetStatus();
+		props.stateArtist._id
+		? props.history.push({ pathname: "/artists/" + props.stateArtist._id })
+		: props.history.push({ pathname: "/artists/" });
+	};
+
+	const artistMessageHandler = event => {
+		event.preventDefault();
+		props.onResetStatus();
+	};
+
+	//===============================================================================================================//
+
+	const artistDeleteCheckHandler = event => {
+		event.preventDefault();
+		setShowModal(true);
+	};
+
+	const artistDeleteCancelHandler = event => {
+		event.preventDefault();
+		setShowModal(false);
+	};
+
+	const artistDeleteConfirmHandler = event => {
+		event.preventDefault();
+		props.onDeleteArtist(props.stateArtist._id);
+		props.history.push({ pathname: "/artists/" });
+	};
+
+	//===============================================================================================================//
+	// Render Edit Artist Form
+	//===============================================================================================================//
+
+	let formElements = [];
+	if (!props.stateLoading && props.stateArtist) {
+		for (let key in props.stateArtistForm) {
+			formElements.push({
+				id: key,
+				attributes: props.stateArtistForm[key]
+			});
+		}
+	}
+
+	//===============================================================================================================//
+
+	let artistForm = <Loader />;
+	if (!props.stateLoading && props.stateError && !props.stateArtist) {
+		artistForm = (
+			<Auxiliary>
+				<h1>There was a problem with your request</h1>
+				<StatusMessage
+					status={"warning"}
+					headline={props.stateError}
+					response={props.stateResponse}
+					message={props.stateFeedback}
+					action={artistRedirectHandler}
+					buttonText={`OK`}
+				/>
+			</Auxiliary>
+		);
+	}
+	if (!props.stateLoading && props.stateArtist) {
+		artistForm = (
+			<div className="container">
+				<h1>{props.stateArtist.name}</h1>
+				{props.stateError ? (
+					<Auxiliary>
+						<StatusMessage
+							status={"warning"}
+							headline={props.stateError}
+							response={props.stateResponse}
+							message={props.stateFeedback}
+							action={artistMessageHandler}
+							buttonText={`Close`}
+						/>
+					</Auxiliary>
+				) : null }
+				<h2>Update Artist Details</h2>
+				<div className="userform">
+					<form onSubmit={artistUpdateHandler}>
+						<div className="input-wrapper">
+							{formElements.map((element, index) =>
+								artistFormRender(element, index)
+							)}
+						</div>
+						<div className={"userform--actions"}>
+							<Button
+								type={getFormIsValid ? "primary" : "disabled"}
+								disabled={!getFormIsValid}
+							>
+								Save
+							</Button>
+							<Button type={"grey"} clicked={artistRedirectHandler}>
+								Cancel
+							</Button>
+							<Button
+								type={"warning"}
+								clicked={artistDeleteCheckHandler}
+							>
+								Delete Artist
+							</Button>
+						</div>
+					</form>
+				</div>
+				<Modal
+					show={getShowModal}
+					hide={artistDeleteCancelHandler}
+					action={artistDeleteConfirmHandler}
+					status={"warning"}
+					headline={`Delete Artist Details`}
+					bespokeText={`Please confirm you wish to delete <strong> ${props.stateArtist.name} </strong> from the database.`}
+					buttonText={`Delete Artist`}
+				>
+					<Button type={"grey"} clicked={artistDeleteCancelHandler}>
+						Cancel
+					</Button>
+				</Modal>
+			</div>
+		);
+	}
+	return artistForm;
 }
 
 //===============================================================================================================//
-
-// ******* REDUX STATE MANAGEMENT ******* //
+// Redux STATE Management
+//===============================================================================================================//
 
 const mapStateToProps = state => {
-  return {
-    stateArtist: state.artist.artist,
-    stateArtists: state.artist.artists,
-    stateArtistForm: state.artist.artistForm,
-    stateLoading: state.artist.loading,
-    stateError: state.artist.error,
-    stateSuccess: state.artist.success
-  };
+	return {
+		stateArtist: state.artist.artist,
+		stateArtists: state.artist.artists,
+		stateArtistForm: state.artist.artistForm,
+		stateLoading: state.artist.loading,
+		stateError: state.artist.error,
+		stateSuccess: state.artist.success,
+		stateResponse: state.artist.response,
+		stateFeedback: state.artist.feedback
+	};
 };
 
 const mapDispatchToProps = dispatch => {
-  return {
-    onFetchArtist: (artistId, edit) =>
-      dispatch(artistActions.fetchArtistSend(artistId, edit)),
-    onFetchArtists: () => dispatch(artistActions.fetchArtistsSend()),
-    onEditLocalArtist: updatedArtistForm =>
-      dispatch(artistActions.editArtistClientInput(updatedArtistForm)),
-    onUpdateArtist: (artistId, updatedArtistData, fileFlag) =>
-      dispatch(
-        artistActions.updateArtistSend(artistId, updatedArtistData, fileFlag)
-      ),
-    onDeleteArtist: artistId =>
-      dispatch(artistActions.deleteArtistSend(artistId)),
-    onResetStatus: () => dispatch(artistActions.artistResetReturnStatus())
-  };
+	return {
+		onFetchArtist: (artistId, edit) =>
+			dispatch(artistActions.fetchArtistSend(artistId, edit)),
+		onFetchArtists: () => 
+			dispatch(artistActions.fetchArtistsSend()),
+		onEditLocalArtist: updatedArtistForm =>
+			dispatch(artistActions.editArtistClientInput(updatedArtistForm)),
+		onUpdateArtist: (artistId, updatedArtistData, fileFlag) =>
+			dispatch(artistActions.updateArtistSend(artistId, updatedArtistData, fileFlag)),
+		onDeleteArtist: artistId =>
+			dispatch(artistActions.deleteArtistSend(artistId)),
+		onResetStatus: () => 
+			dispatch(artistActions.artistResetStatus())
+	};
 };
 
 //===============================================================================================================//
 
 export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+	mapStateToProps,
+	mapDispatchToProps
 )(ArtistEdit);
 
 //===============================================================================================================//
