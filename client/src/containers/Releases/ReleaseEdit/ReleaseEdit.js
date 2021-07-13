@@ -1,6 +1,5 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import Fuse from "fuse.js";
 
 import "./ReleaseEdit.scss";
 
@@ -9,776 +8,611 @@ import Auxiliary from "../../../wrappers/Auxiliary/Auxiliary";
 import Input from "../../../components/Utilities/Form/Input/Input";
 import FileInput from "../../../components/Utilities/Form/File/File";
 import FuzzyInput from "../../../components/Utilities/Form/FuzzyInput/FuzzyInput";
+import FuzzyInputDelete from "../../../components/Utilities/Form/FuzzyInput/FuzzyInputDelete";
 
 import Button from "../../../components/Utilities/UI/Button/Button";
 import Loader from "../../../components/Utilities/UI/Loader/Loader";
 import Modal from "../../../components/Utilities/Modal/Modal";
 import StatusMessage from "../../../components/Utilities/UI/StatusMessage/StatusMessage";
 
-import { updateObject, displayToggle } from "../../../utilities/helpers";
-import { checkValidity } from "../../../utilities/formHelpers/formValidation";
-import { dropdownDatalistSetup, focusNextDataOption } from "../../../utilities/formHelpers/formFuzzyDropdown";
-import { feTrackObject } from '../../../utilities/formHelpers/formElementAttributeBuilder.js'
-import { createTrackForm } from "../../../utilities/formHelpers/formBuilderTrack";
+import * as objBuilderRelease from "../../../utilities/objectHelpers/objectBuilderRelease"
+import { dropdownDatalistSetup } from "../../../utilities/formHelpers/formFuzzyDropdown";
+import { accordion } from "../../../utilities/interfaceHelpers/accordion";
 
+import useHandleInputChange from "../../../hooks/form/HandleInputChange";
+import useHandleFuzzyInputChange from "../../../hooks/form/HandleFuzzyInputChange";
+import useHandleInputAddition from "../../../hooks/form/HandleInputAddition";
+import useHandleInputDeletion from "../../../hooks/form/HandleInputDeletion";
+import useHandleDropdownItemSelect from "../../../hooks/form/HandleDropdownItemSelect";
 
 import * as releaseActions from "../../../store/actions/index";
 
 //===============================================================================================================//
 
-class ReleaseEdit extends Component {
-  state = {
-    avatar: "releases/avatar.jpg",
-    avatarName: "No file(s) selected",
-    avatarFile: "",
-    formIsValid: true,
-    deleteTrack: false,
-    deleteTrackNumber: "",
-    deleteRelease: false,
-    dataListId: "",
-    defaultFuseConfigs: {
-      shouldSort: true,
-      threshold: 0,
-			ignoreLocation: true,
-			minMatchCharLength: 3,
-      keys: ["name"]
-    }
-  };
+const ReleaseEdit = props => {
 
-  //===============================================================================================================//
+	//===============================================================================================================//
+	// Set Up Component STATE & Initialise HOOKS
+	//===============================================================================================================//
 
-  // ******* REACT LIFECYCLE FUNCITONS ******* //
+	const [getAvatar, setAvatar] = useState("releases/avatar.jpg");
+	const [getAvatarName, setAvatarName] = useState("No file(s) selected");
+	const [getAvatarFile, setAvatarFile] = useState("");
+	const [getFormIsValid, setFormIsValid] = useState(true);
+	const [getShowModal, setShowModal] = useState(false);
 
-  componentDidMount() {
-    this.props.onFetchRelease(this.props.match.params.id, true);
-    this.props.onFetchArtists();
-    this.props.onFetchLabels();
-  }
+	const { onFetchRelease, onFetchTracks, onFetchArtists, onFetchLabels, onEditLocalRelease, onEditLocalTrack, stateRelease, stateSuccess, history, match } = props;
+	const { updatedFormStd, formIsValidStd, inputChangeHandler } = useHandleInputChange();
+	const { updatedFormFzy, formIsValidFzy, dataListIdFzy, fuzzyInputChangeHandler } = useHandleFuzzyInputChange();
+	const { updatedFormAdd, inputAddHandler } = useHandleInputAddition();
+	const { updatedFormDel, inputDeleteHandler } = useHandleInputDeletion();
+	const { updatedFormDds, dropdownItemSelectHandler } = useHandleDropdownItemSelect();
+	
+	//===============================================================================================================//
+	// Setup useEffect Functions
+	//===============================================================================================================//
 
-  componentDidUpdate() {
-    this.fuseArtists = new Fuse(
-      this.props.stateArtists,
-      this.state.defaultFuseConfigs
-    );
+	useEffect(() => {
+		console.log("Initial Get Release, Tracks, Artists & Labels Effect Running!");
+		onFetchRelease(match.params.id, true);
+		onFetchTracks(match.params.id, true);
+		onFetchArtists();
+		onFetchLabels();
+		accordion();
+	}, [onFetchRelease, onFetchTracks, onFetchArtists, onFetchLabels, match]);
 
-    this.fuseLabels = new Fuse(
-      this.props.stateLabels,
-      this.state.defaultFuseConfigs
-    );
+	//===============================================================================================================//
+	
+	useEffect(() => {
+		console.log("Standard Input Effect Initialised!");
+		if (updatedFormStd) {
+			setFormIsValid(formIsValidStd);
 
-    this.state.dataListId && dropdownDatalistSetup(this.state.dataListId);
-  }
+			if (updatedFormStd.releaseForm) {
+				console.log("Handle Standard Release Input Effect Running!");
+				onEditLocalRelease(updatedFormStd); 
+			}
+			else if (updatedFormStd[0].trackForm) {
+				console.log("Handle Standard Track Input Effect Running!");
+				onEditLocalTrack(updatedFormStd); 
+			}
+		}
+	}, [formIsValidStd, updatedFormStd, onEditLocalRelease, onEditLocalTrack]);
 
-  //===============================================================================================================//
+	//===============================================================================================================//
 
-  releaseUpdateHandler = event => {
-    event.preventDefault();
+	useEffect(() => {
+		console.log("Fuzzy Input Effect Initialised!");
+		if (updatedFormFzy && dataListIdFzy) {
+			dropdownDatalistSetup(dataListIdFzy);
+			setFormIsValid(formIsValidFzy);
 
-    const releaseDataArray = Object.values(this.props.stateReleaseForm);
+			if (updatedFormFzy.releaseForm) {
+				console.log("Handle Fuzzy Release Input Effect Running!");
+				onEditLocalRelease(updatedFormFzy); 
+			}
+			else if (updatedFormFzy[0].trackForm) {
+				console.log("Handle Fuzzy Track Input Effect Running!");
+				onEditLocalTrack(updatedFormFzy); 
+			}
+		}
+	}, [dataListIdFzy, formIsValidFzy, updatedFormFzy, onEditLocalRelease, onEditLocalTrack]);
 
-    const releaseDataObject = {};
-    releaseDataObject["artistName"] = [];
-    releaseDataObject["labelName"] = [];
-    releaseDataObject["releaseFormat"] = [];
-    releaseDataObject["tracks"] = [];
+	//===============================================================================================================//
 
-    releaseDataArray.forEach(function(element) {
-      if (element instanceof Array) {
-        element.forEach(function(tracks) {
-          let trackObj = {};
-          trackObj["artistName"] = [];
-          Object.values(tracks).forEach(function(track){
-            if (track.elementAttr.name === "artistName") {
-              if (track.linkedRecord) {
-                trackObj["artistName"].push({ _id: track.id });
-              } else if (track.value) {
-                trackObj["artistName"].push({ name: track.value });
-              }
-            } else {
-              trackObj[track.elementAttr.name] = track.value;
-            }
-          });
-          releaseDataObject["tracks"].push(trackObj);
-        });
-      }
-      else if (element.elementAttr.name === "artistName") {
-        if (element.linkedRecord) {
-          releaseDataObject.artistName.push({ _id: element.id });
-        } else if (element.value) {
-          releaseDataObject.artistName.push({ name: element.value });
-        }
-      }
-      else if (element.elementAttr.name === "labelName") {
-        if (element.linkedRecord) {
-          releaseDataObject.labelName.push({ _id: element.id });
-        } else if (element.value) {
-          releaseDataObject.labelName.push({ name: element.value });
-        }
-      }
-      else if (element.elementAttr.name === "releaseFormat") {
-        if (element.value) {
-          releaseDataObject.releaseFormat.push({ name: element.label, release: element.value });
-        }
-      }
-      else {
-        releaseDataObject[element.elementAttr.name] = element.value;
-      }
-    });
+	useEffect(() => {
+		console.log("Add / Delete / DropDown Effect Initialised!");
+		if (updatedFormAdd) {
+			console.log("Handle Add Input Effect Running!");
+			onEditLocalTrack(updatedFormAdd);
 
-    const releaseId = this.props.stateRelease._id;
-    let updatedReleaseData;
-    let fileFlag;
+		}
+		if (updatedFormDel) {
+			console.log("Handle Delete Input Effect Running!");
+			onEditLocalTrack(updatedFormDel);
 
-    if (this.state.avatarFile) {
-      fileFlag = true;
-      let releaseData = JSON.stringify(releaseDataObject);
+		}
+		if (updatedFormDds) {
 
-      updatedReleaseData = new FormData();
-      updatedReleaseData.append("id", releaseId);
-      updatedReleaseData.append("image", this.state.avatarFile);
-      updatedReleaseData.append("release", releaseData);
-    } else {
-      fileFlag = false;
-      updatedReleaseData = {
-        id: releaseId,
-        release: releaseDataObject
-      };
-    }
+			if (updatedFormDds.releaseForm) {
+				console.log("Handle Fuzzy Release DropDown Select Effect Running!");
+				onEditLocalRelease(updatedFormDds); 
+			}
+			else if (updatedFormDds[0].trackForm) {
+				console.log("Handle Fuzzy Track DropDown Select Effect Running!");
+				onEditLocalTrack(updatedFormDds); 
+			}
+		}
+	}, [updatedFormAdd, updatedFormDel, updatedFormDds, onEditLocalRelease, onEditLocalTrack]);
 
-    this.setState({
-      dataListId: ""
-    });
+	//===============================================================================================================//
+
+	useEffect(() => {
+		console.log("POST Form Effect Initialised!");
+		if (stateSuccess !== null) {
+			console.log("Successful POST Effect Running!");
+			history.push({ pathname: "/releases/" + stateRelease._id });
+		}
+	}, [stateRelease, stateSuccess, history]);
+
+	//===============================================================================================================//
+	// Create & Handle Form Submission Object
+	//===============================================================================================================//
+
+  const releaseUpdateHandler = event => {
+		event.preventDefault();
+		
+		const releaseId = props.stateRelease._id;
+		const releaseDataObject = objBuilderRelease.baseReleaseObject();
+		const tracksDataArray = [];
+		let fileFlag = false;
+
+		const releaseDataMap = new Map(Object.entries(props.stateReleaseForm));
+
+    releaseDataMap.forEach(function(value, key) {
+			switch (key) {
+				case "label": 
+					value.forEach(function(element) {
+						element.linkedRecord ?
+						releaseDataObject.labelName.push({ _id: element.fuzzyRef }) :
+						releaseDataObject.labelName.push({ name: element.value });
+					});
+				break;
+				case "formats":
+					value.forEach(function(element) {
+						releaseDataObject.releaseFormat.push({
+							name: element.label,
+							release: element.value
+						});
+					});
+				break;
+				case "imageUpload":
+				break;
+				default : 
+					releaseDataObject[key] = value.value;		
+			}
+		});
+
+		const tracksDataMap = new Map(Object.entries(props.stateTrackForm));
+
+		tracksDataMap.forEach(function(value, key) {
+			let track = objBuilderRelease.baseTrackObject();
+			for ( let key in value ) {
+				switch (key) {
+					case "artists": 
+						value[key].forEach(function(element) {
+							element.linkedRecord ?
+							track.artistName.push({ _id: element.fuzzyRef }) :
+							track.artistName.push({ name: element.value });
+						});
+					break;
+					default : 
+						track[key] = value[key].value;
+				}
+				track.releaseTitle = releaseId;
+				track.releaseCatalogue = releaseId;
+				track.releasePicture = releaseId;
+				track.releaseLabel = releaseDataObject.labelName[0]._id
+					? releaseDataObject.labelName[0]._id
+					: "";
+			}
+			tracksDataArray.push(track);
+		})
+
+		const releaseData = { release: { 
+			release: releaseDataObject,
+			tracks: tracksDataArray
+		} };
+		let updatedReleaseData = releaseData;
+
+		if (getAvatarFile) { 
+			updatedReleaseData = new FormData();
+			updatedReleaseData.append("id", releaseId);
+			updatedReleaseData.append("image", getAvatarFile);
+			updatedReleaseData.append("release", JSON.stringify(releaseData));
+			fileFlag = true;
+		}
 
 		console.log(updatedReleaseData);
-		console.log(fileFlag);
-    console.log(JSON.stringify(releaseDataObject));
-
-    //this.props.onUpdateRelease(releaseId, updatedReleaseData, fileFlag);
+    //props.onUpdateRelease(releaseId, updatedReleaseData, fileFlag);
   };
 
+	//===============================================================================================================//
+	// Prepare HTML Form Using Processed ReleaseForm Object Array From Redux Store
+	//===============================================================================================================//
+
+	const releaseFormRender = (arrayElement, arrayIndex) => {
+		switch (arrayElement.id) {
+			case "releaseForm":
+				break;
+			case "imageUpload": 
+				return <FileInput
+					key={arrayIndex}
+					elementAttributes={arrayElement.attributes}
+					elementImage={
+						arrayElement.attributes.pictureLocation
+							? `releases/${arrayElement.attributes.pictureLocation}`
+							: getAvatar
+					}
+					elementImageName={
+						arrayElement.attributes.pictureName
+							? arrayElement.attributes.pictureName
+							: getAvatarName
+					}
+					hasUpload={getAvatarFile ? true : false}
+					imageUpload={`${getAvatar}`}
+					imageNameUpload={getAvatarName}
+					title={props.stateRelease.title}
+					changed={event => imageUploadPreviewHandler(event)}
+				/>
+			case "label":
+				return <Auxiliary key={arrayIndex}>
+				{arrayElement.attributes.map((labelElement, labelIndex) =>
+					<FuzzyInput
+						key={labelIndex}
+						elementIndex={labelIndex}
+						elementAttributes={labelElement}
+						elementValid={!labelElement.valid}
+						clicked={event =>
+							dropdownItemSelectHandler(
+								event,
+								props.stateReleaseForm[arrayElement.id][labelIndex],
+								`${arrayElement.id}[${labelIndex}]`,
+								props.stateReleaseForm
+							)
+						}
+						changed={event =>
+							fuzzyInputChangeHandler(
+								event,
+								props.stateReleaseForm[arrayElement.id][labelIndex],
+								`${arrayElement.id}[${labelIndex}]`,
+								props.stateReleaseForm,
+								`${labelElement.labelFor}List`,
+								props.stateLabels
+							)
+						}
+						keyup={event =>
+							dropdownItemSelectHandler(
+								event,
+								props.stateReleaseForm[arrayElement.id][labelIndex],
+								`${arrayElement.id}[${labelIndex}]`,
+								props.stateReleaseForm,
+								`${labelElement.labelFor}List`
+							)
+						}
+					/>
+					)}
+				</Auxiliary>
+			case "formats":
+				return <fieldset key={arrayIndex}>
+					<legend>Release Formats</legend>
+					{arrayElement.attributes.map((formatElement, formatIndex) =>
+						<Input
+							key={formatIndex}
+							elementAttributes={formatElement}
+							elementValid={!formatElement.valid}
+							changed={event =>
+								inputChangeHandler(
+									event,
+									props.stateReleaseForm[arrayElement.id][formatIndex],
+									`${arrayElement.id}[${formatIndex}]`,
+									props.stateReleaseForm
+								)
+							}
+						/>	
+					)}
+				</fieldset>
+			default:
+				return <Input
+					key={arrayIndex}
+					elementAttributes={arrayElement.attributes}
+					elementValid={!arrayElement.attributes.valid}
+					changed={event =>
+						inputChangeHandler(
+							event,
+							props.stateReleaseForm[arrayElement.id],
+							`${arrayElement.id}`,
+							props.stateReleaseForm
+						)
+					}
+				/>
+		}
+	}
+	
+	//===============================================================================================================//
+	// Prepare HTML Form Using Processed TrackForm Object Array From Redux Store
+	//===============================================================================================================//
+
+  const trackFormRender = (arrayElement, arrayIndex, trackIndex) => {
+		switch (arrayElement.id) {
+			case "trackForm":
+				break;
+			case "trackId":
+				break;
+			case "artists":
+				return <fieldset key={arrayIndex}>
+				<legend>Artists</legend>
+					{arrayElement.attributes.map((artistElement, artistIndex) =>
+						<FuzzyInputDelete
+							key={artistIndex}
+							elementIndex={artistIndex}
+							elementAttributes={artistElement}
+							elementValid={!artistElement.valid}
+							clicked={event =>
+								dropdownItemSelectHandler(
+									event,
+									props.stateTrackForm[trackIndex][arrayElement.id][artistIndex],
+									`[${trackIndex}]${arrayElement.id}[${artistIndex}]`,
+									props.stateTrackForm
+								)
+							}
+							changed={event =>
+								fuzzyInputChangeHandler(
+									event,
+									props.stateTrackForm[trackIndex][arrayElement.id][artistIndex],
+									`[${trackIndex}]${arrayElement.id}[${artistIndex}]`,
+									props.stateTrackForm,
+									`${artistElement.labelFor}List`,
+									props.stateArtists
+								)
+							}
+							keyup={event =>
+								dropdownItemSelectHandler(
+									event,
+									props.stateTrackForm[trackIndex][arrayElement.id][artistIndex],
+									`[${trackIndex}]${arrayElement.id}[${artistIndex}]`,
+									props.stateTrackForm,
+									`${artistElement.labelFor}List`
+								)
+							}
+							delete={event =>
+								inputDeleteHandler(
+									event,
+									props.stateTrackForm[trackIndex][arrayElement.id],
+									`[${trackIndex}][${arrayElement.id}]`,
+									props.stateTrackForm,
+									artistIndex
+								)
+							}
+						/>
+					)}
+					<Button 
+						type={"primary"}
+						clicked={event =>
+							this.inputAddHandler(
+								event,
+								props.stateTrackForm[trackIndex][arrayElement.id],
+								`[${trackIndex}][${[arrayElement.id]}]`,
+								props.stateTrackForm,
+								`artists`
+							)
+						}
+					>
+						Add Artist
+					</Button>
+				</fieldset>
+			default:
+				return <Input
+					key={arrayIndex}
+					elementAttributes={arrayElement.attributes}
+					elementValid={!arrayElement.attributes.valid}
+					changed={event =>
+						inputChangeHandler(
+							event,
+							props.stateTrackForm[trackIndex][arrayElement.id],
+							`[${trackIndex}]${arrayElement.id}`,
+							props.stateTrackForm
+						)
+					}
+				/>
+		}
+	}
+	
   //===============================================================================================================//
 
-  inputChangeHandler = (event, inputIdentifier) => {
-
-    const updatedReleaseElement = updateObject(
-      this.props.stateReleaseForm[inputIdentifier],
-      {
-        value: event.target.type === "checkbox" && event.target.checked ? "yes" : event.target.value,
-        valid: checkValidity(
-          event.target.value,
-          this.props.stateReleaseForm[inputIdentifier].validationRequired
-        ),
-        touched: true
-      }
-    );
-
-    const updatedReleaseForm = updateObject(this.props.stateReleaseForm, {
-      [inputIdentifier]: updatedReleaseElement
-    });
-
-    let formIsValid = true;
-    for (let inputIdentifier in updatedReleaseForm) {
-      if (inputIdentifier !== "tracks") {
-        formIsValid = updatedReleaseForm[inputIdentifier].valid && formIsValid;
-      }
-    }
-
-    this.setState({
-      formIsValid: formIsValid
-    });
-
-    this.props.onEditLocalRelease(updatedReleaseForm);
-  };
-
-  //===============================================================================================================//
-
-  trackInputChangeHandler = (event, arrayIndex, inputIdentifier) => {
-    const updatedReleaseElement = updateObject(
-      this.props.stateReleaseForm.tracks[arrayIndex][inputIdentifier],
-      {
-        value: event.target.value,
-        valid: checkValidity(
-          event.target.value,
-          this.props.stateReleaseForm.tracks[arrayIndex][inputIdentifier].validationRequired
-        ),
-        touched: true
-      }
-    );
-
-    const track = updateObject(
-      this.props.stateReleaseForm.tracks[arrayIndex],
-      { [inputIdentifier] : updatedReleaseElement }
-    );
-    
-    const tracksArray = [...this.props.stateReleaseForm.tracks];
-
-    const tracks = tracksArray.map((element, index) => {
-      if (index !== arrayIndex) {
-        return element
-      }
-      return {
-        ...element,
-        ...track
-      }
-    })
-
-    const updatedReleaseForm = updateObject(
-      this.props.stateReleaseForm,
-      { tracks }
-    );
-
-    let formIsValid = true;
-    for (let inputIdentifier in updatedReleaseForm.tracks[arrayIndex]) {
-      formIsValid = updatedReleaseForm.tracks[arrayIndex][inputIdentifier].valid && formIsValid;
-    }
-
-    this.setState({
-      formIsValid: formIsValid
-    });
-
-    this.props.onEditLocalRelease(updatedReleaseForm);
-  };
-
-  //===============================================================================================================//
-
-  trackAddHandler = event => {
-    event.preventDefault();
-
-    const currentTracks = [...this.props.stateReleaseForm.tracks];
-
-		const blankTrackNumber = currentTracks.length + 1;
-		const blankTrack = feTrackObject(blankTrackNumber);
-		const newTrack = createTrackForm(blankTrack);
-
-		console.log(newTrack);
-    //const newTrack = createTrackForm([ { track_number: blankTrackNumber, artist_name: "", title: "", catalogue: "", genre: "", mixkey: "" } ]);
-    
-    const tracks = currentTracks.concat(newTrack);
-
-    const updatedReleaseForm = updateObject(
-      this.props.stateReleaseForm,
-      { tracks }
-    );
-
-    this.props.onEditLocalRelease(updatedReleaseForm);
-  }
-
-  //===============================================================================================================//
-
-  trackDeleteCheckHandler = (event, arrayIndex) => {
-    event.preventDefault();
-    this.setState({ deleteTrack: true, deleteTrackNumber: arrayIndex });
-  };
-
-  trackDeleteCancelHandler = event => {
-    event.preventDefault();
-    this.setState({ deleteTrack: false, deleteTrackNumber: "" });
-  };
-
-  trackDeleteConfirmHandler = event => {
-    event.preventDefault();
-
-    const currentTracks = [...this.props.stateReleaseForm.tracks];
-
-    const tracks = currentTracks.filter(track => track.trackNumber.value !== this.state.deleteTrackNumber);
-
-    const updatedReleaseForm = updateObject(
-      this.props.stateReleaseForm,
-      { tracks }
-    );
-
-    this.props.onEditLocalRelease(updatedReleaseForm);
-    this.setState({ deleteTrack: false, deleteTrackNumber: "" });
-  }
-
-  //===============================================================================================================//
-
-  imageUploadPreviewHandler = event => {
-    this.setState({
-      avatar: URL.createObjectURL(event.target.files[0]),
-      avatarName: event.target.files[0].name,
-      avatarFile: event.target.files[0]
-    });
-  };
-
-  //===============================================================================================================//
-
-  fuzzyInputChangeHandler = (event, inputIdentifier, inputId, dataSource) => {
-    
-    const inputValue = event.target.value;
-    const matchedRecords = dataSource === "artistName" ? this.fuseArtists.search(inputValue) : this.fuseLabels.search(inputValue);
-
-    const updatedReleaseElement = updateObject(
-      this.props.stateReleaseForm[inputIdentifier],
-      {
-        id: inputIdentifier,
-				value: inputValue,
-				valid: checkValidity(
-					inputValue,
-					this.props.stateReleaseForm[inputIdentifier].validationRequired
-        ),
-        touched: true,
-        matchedRecords: matchedRecords,
-        linkedRecord: false,
-        showDropdown: "true"
-      }
-    );
-
-    const updatedReleaseForm = updateObject(this.props.stateReleaseForm, {
-      [inputIdentifier]: updatedReleaseElement
-		});
-		
-		let formIsValid = true;
-    for (let inputIdentifier in updatedReleaseForm) {
-      if (inputIdentifier !== "tracks") {
-        formIsValid = updatedReleaseForm[inputIdentifier].valid && formIsValid;
-      }
-    }
-
-    this.setState({
-			formIsValid: formIsValid,
-      dataListId: inputId
-    });
-
-    this.props.onEditLocalRelease(updatedReleaseForm);
-  };
-
-  //===============================================================================================================//
-
-  trackFuzzyInputChangeHandler = (event, arrayIndex, inputIdentifier, inputId) => {
-    const inputValue = event.target.value;
-    const matchedRecords = this.fuseArtists.search(inputValue);
-
-    const updatedTrackElement = updateObject(
-      this.props.stateReleaseForm.tracks[arrayIndex][inputIdentifier],
-      {
-        id: inputIdentifier,
-				value: inputValue,
-				valid: checkValidity(
-          inputValue,
-          this.props.stateReleaseForm.tracks[arrayIndex][inputIdentifier].validationRequired
-        ),
-        touched: true,
-        matchedRecords: matchedRecords,
-        linkedRecord: false,
-        showDropdown: "true"
-      }
-    );
-
-    const updatedTrack = updateObject(this.props.stateReleaseForm.tracks[arrayIndex], {
-      [inputIdentifier] : updatedTrackElement
-    });
-    
-    const tracksArray = [...this.props.stateReleaseForm.tracks];
-
-    const tracks = tracksArray.map((track, index) => {
-      if (index !== arrayIndex) {
-        return track
-      }
-      return {
-        ...track,
-        ...updatedTrack
-      }
-    })
-
-		const updatedReleaseForm = updateObject(this.props.stateReleaseForm, { tracks });
-		
-		let formIsValid = true;
-    for (let inputIdentifier in updatedReleaseForm.tracks[arrayIndex]) {
-      formIsValid = updatedReleaseForm.tracks[arrayIndex][inputIdentifier].valid && formIsValid;
-    }
-
-    this.setState({
-			formIsValid: formIsValid,
-      dataListId: inputId
-    });
-
-    this.props.onEditLocalRelease(updatedReleaseForm);
-  };
-
-  //===============================================================================================================//
-
-  dropdownItemKeyUpHandler = (event, inputIdentifier, dataListId, trackSelect, arrayIndex) => {
-    const dataList = document.getElementById(dataListId);
-    const moveUp = "ArrowUp";
-    const moveDown = "ArrowDown";
-    const selectOption = "Enter";
-
-    if (dataList.hasChildNodes()) {
-      const dataOptions = [].slice.call(
-        dataList.getElementsByTagName("option")
-      );
-
-      switch (event.key) {
-        case moveUp:
-          focusNextDataOption(moveUp, dataOptions);
-          return;
-        case moveDown:
-          focusNextDataOption(moveDown, dataOptions);
-          return;
-        case selectOption:
-          trackSelect === true
-            ? this.trackDropdownItemSelectHandler(event, arrayIndex, inputIdentifier)
-            : this.dropdownItemSelectHandler(event, inputIdentifier);
-          return;
-        default:
-          return;
-      }
-    }
-  };
-
-  //===============================================================================================================//
-
-  dropdownItemSelectHandler = (event, inputIdentifier) => {
-    const updatedReleaseElement = updateObject(
-      this.props.stateReleaseForm[inputIdentifier],
-      {
-        id: event.target.id,
-        value: event.target.value,
-        linkedRecord: true,
-        showDropdown: "false"
-      }
-    );
-
-    const updatedReleaseForm = updateObject(this.props.stateReleaseForm, {
-      [inputIdentifier]: updatedReleaseElement
-    });
-
-    this.props.onEditLocalRelease(updatedReleaseForm);
-  };
-    
-  //===============================================================================================================//
-
-  trackDropdownItemSelectHandler = (event, arrayIndex, inputIdentifier) => {
-    const updatedTrackElement = updateObject(
-      this.props.stateReleaseForm.tracks[arrayIndex][inputIdentifier],
-      {
-        id: event.target.id,
-        value: event.target.value,
-        linkedRecord: true,
-        showDropdown: "false"
-      }
-    );
-
-    const updatedTrack = updateObject(this.props.stateReleaseForm.tracks[arrayIndex], {
-      [inputIdentifier] : updatedTrackElement
-    });
-    
-    const tracksArray = [...this.props.stateReleaseForm.tracks];
-
-    const tracks = tracksArray.map((track, index) => {
-      if (index !== arrayIndex) {
-        return track
-      }
-      return {
-        ...track,
-        ...updatedTrack
-      }
-    })
-
-    const updatedReleaseForm = updateObject(this.props.stateReleaseForm, { tracks });
-
-    this.props.onEditLocalRelease(updatedReleaseForm);
-  };
-    
-  //===============================================================================================================//
-
-
-  releaseProfileHandler = event => {
-    event.preventDefault();
-    this.props.onResetStatus();
-    this.props.history.replace({
-      pathname: "/releases/" + this.props.stateRelease._id
-    });
-  };
-
-  //===============================================================================================================//
-
-  releaseDeleteCheckHandler = event => {
-    event.preventDefault();
-    this.setState({ deleteRelease: true });
-  };
-
-  releaseDeleteCancelHandler = event => {
-    event.preventDefault();
-    this.setState({ deleteRelease: false });
-  };
-
-  releaseDeleteConfirmHandler = event => {
-    event.preventDefault();
-    this.props.onDeleteRelease(this.props.stateRelease._id);
-    this.props.history.replace({ pathname: "/releases/" });
-  };
-
-  //===============================================================================================================//
-
-  render() {
-    let formElements = [];
-    if (!this.props.stateLoading && this.props.stateRelease) {
-      for (let key in this.props.stateReleaseForm) {
-        formElements.push({
-          id: key,
-          attributes: this.props.stateReleaseForm[key]
-        });
+	const imageUploadPreviewHandler = event => {
+		setAvatar(URL.createObjectURL(event.target.files[0]));
+		setAvatarName(event.target.files[0].name);
+		setAvatarFile(event.target.files[0]);
+	};
+
+	//===============================================================================================================//
+	// Release Action Helpers
+	//===============================================================================================================//
+
+	const releaseRedirectHandler = event => {
+		event.preventDefault();
+		props.onResetStatus();
+		props.stateRelease._id
+		? props.history.push({ pathname: "/releases/" + props.stateRelease._id })
+		: props.history.push({ pathname: "/releases/" });
+	};
+
+	const releaseMessageHandler = event => {
+		event.preventDefault();
+		props.onResetStatus();
+	};
+
+	//===============================================================================================================//
+
+	const releaseDeleteCheckHandler = event => {
+		event.preventDefault();
+		setShowModal(true);
+	};
+
+	const releaseDeleteCancelHandler = event => {
+		event.preventDefault();
+		setShowModal(false);
+	};
+
+	const releaseDeleteConfirmHandler = event => {
+		event.preventDefault();
+		props.onDeleteArtist(props.stateRelease._id);
+		props.history.push({ pathname: "/releases/" });
+	};
+
+	//===============================================================================================================//
+	// Render Edit Release Form
+	//===============================================================================================================//
+
+	let releaseFormElements = [];
+	let trackFormElements = [];
+
+	if (!props.stateLoading && props.stateReleaseForm && props.stateTrackForm) {
+		for (let key in props.stateReleaseForm) {
+			releaseFormElements.push({
+				id: key,
+				attributes: props.stateReleaseForm[key]
+			});
+		}
+		props.stateTrackForm.forEach((track) => {
+			let trackElement = [];
+			for (let key in track) {
+				trackElement.push({
+					id: key,
+					value: track[key].value,
+					attributes: track[key]
+				});
 			}
-			console.log(formElements);
-    }
+			trackFormElements.push(trackElement);
+		});
+	}
 
-    //===============================================================================================================//
+	//===============================================================================================================//
 
-    let releaseForm = <Loader />;
-    if (!this.props.stateLoading && this.props.stateError) {
-      releaseForm = (
-        <StatusMessage status={"warning"} message={this.props.stateError} />
-      );
-    }
-    if (!this.props.stateLoading && this.props.stateRelease) {
-      releaseForm = (
-        <Auxiliary>
-          <h1>{this.props.stateRelease.title}</h1>
-          <h2>Update Release Details</h2>
-          {this.props.stateSuccess ? (
-            <StatusMessage
-              status={"success"}
-              message={this.props.stateSuccess}
-            />
-          ) : null}
-          <div className="userform">
-            <form onSubmit={this.releaseUpdateHandler}>
-              <div className="input-wrapper">
-                {formElements.map((formElement, index) =>
-                  formElement.attributes.type === "file" ? (
-                    <FileInput
-											key={index}
-											elementType={formElement.attributes.type}
-											elementId={formElement.attributes.id}
-											elementName={formElement.attributes.name}
-                      elementLabel={formElement.attributes.label}
-                      elementLabelFor={formElement.attributes.labelFor}
-                      elementImage={
-                        formElement.attributes.pictureLocation
-                          ? `releases/${formElement.attributes.pictureLocation}`
-                          : this.state.avatar
-                      }
-                      elementImageName={
-                        formElement.attributes.pictureName
-                          ? formElement.attributes.pictureName
-                          : this.state.avatarName
-                      }
-                      hasUpload={this.state.avatarFile ? true : false}
-                      imageUpload={`${this.state.avatar}`}
-                      imageNameUpload={this.state.avatarName}
-                      title={this.props.stateRelease.title}
-                      changed={event => this.imageUploadPreviewHandler(event)}
-                    />
-                    ) : formElement.attributes.isFuzzy ? (
-                      <FuzzyInput
-                        key={index}
-												elementType={formElement.attributes.type}
-												elementId={formElement.attributes.id}
-												elementName={formElement.attributes.name}
-												elementLabel={formElement.attributes.label}
-                        elementLabelFor={formElement.attributes.labelFor}
-												elementValue={formElement.attributes.value}
-												invalid={!formElement.attributes.valid}
-												shouldValidate={formElement.attributes.validationRequired}
-												errorMessage={formElement.attributes.validationFeedback}
-												touched={formElement.attributes.touched}
-												data={this.props.stateLabels}
-                        dataListId={`${formElement.attributes.labelFor}List`}
-                        matches={formElement.attributes.matchedRecords}
-                        showDropdown={formElement.attributes.showDropdown}
-                        clicked={event =>
-                          this.dropdownItemSelectHandler(event, formElement.id)
-                        }
-                        changed={event =>
-                          this.fuzzyInputChangeHandler(
-                            event,
-                            formElement.id,
-                            `${formElement.attributes.labelFor}List`,
-                            formElement.attributes.name
-                          )
-                        }
-                        keyup={event =>
-                          this.dropdownItemKeyUpHandler(
-                            event,
-                            formElement.id,
-                            `${formElement.attributes.labelFor}List`,
-                            false
-                          )
-                        }
-                      />
-                    ) : formElement.id === "tracks" ? (
-                      formElement.attributes.map((element, arrayIndex) =>
-                        <fieldset key={arrayIndex} className="userform--track">
-                          <legend className="closed" onClick={displayToggle}>Edit Track {arrayIndex + 1}</legend>
-                          <div className="visually-hidden">
-                            {Object.values(element).map((element, index) =>
-                              element.isFuzzy ? (
-                                <FuzzyInput
-                                  key={index}
-																	elementType={formElement.attributes.type}
-																	elementId={formElement.attributes.id}
-																	elementName={formElement.attributes.name}
-																	elementLabel={element.label}
-                                  elementLabelFor={element.labelFor}
-																	elementValue={element.value}
-																	invalid={!formElement.attributes.valid}
-																	shouldValidate={formElement.attributes.validationRequired}
-																	errorMessage={formElement.attributes.validationFeedback}
-																	touched={formElement.attributes.touched}
-																	data={this.props.stateArtists}
-                                  dataListId={`${element.labelFor}List${arrayIndex}`}
-                                  matches={element.matchedRecords}
-                                  showDropdown={element.showDropdown}
-                                  clicked={event =>
-                                    this.trackDropdownItemSelectHandler(
-                                      event,
-                                      arrayIndex,
-                                      element.fuzzyRef
-                                    )
-                                  }
-                                  changed={event =>
-                                    this.trackFuzzyInputChangeHandler(
-                                      event,
-                                      arrayIndex,
-                                      element.fuzzyRef,
-                                      `${element.labelFor}List${arrayIndex}`
-                                    )
-                                  }
-                                  keyup={event =>
-                                    this.dropdownItemKeyUpHandler(
-                                      event,
-                                      element.fuzzyRef,
-                                      `${element.labelFor}List${arrayIndex}`,
-                                      true,
-                                      arrayIndex
-                                    )
-                                  }
-                                />
-                              ) : (
-                                <Input
-                                  key={index}
-																	element={formElement.attributes.element}
-																	elementType={formElement.attributes.type}
-																	elementId={formElement.attributes.id}
-																	elementName={formElement.attributes.name}
-																	elementLabel={element.label}
-                                  elementLabelFor={element.labelFor}
-                                  arrayIndex={arrayIndex}
-                                  elementValue={element.value}
-                                  invalid={!element.valid}
-                                  shouldValidate={element.validationRequired}
-                                  errorMessage={element.validationFeedback}
-                                  touched={element.touched}
-                                  changed={event =>
-                                    this.trackInputChangeHandler(event, arrayIndex, element.id)
-                                  }
-                                />
-                              )
-                            )}
-                            <Button type={"warning"} clicked={event => this.trackDeleteCheckHandler(event, arrayIndex)} >
-                              Delete Track
-                            </Button>
-                          </div>
-                        </fieldset>
-                      )                    
-                    ) : (
-                      <Input
-											key={index}
-											element={formElement.attributes.element}
-											elementType={formElement.attributes.type}
-											elementId={formElement.attributes.id}
-											elementName={formElement.attributes.name}
-                      elementLabel={formElement.attributes.label}
-                      elementLabelFor={formElement.attributes.labelFor}
-                      elementValue={formElement.attributes.value}
-                      invalid={!formElement.attributes.valid}
-                      shouldValidate={formElement.attributes.validationRequired}
-                      errorMessage={formElement.attributes.validationFeedback}
-                      touched={formElement.attributes.touched}
-                      changed={event =>
-                        this.inputChangeHandler(event, formElement.id)
-                      }
-                    />
-                  )
-                )}
-                <Button type={"primary"} clicked={this.trackAddHandler} >
-                  Add New Track
-                </Button>
-              </div>
-              <div className={"userform--actions"}>
-                <Button
-                  type={this.state.formIsValid ? "success" : "disabled"}
-                  disabled={!this.state.formIsValid}
-                >
-                  Save Release
-                </Button>
-
-                <Button type={"grey"} clicked={this.releaseProfileHandler}>
-                  Cancel
-                </Button>
-                <Button
-                  type={"warning"}
-                  clicked={this.releaseDeleteCheckHandler}
-                >
-                  Delete Release
-                </Button>
-              </div>
-            </form>
-          </div>
-
-          <Modal
-            show={this.state.deleteTrack}
-            hide={this.trackDeleteCancelHandler}
-          >
-            <h2>Delete Track</h2>
-            <p>
-              Please confirm you wish to delete
-              <strong> Track {this.state.deleteTrackNumber}</strong>.
-            </p>
-            <Button type={"warning"} clicked={this.trackDeleteConfirmHandler}>
-              Delete Track
-            </Button>
-            <Button type={"primary"} clicked={this.trackDeleteCancelHandler}>
-              Cancel
-            </Button>
-          </Modal>
-
-          <Modal
-            show={this.state.deleteRelease}
-            hide={this.releaseDeleteCancelHandler}
-          >
-            <h2>Delete Release Details</h2>
-            <p>
-              Please confirm you wish to delete
-              <strong> {this.props.stateRelease.title} </strong>
-              from the database.
-            </p>
-            <Button type={"warning"} clicked={this.releaseDeleteConfirmHandler}>
-              Delete Release
-            </Button>
-            <Button type={"primary"} clicked={this.releaseDeleteCancelHandler}>
-              Cancel
-            </Button>
-          </Modal>
-        </Auxiliary>
-      );
-    }
-    return <div className="container">{releaseForm}</div>;
-  }
+	let releaseForm = <Loader />;
+	if (!props.stateLoading && props.stateError && !props.stateRelease) {
+		releaseForm = (
+			<Auxiliary>
+				<h1>There was a problem with your request</h1>
+				<StatusMessage
+					status={"warning"}
+					headline={props.stateError}
+					response={props.stateResponse}
+					message={props.stateFeedback}
+					action={releaseRedirectHandler}
+					buttonText={`OK`}
+				/>
+			</Auxiliary>
+		);
+	}
+	if (!props.stateLoading && props.stateRelease && props.stateTracks) {
+		releaseForm = (
+			<div className="container">
+				<h1>{props.stateRelease.title}</h1>
+				{props.stateError ? (
+					<Auxiliary>
+						<StatusMessage
+							status={"warning"}
+							headline={props.stateError}
+							response={props.stateResponse}
+							message={props.stateFeedback}
+							action={releaseMessageHandler}
+							buttonText={`Close`}
+						/>
+					</Auxiliary>
+				) : null }
+				<h2>Update Release Details</h2>
+				<div className="userform">
+					<form onSubmit={releaseUpdateHandler}>
+						<div className="input-wrapper">
+							{releaseFormElements.map((element, index) =>
+								releaseFormRender(element, index)
+							)}
+							<fieldset data-accordion-group="true">
+								<legend>Tracks ({trackFormElements.length})</legend>
+									{trackFormElements.map((trackElement, trackIndex) =>
+										<details key={trackIndex}>
+											<summary aria-expanded="false" data-accordion-control="true" aria-controls={`accordionContainer${trackIndex}`} id={`accordionControl${trackIndex}`}>
+												Edit Track {trackIndex + 1}: {trackElement[2].value}
+											</summary>
+											<div id={`accordionContainer${trackIndex}`} role="region" aria-labelledby={`accordionControl${trackIndex}`} data-accordion-content="true">
+												{trackElement.map((element, index) =>
+													trackFormRender(element, index, trackIndex)
+												)}
+												<Button
+													type={"warning"}
+													clicked={event => 
+														inputDeleteHandler(
+															event,
+															props.stateTrackForm,
+															"root",
+															props.stateTrackForm,
+															trackIndex
+														)
+													}
+												>
+													Delete Track
+												</Button>
+											</div>	
+										</details>
+									)}
+									<Button 
+										type={"primary"}
+										clicked={event => 
+											inputAddHandler(
+												event,
+												props.stateTrackForm,
+												"root",
+												props.stateTrackForm,
+												"tracks"
+											)
+										}
+									>
+										Add New Track
+									</Button>
+							</fieldset>
+						</div>
+						<div className={"userform--actions"}>
+						<Button
+								type={getFormIsValid ? "primary" : "disabled"}
+								disabled={!getFormIsValid}
+							>
+								Save Release
+							</Button>
+							<Button type={"grey"} clicked={releaseRedirectHandler}>
+								Cancel
+							</Button>
+							<Button
+									type={"warning"}
+									clicked={releaseDeleteCheckHandler}
+							>
+								Delete Release
+							</Button>
+						</div>
+					</form>
+				</div>
+				<Modal
+					show={getShowModal}
+					hide={releaseDeleteCancelHandler}
+					action={releaseDeleteConfirmHandler}
+					status={"warning"}
+					headline={`Delete Release Details`}
+					bespokeText={`Please confirm you wish to delete <strong> ${props.stateRelease.title} </strong> from the database.`}
+					buttonText={`Delete Release`}
+				>
+					<Button type={"grey"} clicked={releaseDeleteCancelHandler}>
+						Cancel
+					</Button>
+				</Modal>
+			</div>
+		);
+	}
+	return releaseForm;
 }
 
 //===============================================================================================================//
-
-// ******* REDUX STATE MANAGEMENT ******* //
+// Redux STATE Management
+//===============================================================================================================//
 
 const mapStateToProps = state => {
   return {
     stateRelease: state.release.release,
     stateArtists: state.artist.artists,
-    stateLabels: state.label.labels,
-    stateReleaseForm: state.release.releaseForm,
+		stateLabels: state.label.labels,
+		stateTracks: state.track.tracks,
+		stateReleaseForm: state.release.releaseForm,
+		stateTrackForm: state.track.trackForm,
     stateLoading: state.release.loading,
     stateError: state.release.error,
     stateSuccess: state.release.success
@@ -788,18 +622,23 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     onFetchRelease: (releaseId, edit) =>
-      dispatch(releaseActions.fetchReleaseSend(releaseId, edit)),
-    onFetchArtists: () => dispatch(releaseActions.fetchArtistsSend()),
-    onFetchLabels: () => dispatch(releaseActions.fetchLabelsSend()),
+			dispatch(releaseActions.fetchReleaseSend(releaseId, edit)),
+		onFetchTracks: (releaseId, edit) =>
+			dispatch(releaseActions.fetchTracksByReleaseSend(releaseId, edit)),
+    onFetchArtists: () => 
+			dispatch(releaseActions.fetchArtistsSend()),
+    onFetchLabels: () => 
+			dispatch(releaseActions.fetchLabelsSend()),
     onEditLocalRelease: updatedReleaseForm =>
-      dispatch(releaseActions.editReleaseClientInput(updatedReleaseForm)),
+			dispatch(releaseActions.editReleaseClientInput(updatedReleaseForm)),
+		onEditLocalTrack: updatedTrackForm =>
+      dispatch(releaseActions.editTrackClientInput(updatedTrackForm)),
     onUpdateRelease: (releaseId, updatedReleaseData, fileFlag) =>
-      dispatch(
-        releaseActions.updateReleaseSend(releaseId, updatedReleaseData, fileFlag)
-      ),
+      dispatch(releaseActions.updateReleaseSend(releaseId, updatedReleaseData, fileFlag)),
     onDeleteRelease: releaseId =>
       dispatch(releaseActions.deleteReleaseSend(releaseId)),
-    onResetStatus: () => dispatch(releaseActions.releaseResetReturnStatus())
+    onResetStatus: () => 
+			dispatch(releaseActions.releaseResetStatus())
   };
 };
 

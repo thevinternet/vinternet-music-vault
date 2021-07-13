@@ -1,90 +1,138 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { HashLink as Link } from "react-router-hash-link";
 
 import "./ReleaseList.scss";
 
-import Auxiliary from "../../../wrappers/Auxiliary/Auxiliary";
 import ReleaseListItem from "../../../components/Lists/Release/ReleaseListItem";
+
 import Loader from "../../../components/Utilities/UI/Loader/Loader";
+import Modal from "../../../components/Utilities/Modal/Modal";
 import StatusMessage from "../../../components/Utilities/UI/StatusMessage/StatusMessage";
 
 import * as releaseActions from "../../../store/actions/index";
 
 //===============================================================================================================//
 
-class ReleaseList extends Component {
-  componentDidMount() {
-    this.props.onFetchReleases();
-  }
+const ReleaseList = props => {
 
-  //===============================================================================================================//
+	//===============================================================================================================//
+	// Set Up Component STATE & Initialise HOOKS
+	//===============================================================================================================//
 
-  render() {
-    let releaseList = <Loader />;
-    if (!this.props.stateLoading) {
-      releaseList = (
-        <div className="container">
-          <h1>Releases</h1>
-          {this.props.stateError ? (
-            <StatusMessage status={"warning"} message={this.props.stateError} />
-          ) : (
-            <Auxiliary>
-              {this.props.stateSuccess ? (
-                <StatusMessage
-                  status={"success"}
-                  message={this.props.stateSuccess}
-                />
-              ) : null}
-              <p>Showing {this.props.stateReleases.length} results</p>
-              <ol className="list--block">
-                {this.props.stateReleases.map(release => (
-                  <ReleaseListItem
-                    key={release._id}
-                    releaseId={release._id}
-                    releaseName={release.title}
-                    releaseCat={release.catalogue}
-                    releaseYear={release.year}
-                    picture={release.picture}
-                  />
-                ))}
-              </ol>
-              <Link smooth to="#content">
-                Back To Top
-              </Link>
-            </Auxiliary>
-          )}
-        </div>
-      );
-    }
-    return releaseList;
-  }
+	const { onFetchReleases, history } = props;
+	const [getShouldRedirect, setShouldRedirect] = useState(false);
+
+	//===============================================================================================================//
+	// Setup useEffect Functions
+	//===============================================================================================================//
+
+	useEffect(() => {
+		console.log("Initial Get Releases Effect Running!")
+		onFetchReleases();
+	}, [onFetchReleases]);
+
+	useEffect(() => {
+		if(getShouldRedirect) { history.push({ pathname: "/releases/" }); }
+	}, [getShouldRedirect, history])
+
+	//===============================================================================================================//
+	// Release Action Helpers
+	//===============================================================================================================//
+
+	const releaseMessageHandler = (event, redirect) => {
+		event.preventDefault();
+		props.onResetStatus();
+		setShouldRedirect(redirect)
+	};
+
+	//===============================================================================================================//
+	// Render Release List
+	//===============================================================================================================//
+
+	let releaseList = <Loader />;
+	if (!props.stateLoading && props.stateError) {
+		releaseList = (
+			<div className="container">
+				<h1>There was a problem with your request</h1>
+				<StatusMessage
+					status={"warning"}
+					headline={props.stateError}
+					response={props.stateResponse}
+					message={props.stateFeedback}
+					action={event => releaseMessageHandler(event, true)}
+					buttonText={`OK`}
+				/>
+			</div>
+		);
+	}
+	if (!props.stateLoading && props.stateReleases && !props.stateError) {
+		releaseList = (
+			<div className="container">
+				<h1>Releases</h1>
+				<p>Showing {props.stateReleases.length} results</p>
+				<ol className="list--block">
+					{props.stateReleases.map(release => (
+						<ReleaseListItem
+							key={release._id}
+							releaseId={release._id}
+							releaseName={release.title}
+							releaseCat={release.catalogue}
+							releaseYear={release.year}
+							picture={release.picture}
+						/>
+					))}
+				</ol>
+				<Link smooth to="#content">
+					Back To Top
+				</Link>
+				{props.stateSuccess ? (
+					<Modal
+						show={true}
+						hide={event => releaseMessageHandler(event, false)}
+						action={event => releaseMessageHandler(event, false)}
+						status={"success"}
+						headline={props.stateSuccess}
+						response={props.stateResponse}
+						message={props.stateFeedback}
+						buttonText={`OK`}
+					/>
+				) : null }
+			</div>
+		);
+	}
+	return releaseList;
 }
 
 //===============================================================================================================//
-
-// ******* REDUX STATE MANAGEMENT ******* //
+// Redux STATE Management
+//===============================================================================================================//
 
 const mapStateToProps = state => {
-  return {
-    stateReleases: state.release.releases,
-    stateLoading: state.release.loading,
-    stateError: state.release.error,
-    stateSuccess: state.release.success
-  };
+	return {
+		stateReleases: state.release.releases,
+		stateLoading: state.release.loading,
+		stateError: state.release.error,
+		stateSuccess: state.release.success,
+		stateResponse: state.release.response,
+		stateFeedback: state.release.feedback
+	};
 };
 
 const mapDispatchToProps = dispatch => {
-  return {
-    onFetchReleases: () => dispatch(releaseActions.fetchReleasesSend())
-  };
+	return {
+		onFetchReleases: () => 
+			dispatch(releaseActions.fetchReleasesSend()),
+		onResetStatus: () => 
+			dispatch(releaseActions.releaseResetStatus())
+	};
 };
 
 //===============================================================================================================//
 
 export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+	mapStateToProps,
+	mapDispatchToProps
 )(ReleaseList);
 
 //===============================================================================================================//

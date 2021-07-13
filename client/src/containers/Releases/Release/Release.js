@@ -1,104 +1,157 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 
 import "./Release.scss";
 
 import ReleaseComponent from "../../../components/Things/Release/Release";
+
 import Loader from "../../../components/Utilities/UI/Loader/Loader";
+import Modal from "../../../components/Utilities/Modal/Modal";
 import StatusMessage from "../../../components/Utilities/UI/StatusMessage/StatusMessage";
 
 import * as releaseActions from "../../../store/actions/index";
 
 //===============================================================================================================//
 
-class Release extends Component {
+const Release = props => {
 
-  componentDidMount() {
-    this.props.onFetchRelease(this.props.match.params.id, false);
-  }
+	//===============================================================================================================//
+	// Set Up Component STATE & Initialise HOOKS
+	//===============================================================================================================//
 
-  //===============================================================================================================//
+	const { onFetchRelease, onFetchTracks, onTrackResetStatus, onTrackResetResults, stateTrackError, history, match } = props;
+	const [getShouldRedirect, setShouldRedirect] = useState(false);
 
-  render() {
-    let release = <Loader />;
-    if (!this.props.stateLoading && this.props.stateError) {
-      release = (
-        <StatusMessage status={"warning"} message={this.props.stateError} />
-      );
-    }
+	if (props.stateTrackError) { 
+		props.onTrackResetStatus();
+	}
 
-    if (!this.props.stateLoading && this.props.stateRelease) {
+	//===============================================================================================================//
+	// Setup useEffect Functions
+	//===============================================================================================================//
 
-      const artistNamesArray = [];
-      let artistNames = [];
-      let releaseFormats = [];
-    
-      if (this.props.stateRelease.track.length) {
-        this.props.stateRelease.track.map(track =>
-          track.artist_name.map(artist =>
-            artistNamesArray.push({ name : artist.name, id : artist._id })
-          )     
-        )
-        artistNames = artistNamesArray.reduce((accumulator, currentArtist) => {
-          const uniqueArtist = accumulator.find(item => item.id === currentArtist.id);
-          return !uniqueArtist ? accumulator.concat([currentArtist]) : accumulator
-        }, []);
-      }
+	useEffect(() => {
+		console.log("Initial Get Release & Tracks Effect Running!")
+		onFetchRelease(match.params.id, false);
+		onFetchTracks(match.params.id);
+	}, [onFetchRelease, onFetchTracks, match]);
 
-      if (this.props.stateRelease.format.length) {
-        this.props.stateRelease.format.map(format => {
-          if (format.release === "yes") { releaseFormats.push(format.name) }
-          return releaseFormats;
-        })
-      }
+	useEffect(() => {
+		if (getShouldRedirect) { 
+			history.push({ pathname: "/releases/" }); 
+		}
+	}, [getShouldRedirect, history]);
 
-      //============================================================================================================//
+	useEffect(() => {
+		if (stateTrackError) { 
+			onTrackResetStatus();
+			onTrackResetResults();
+		}
+	}, [stateTrackError, onTrackResetStatus, onTrackResetResults])
 
-      release = (
-        <div className="panel">
-          <ReleaseComponent
-            releaseId={this.props.stateRelease._id}
-            releaseArtist={artistNames}
-            releaseTitle={this.props.stateRelease.title.trim()}
-            releaseLabel={this.props.stateRelease.label_name}
-            releaseCat={this.props.stateRelease.catalogue}
-            releaseTracks={this.props.stateRelease.track}
-            releaseYear={this.props.stateRelease.year}
-            releaseFormat={releaseFormats}
-            releasePicture={this.props.stateRelease.picture}
-            releaseLink={this.props.stateRelease.discogs_url}
-          />
-        </div>
-      );
-    }
-    return <div className="container">{release}</div>;
-  }
+	//===============================================================================================================//
+	// Release Action Helpers
+	//===============================================================================================================//
+
+	const releaseMessageHandler = (event, redirect) => {
+		event.preventDefault();
+		props.onReleaseResetStatus();
+		props.onTrackResetStatus();
+		setShouldRedirect(redirect);
+	};
+
+	//===============================================================================================================//
+	// Render Release Thing
+	//===============================================================================================================//
+
+	let release = <Loader />;
+	if (!props.stateLoading && props.stateReleaseError) {
+		release = (
+			<div className="container">
+				<h1>There was a problem with your request</h1>
+				<StatusMessage
+					status={"warning"}
+					headline={props.stateReleaseError}
+					response={props.stateResponse}
+					message={props.stateFeedback}
+					action={event => releaseMessageHandler(event, true)}
+					buttonText={`OK`}
+				/>
+			</div>
+		);
+	}
+	if (!props.stateLoading && props.stateRelease && !props.stateReleaseError) {
+		release = (
+			<div className="container">
+				<div className="panel">
+					<ReleaseComponent
+						releaseId={props.stateRelease._id}
+						releaseArtist={props.stateRelease.artist_name}
+						releaseTitle={props.stateRelease.title}
+						releaseLabel={props.stateRelease.label_name}
+						releaseCat={props.stateRelease.catalogue}
+						releaseTracks={props.stateTracks}
+						releaseYear={props.stateRelease.year}
+						releaseFormat={props.stateRelease.format}
+						releasePicture={props.stateRelease.picture}
+						releaseLink={props.stateRelease.discogs_url}
+					/>
+				</div>
+				{ props.stateSuccess ? (
+					<Modal
+						show={true}
+						hide={event => releaseMessageHandler(event, false)}
+						action={event => releaseMessageHandler(event, false)}
+						status={"success"}
+						headline={props.stateSuccess}
+						response={props.stateResponse}
+						message={props.stateFeedback}
+						buttonText={`OK`}
+					/>
+				) : null }
+			</div>
+		);
+	}
+	return release;
 }
 
 //===============================================================================================================//
-
-// ******* REDUX STATE MANAGEMENT ******* //
+// Redux STATE Management
+//===============================================================================================================//
 
 const mapStateToProps = state => {
-  return {
-    stateRelease: state.release.release,
-    stateLoading: state.release.loading,
-    stateError: state.release.error
-  };
+	return {
+		stateRelease: state.release.release,
+		stateTracks: state.track.tracks,
+		stateLoading: state.release.loading,
+		stateSuccess: state.release.success,
+		stateResponse: state.release.response,
+		stateFeedback: state.release.feedback,
+		stateReleaseError: state.release.error,
+		stateTrackError: state.track.error
+	};
 };
 
 const mapDispatchToProps = dispatch => {
-  return {
-    onFetchRelease: (releaseId, edit) =>
-      dispatch(releaseActions.fetchReleaseSend(releaseId, edit))
-  };
+	return {
+		onFetchRelease: (releaseId, edit) =>
+			dispatch(releaseActions.fetchReleaseSend(releaseId, edit)),
+		onFetchTracks: (releaseId, edit) =>
+			dispatch(releaseActions.fetchTracksByReleaseSend(releaseId, edit)),
+		onReleaseResetStatus: () =>
+			dispatch(releaseActions.releaseResetStatus()),
+		onTrackResetStatus: () =>
+			dispatch(releaseActions.trackResetStatus()),
+		onTrackResetResults: () =>
+			dispatch(releaseActions.trackResetResults())
+	};
 };
 
 //===============================================================================================================//
 
 export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+	mapStateToProps,
+	mapDispatchToProps
 )(Release);
 
 //===============================================================================================================//
