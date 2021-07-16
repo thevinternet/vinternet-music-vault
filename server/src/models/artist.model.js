@@ -88,12 +88,12 @@ ArtistModel.getArtistById = async (id) => {
 ArtistModel.createNewArtist = async (props, file) => {
 	try {
 		const artist = await ArtistModel.create({
-			name: props.artistName,
-			real_name: props.realName,
-			alias_name: props.aliasName,
+			name: props.name,
+			real_name: props.real_name,
+			alias_name: props.alias_name,
 			profile: props.profile,
 			website: props.website,
-			discogs_id: props.discogsId,
+			discogs_id: props.discogs_id,
 			picture: file
 		});
 
@@ -123,12 +123,12 @@ ArtistModel.updateExistingArtistById = async (id, props) => {
 	// Create 'Set' Object with updated Artist Props and optional Image File
 	const artistUpdateProps = {
 		$set: {
-			name: props.artistName,
-			real_name: props.realName,
-			alias_name: props.aliasName,
+			name: props.name,
+			real_name: props.real_name,
+			alias_name: props.alias_name,
 			profile: props.profile,
 			website: props.website,
-			discogs_id: props.discogsId,
+			discogs_id: props.discogs_id,
 		}
 	}
 	if (props.picture) {

@@ -21,24 +21,24 @@ LabelController.validate = (method) => {
 				body("label._id")
 					.optional().isMongoId()
 					.withMessage("The value for the Label Id provided is not valid"),
-				body("label.labelName")
+				body("label.name")
 					.notEmpty().escape().trim()
 					.withMessage("Please provide the name of the label"),
-				body("label.parentLabel")
+				body("label.parent_label")
 					.isArray()
 					.withMessage("Parent Label array is malformed and not valid"),
-				body("label.parentLabel.*._id")
+				body("label.parent_label.*._id")
 					.isMongoId().optional()
 					.withMessage("The value for the Parent Label Id provided is not valid"),
-				body("label.parentLabel.*.name")
+				body("label.parent_label.*.name")
 					.optional().escape().trim(),
-				body("label.subsidiaryLabel")
+				body("label.subsidiary_label")
 					.isArray()
 					.withMessage("Subsidiary Label array is malformed and not valid"),
-				body("label.subsidiaryLabel.*._id")
+				body("label.subsidiary_label.*._id")
 					.isMongoId().optional()
 					.withMessage("The value for the Subsidiary Label Id provided is not valid"),
-				body("label.subsidiaryLabel.*.name")
+				body("label.subsidiary_label.*.name")
 					.optional().escape().trim(),
 				body("label.profile")
 					.optional().escape().trim(),
@@ -53,7 +53,7 @@ LabelController.validate = (method) => {
 					.withMessage("Please provide the name of the website"),
 				body("label.website.*.url")
 					.optional().escape().trim(),
-				body("label.discogsId")
+				body("label.discogs_id")
 					.optional().escape().trim()
 			]
 		}
@@ -141,7 +141,7 @@ LabelController.createNewLabel = async (req, res, next) => {
 		}
 
 		// If label name already exists return error object
-		const labelCheck = await LabelModel.find({ name: req.body.label.labelName }).exec();
+		const labelCheck = await LabelModel.find({ name: req.body.label.name }).exec();
 
 		if (labelCheck.length) {
 			return res.json({
@@ -150,9 +150,9 @@ LabelController.createNewLabel = async (req, res, next) => {
 					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
-							value: req.body.label.labelName,
+							value: req.body.label.name,
 							msg: "The label name provided is already in the database",
-							param: "labelName",
+							param: "name",
 							location: "body"
 						}
 					]
@@ -166,17 +166,17 @@ LabelController.createNewLabel = async (req, res, next) => {
 		// Prepare label picture object
 		let file;
 		if (req.file) {
-			file = {
+			file = [{
 				location: req.file.filename,
 				filename: req.file.originalname,
 				format: req.file.mimetype
-			}
+			}]
 		} else {
-			file = {
+			file = [{
 				location: "avatar.jpg",
 				filename: "avatar.jpg",
 				format: "image/jpeg"
-			}
+			}]
 		}
 
 		// Submit label object to model and handle response
@@ -253,11 +253,11 @@ LabelController.updateExistingLabelById = async (req, res, next) => {
 
 		// Handle optional picture file and append to label object
 		if (req.file) {
-			props.picture = {
+			props.picture = [{
 				location: req.file.filename,
 				filename: req.file.originalname,
 				format: req.file.mimetype
-			}
+			}]
 		}
 
 		// Submit label object to model and handle response
@@ -277,7 +277,7 @@ LabelController.updateExistingLabelById = async (req, res, next) => {
 					response: "HTTP Status Code 200 (OK)",
 					feedback: [
 						{
-							msg: `${props.labelName} successfully updated`,
+							msg: `${props.name} successfully updated`,
 							value: label
 						}
 					]

@@ -9,16 +9,15 @@ const ArtistUtilities = {}
 ArtistUtilities.createArtistDocument = async (artist) => {
 
 	const props = {
-		artistName: artist.artistName,
-		realName: artist.realName,
-		aliasName: [],
+		name: artist.name,
+		real_name: artist.real_name,
 		profile: artist.profile,
 		website: artist.website,
-		discogsId: artist.discogsId,
+		discogs_id: artist.discogs_id,
 	}
 
 	// Create linked Alias Name data properties
-	props.aliasName = await DocumentUtilities.manageLinkedData(artist.aliasName, ArtistModel);
+	props.alias_name = await DocumentUtilities.manageLinkedData(artist.alias_name, ArtistModel);
 
 	return props;
 }

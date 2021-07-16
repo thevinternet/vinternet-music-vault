@@ -52,11 +52,17 @@ router.post(
 		next();
 	},
 	ReleaseController.validate("checkReleaseInput"),
+	ReleaseController.validate("checkTrackInput"),
 	ReleaseController.createNewRelease
 );
 
 // [POST] Add New Release With Text Properties Only Endpoint
-router.post("/new/text", ReleaseController.validate("checkReleaseInput"), ReleaseController.createNewRelease);
+router.post(
+	"/new/text",
+	ReleaseController.validate("checkReleaseInput"),
+	ReleaseController.validate("checkTrackInput"),
+	ReleaseController.createNewRelease
+);
 
 //===============================================================================================================//
 // Routes - All Release [PUT] Routes
@@ -71,11 +77,17 @@ router.put(
 		next();
 	},
 	ReleaseController.validate("checkReleaseInput"),
+	ReleaseController.validate("checkTrackInput"),
 	ReleaseController.updateExistingReleaseById
 );
 
 // [PUT] Update Release Text Properties Only Endpoint
-router.put("/:id/update/text", ReleaseController.validate("checkReleaseInput"), ReleaseController.updateExistingReleaseById);
+router.put(
+	"/:id/update/text",
+	ReleaseController.validate("checkReleaseInput"),
+	ReleaseController.validate("checkTrackInput"),
+	ReleaseController.updateExistingReleaseById
+);
 
 //===============================================================================================================//
 // Routes - All Release [DELETE] Routes

@@ -9,17 +9,15 @@ const LabelUtilities = {}
 LabelUtilities.createLabelDocument = async (label) => {
 
 	const props = {
-		labelName: label.labelName,
-		parentLabel: [],
-		subsidiaryLabel: [],
+		name: label.name,
 		profile: label.profile,
 		website: label.website,
-		discogsId: label.discogsId,
+		discogs_id: label.discogs_id,
 	}
 
 	// Create linked Parent & Subsidiary Label data properties
-	props.parentLabel = await DocumentUtilities.manageLinkedData(label.parentLabel, LabelModel);
-	props.subsidiaryLabel = await DocumentUtilities.manageLinkedData(label.subsidiaryLabel, LabelModel);
+	props.parent_label = await DocumentUtilities.manageLinkedData(label.parent_label, LabelModel);
+	props.subsidiary_label = await DocumentUtilities.manageLinkedData(label.subsidiary_label, LabelModel);
 
 	return props;
 }

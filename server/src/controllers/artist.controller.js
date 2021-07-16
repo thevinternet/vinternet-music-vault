@@ -21,18 +21,18 @@ ArtistController.validate = (method) => {
 				body("artist._id")
 					.optional().isMongoId()
 					.withMessage("The value for the Artist Id provided is not valid"),
-				body("artist.artistName")
+				body("artist.name")
 					.notEmpty().escape().trim()
 					.withMessage("Please provide the name of the artist"),
-				body("artist.realName")
+				body("artist.real_name")
 					.optional().escape().trim(),
-				body("artist.aliasName")
+				body("artist.alias_name")
 					.isArray()
 					.withMessage("Alias Name array is malformed and not valid"),
-				body("artist.aliasName.*._id")
+				body("artist.alias_name.*._id")
 					.isMongoId().optional()
 					.withMessage("The value for the Alias Name Id provided is not valid"),
-				body("artist.aliasName.*.name")
+				body("artist.alias_name.*.name")
 					.optional().escape().trim(),
 				body("artist.profile")
 					.optional().escape().trim(),
@@ -47,7 +47,7 @@ ArtistController.validate = (method) => {
 					.withMessage("Please provide the name of the website"),
 				body("artist.website.*.url")
 					.optional().escape().trim(),
-				body("artist.discogsId")
+				body("artist.discogs_id")
 					.optional().escape().trim()
 			]
 		}
@@ -135,7 +135,7 @@ ArtistController.createNewArtist = async (req, res, next) => {
 		}
 
 		// If artist name already exists return error object
-		const artistCheck = await ArtistModel.find({ name: req.body.artist.artistName }).exec();
+		const artistCheck = await ArtistModel.find({ name: req.body.artist.name }).exec();
 
 		if (artistCheck.length) {
 			return res.json({
@@ -144,9 +144,9 @@ ArtistController.createNewArtist = async (req, res, next) => {
 					response: "HTTP Status Code 200 (OK)",
 					errors: [
 						{
-							value: req.body.artist.artistName,
+							value: req.body.artist.name,
 							msg: "The artist name provided is already in the database",
-							param: "artistName",
+							param: "name",
 							location: "body"
 						}
 					]
@@ -160,17 +160,17 @@ ArtistController.createNewArtist = async (req, res, next) => {
 		// Prepare artist picture object
 		let file;
 		if (req.file) {
-			file = {
+			file = [{
 				location: req.file.filename,
 				filename: req.file.originalname,
 				format: req.file.mimetype
-			}
+			}]
 		} else {
-			file = {
+			file = [{
 				location: "avatar.jpg",
 				filename: "avatar.jpg",
 				format: "image/jpeg"
-			}
+			}]
 		}
 
 		// Submit artist object to model and handle response
@@ -247,11 +247,11 @@ ArtistController.updateExistingArtistById = async (req, res, next) => {
 
 		// Handle optional picture file and append to artist object
 		if (req.file) {
-			props.picture = {
+			props.picture = [{
 				location: req.file.filename,
 				filename: req.file.originalname,
 				format: req.file.mimetype
-			}
+			}]
 		}
 
 		// Submit artist object to model and handle response
@@ -271,7 +271,7 @@ ArtistController.updateExistingArtistById = async (req, res, next) => {
 					response: "HTTP Status Code 200 (OK)",
 					feedback: [
 						{
-							msg: `${props.artistName} successfully updated`,
+							msg: `${props.name} successfully updated`,
 							value: artist
 						}
 					]

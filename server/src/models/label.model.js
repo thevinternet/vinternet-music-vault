@@ -91,12 +91,12 @@ LabelModel.getLabelById = async (id) => {
 LabelModel.createNewLabel = async (props, file) => {
 	try {
 		const label = await LabelModel.create({
-			name: props.labelName,
-			parent_label: props.parentLabel,
-			subsidiary_label: props.subsidiaryLabel,
+			name: props.name,
+			parent_label: props.parent_label,
+			subsidiary_label: props.subsidiary_label,
 			profile: props.profile,
 			website: props.website,
-			discogs_id: props.discogsId,
+			discogs_id: props.discogs_id,
 			picture: file
 		});
 
@@ -126,12 +126,12 @@ LabelModel.updateExistingLabelById = async (id, props) => {
 	// Create 'Set' Object with updated Label Props and optional Image File
 	const labelUpdateProps = {
 		$set: {
-			name: props.labelName,
-			parent_label: props.parentLabel,
-			subsidiary_label: props.subsidiaryLabel,
+			name: props.name,
+			parent_label: props.parent_label,
+			subsidiary_label: props.subsidiary_label,
 			profile: props.profile,
 			website: props.website,
-			discogs_id: props.discogsId,
+			discogs_id: props.discogs_id,
 		}
 	}
 	if (props.picture) {
