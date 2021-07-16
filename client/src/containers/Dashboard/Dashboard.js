@@ -52,27 +52,6 @@ class Dashboard extends Component {
               </div>
             </div>
           </li>
-          <li>
-            <div className="card--small">
-              <figure>
-                <picture>
-                  <img
-                    src={avatarArtist}
-                    alt={"Artists"}
-                    width="60px"
-                    height="60px"
-                  />
-                </picture>
-              </figure>
-              <div className="card__details">
-                <h2>
-                  <Link to={{ pathname: "/artists/5d92607d76ed50de35d9904a" }}>
-                    Example Artist: Soul Intent
-                  </Link>
-                </h2>
-              </div>
-            </div>
-          </li>
         </ol>
         <h2>Labels</h2>
         <ol className="list--block">
@@ -110,27 +89,6 @@ class Dashboard extends Component {
               <div className="card__details">
                 <h2>
                   <Link to={{ pathname: "/labels/new" }}>Add New Label</Link>
-                </h2>
-              </div>
-            </div>
-          </li>
-          <li>
-            <div className="card--small">
-              <figure>
-                <picture>
-                  <img
-                    src={avatarLabel}
-                    alt={"Labels"}
-                    width="60px"
-                    height="60px"
-                  />
-                </picture>
-              </figure>
-              <div className="card__details">
-                <h2>
-                  <Link to={{ pathname: "/labels/5d8e508e785b016aa48d4923" }}>
-                    Example Label: Lossless Music
-                  </Link>
                 </h2>
               </div>
             </div>
@@ -176,13 +134,16 @@ class Dashboard extends Component {
               </div>
             </div>
           </li>
+        </ol>
+        <h2>Tracks</h2>
+        <ol className="list--block">
           <li>
             <div className="card--small">
               <figure>
                 <picture>
                   <img
                     src={avatarRelease}
-                    alt={"Releases"}
+                    alt={"Tracks"}
                     width="60px"
                     height="60px"
                   />
@@ -190,9 +151,7 @@ class Dashboard extends Component {
               </figure>
               <div className="card__details">
                 <h2>
-                  <Link to={{ pathname: "/releases/5dbaaa2e33a7f0b867c24e3e" }}>
-                    Example Release: Drifting [Exkursions] (EXKUR001)
-                  </Link>
+                  <Link to={{ pathname: "/tracks" }}>View All Tracks</Link>
                 </h2>
               </div>
             </div>

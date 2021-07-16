@@ -144,31 +144,48 @@ const ReleaseAdd = props => {
 		const tracksDataArray = [];
 		let fileFlag = false;
 
+		// Create Release Object for API submission
+
 		const releaseDataMap = new Map(Object.entries(props.stateReleaseForm));
 
 		releaseDataMap.forEach(function(value, key) {
 			switch (key) {
+				case "releaseTitle":
+					releaseDataObject.title = value.value;
+				break;
 				case "label": 
 					value.forEach(function(element) {
 						element.linkedRecord ?
-						releaseDataObject.labelName.push({ _id: element.fuzzyRef }) :
-						releaseDataObject.labelName.push({ name: element.value });
+						releaseDataObject.label_name.push({ _id: element.fuzzyRef }) :
+						releaseDataObject.label_name.push({ name: element.value });
 					});
+				break;
+				case "catalogue":
+					releaseDataObject.catalogue = value.value;
+				break;
+				case "releaseYear":
+					releaseDataObject.year = value.value;
 				break;
 				case "formats":
 					value.forEach(function(element) {
-						releaseDataObject.releaseFormat.push({
+						releaseDataObject.format.push({
 							name: element.label,
 							release: element.value
 						});
 					});
 				break;
-				case "imageUpload":
+				case "discogsLink":
+					releaseDataObject.discogs_url = value.value;
+				break;
+				case "discogsId":
+					releaseDataObject.discogs_id = value.value;
 				break;
 				default : 
 					releaseDataObject[key] = value.value;		
 			}
 		});
+
+		// Create Track Object for API submission
 
 		const tracksDataMap = new Map(Object.entries(props.stateTrackForm));
 
@@ -179,24 +196,39 @@ const ReleaseAdd = props => {
 					case "artists": 
 						value[key].forEach(function(element) {
 							element.linkedRecord ?
-							track.artistName.push({ _id: element.fuzzyRef }) :
-							track.artistName.push({ name: element.value });
+							track.artist_name.push({ _id: element.fuzzyRef }) :
+							track.artist_name.push({ name: element.value });
 						});
+					break;
+					case "trackTitle":
+						track.name = value[key].value;
+					break;
+					case "trackNumber":
+						track.track_number = value[key].value;
+					break;
+					case "trackGenre":
+						track.genre = value[key].value;
+					break;
+					case "trackMixKey":
+						track.mixkey = value[key].value;
 					break;
 					default : 
 						track[key] = value[key].value;
 				}
-				track.releaseLabel = releaseDataObject.labelName[0]._id
-					? releaseDataObject.labelName[0]._id
+				track.releaseLabel = releaseDataObject.label_name[0]._id
+					? releaseDataObject.label_name[0]._id
 					: "";
 			}
 			tracksDataArray.push(track);
 		})
 
-		const releaseData = { release: { 
-				release: releaseDataObject,
-				tracks: tracksDataArray
-			} };
+		// Prepare API submission (Plain Object / Form Data)
+
+		const releaseData = {
+			release: releaseDataObject,
+			tracks: tracksDataArray
+		};
+		
 		let newReleaseData = releaseData;
 
 		if (getAvatarFile) { 
@@ -206,7 +238,6 @@ const ReleaseAdd = props => {
 			fileFlag = true;
 		}
 
-		// console.log(newReleaseData);
 		props.onAddRelease(newReleaseData, fileFlag);
 	};
 

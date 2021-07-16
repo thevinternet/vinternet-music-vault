@@ -116,16 +116,27 @@ const ArtistAdd = props => {
 		const artistDataObject = objBuilderArtist.baseArtistObject();
 		let fileFlag = false;
 
+		// Create Artist Object for API submission
+
 		const artistDataMap = new Map(Object.entries(props.stateArtistForm));
 
 		artistDataMap.forEach(function(value, key) {
 			switch (key) {
+				case "artistName":
+					artistDataObject.name = value.value;
+				break;
+				case "realName":
+					artistDataObject.real_name = value.value;
+				break;
 				case "aliasNames": 
 					value.forEach(function(element) {
 						element.linkedRecord ?
-						artistDataObject.aliasName.push({ _id: element.id }) :
-						artistDataObject.aliasName.push({ name: element.value });
+						artistDataObject.alias_name.push({ _id: element.id }) :
+						artistDataObject.alias_name.push({ name: element.value });
 					});
+				break;
+				case "profile":
+					artistDataObject.profile = value.value;
 				break;
 				case "websites":
 					value.forEach(function(element) {
@@ -135,11 +146,16 @@ const ArtistAdd = props => {
 						});
 					});
 				break;
+				case "discogsId":
+					artistDataObject.discogs_id = value.value;
+				break;
 				default : 
 					artistDataObject[key] = value.value;
 			}
 		});
 
+		// Prepare API submission (Plain Object / Form Data)
+		
 		const artistData = { artist : artistDataObject }
 		let newArtistData = artistData;
 

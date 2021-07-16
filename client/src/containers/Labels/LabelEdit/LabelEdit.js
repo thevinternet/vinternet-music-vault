@@ -119,23 +119,31 @@ const LabelEdit = props => {
 		const labelId = props.stateLabel._id;
 		let fileFlag = false;
 
+		// Create Label Object for API submission
+
 		const labelDataMap = new Map(Object.entries(props.stateLabelForm));
 
 		labelDataMap.forEach(function(value, key) {
 			switch (key) {
+				case "labelName":
+					labelDataObject.name = value.value;
+				break;
 				case "parentLabel":
 					value.forEach(function(element) {
 						element.linkedRecord ?
-						labelDataObject.parentLabel.push({ _id: element.fuzzyRef }) :
-						labelDataObject.parentLabel.push({ name: element.value });
+						labelDataObject.parent_label.push({ _id: element.fuzzyRef }) :
+						labelDataObject.parent_label.push({ name: element.value });
 					});
 				break;
 				case "subsidiaryLabels": 
 					value.forEach(function(element) {
 						element.linkedRecord ?
-						labelDataObject.subsidiaryLabel.push({ _id: element.fuzzyRef }) :
-						labelDataObject.subsidiaryLabel.push({ name: element.value });
+						labelDataObject.subsidiary_label.push({ _id: element.fuzzyRef }) :
+						labelDataObject.subsidiary_label.push({ name: element.value });
 					});
+				break;
+				case "profile":
+					labelDataObject.profile = value.value;
 				break;
 				case "websites":
 					value.forEach(function(element) {
@@ -145,11 +153,16 @@ const LabelEdit = props => {
 						});
 					});
 				break;
+				case "discogsId":
+					labelDataObject.discogs_id = value.value;
+				break;
 				default : 
 					labelDataObject[key] = value.value;		
 			}
 		});
 
+		// Prepare API submission (Plain Object / Form Data)
+		
 		const labelData = { label: labelDataObject };
 		let updatedLabelData = labelData;
 
@@ -161,7 +174,6 @@ const LabelEdit = props => {
 			fileFlag = true;
 		}
 
-		console.log(updatedLabelData);
 		props.onUpdateLabel(labelId, updatedLabelData, fileFlag);
 	};
 
