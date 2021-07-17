@@ -13,6 +13,7 @@ services:
     # - /usr/app/server/node_modules
     environment:
       - NODE_ENV=${NODE_ENV}
+      - NODE_PATH=/node_modules
       - CHOKIDAR_USEPOLLING='true'
     env_file: .env
     ports:

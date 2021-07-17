@@ -4,6 +4,9 @@
 
 FROM node:14-alpine as client
 
+# Extend PATH
+ENV PATH=$PATH:/node_modules/.bin
+
 # Declare Client App Directory
 WORKDIR /usr/app/client/
 
@@ -19,6 +22,9 @@ RUN yarn build
 #--- Stage 2: Build Server ---#
 
 FROM node:14-alpine
+
+# Extend PATH
+ENV PATH=$PATH:/node_modules/.bin
 
 # Declare Main App Directory
 WORKDIR /usr/src/app/

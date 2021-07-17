@@ -2,6 +2,9 @@
 
 FROM node:14-alpine
 
+# Extend PATH
+ENV PATH=$PATH:/node_modules/.bin
+
 # Create Client App Directory
 RUN mkdir -p /usr/app/client/
 WORKDIR /usr/app/client/

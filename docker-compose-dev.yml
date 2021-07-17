@@ -13,8 +13,10 @@ services:
       - ./client/public/assets/images/artists:/usr/app/client/public/assets/images/artists
       - ./client/public/assets/images/labels:/usr/app/client/public/assets/images/labels
       - ./client/public/assets/images/releases:/usr/app/client/public/assets/images/releases
+    # - /usr/app/server/node_modules
     environment:
       - NODE_ENV=${NODE_ENV}
+      - NODE_PATH=/node_modules
       - CHOKIDAR_USEPOLLING='true'
     env_file: ./server/.env
     ports:
@@ -58,8 +60,10 @@ services:
     container_name: vmv-client-dev
     volumes:
       - ./client:/usr/app/client
+    # - /usr/app/client/node_modules
     environment:
       - NODE_ENV=${NODE_ENV}
+      - NODE_PATH=/node_modules
       - CHOKIDAR_USEPOLLING='true'
     stdin_open: true
     tty: true
