@@ -262,8 +262,7 @@ TrackModel.createNewTrack = async (props) => {
 			release_ref: props.release_ref,
 			track_number: props.track_number,
 			genre: props.genre,
-			mixkey: props.mixkey,
-			file_location: props.file_location
+			mixkey: props.mixkey
 		});
 
 		return track;
@@ -301,8 +300,7 @@ TrackModel.updateExistingTrackById = async (id, props) => {
 			release_ref: props.release_ref,
 			track_number: props.track_number,
 			genre: props.genre,
-			mixkey: props.mixkey,
-			file_location: props.file_location
+			mixkey: props.mixkey
 		}
 	}
 

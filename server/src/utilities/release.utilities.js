@@ -75,6 +75,11 @@ ReleaseUtilities.updateReleaseDocument = async (id, release, tracks) => {
 
 	// Append Track IDs array to updatedRelease object
 	updatedRelease.tracks = linkedProps.trackId;
+	
+	// Remove any existing Tracks not part of the updated Release
+	if (updatedRelease.tracks.length) {
+		await TrackUtilities.removeExistingTrackDocuments(updatedRelease.tracks, id);
+	}
 
 	// Remove any duplicate Artist Ids
 	const artistIds = [...linkedProps.artistId];

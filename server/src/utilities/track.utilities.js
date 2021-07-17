@@ -53,5 +53,44 @@ TrackUtilities.createTrackDocuments = async (tracks, releaseId) => {
 }
 
 //===============================================================================================================//
+// Utility - Remove Track Documents (During Update Release Process)
+//===============================================================================================================//
+
+TrackUtilities.removeExistingTrackDocuments = async (updatedTracks, releaseId) => {
+
+	let updatedTrackIds = [];
+	let existingTrackIds = [];
+
+	// If updatedTracks array has values, push Ids to new updatedTrackIds array
+	if (updatedTracks.length) {
+		updatedTracks.forEach(track => {
+			updatedTrackIds.push(track._id.toString())
+		})
+	}
+
+	// Check DB for existing Tracks associated with Release
+	const existingTracks = await TrackModel.find({ release_title: releaseId });
+
+	// If existingTracks array has values, push Ids to new existingTracksIds array
+	if (existingTracks.length) {
+		existingTracks.forEach(track => {
+			existingTrackIds.push(track._id.toString())
+		})
+	}
+	
+	// Filter out existingTracks & updatedTracks to leave remaining Tracks for deletion
+	const tracksToRemove = existingTrackIds.filter(item => !updatedTrackIds.includes(item));
+
+	// Delete remaining Tracks from database
+	if (tracksToRemove.length) {
+		for (let index = 0; index < tracksToRemove.length; index++) {
+			await TrackModel.deleteOne({ _id: tracksToRemove[index] }).exec();
+		}
+	}
+
+	next();
+}
+
+//===============================================================================================================//
 
 module.exports = TrackUtilities;

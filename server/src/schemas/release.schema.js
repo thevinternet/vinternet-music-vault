@@ -31,7 +31,7 @@ const ReleaseSchema = new Schema(
 		format: [
 			{
 				name: { type: String },
-				released: { type: Boolean }
+				released: { type: String }
 			}
 		],
 		picture: [
