@@ -4,8 +4,8 @@
 
 export const baseReleaseObject = () => {
   return {
-		labelName: [],
-		releaseFormat: []
+		label_name: [],
+		format: []
   };
 };
 
@@ -15,7 +15,8 @@ export const baseReleaseObject = () => {
 
 export const baseTrackObject = () => {
 	return {
-		artistName: []
+		artist_name: [],
+		release_label:[]
 	}
 }
 

@@ -4,8 +4,8 @@
 
 export const baseLabelObject = () => {
   return {
-		parentLabel: [],
-		subsidiaryLabel: [],
+		parent_label: [],
+		subsidiary_label: [],
     website: []
   };
 };

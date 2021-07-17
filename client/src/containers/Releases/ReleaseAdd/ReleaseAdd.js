@@ -191,7 +191,7 @@ const ReleaseAdd = props => {
 
 		tracksDataMap.forEach(function(value, key) {
 			let track = objBuilderRelease.baseTrackObject();
-			for ( let key in value ) {
+			for (let key in value) {
 				switch (key) {
 					case "artists": 
 						value[key].forEach(function(element) {
@@ -206,18 +206,18 @@ const ReleaseAdd = props => {
 					case "trackNumber":
 						track.track_number = value[key].value;
 					break;
-					case "trackGenre":
+					case "genre":
 						track.genre = value[key].value;
 					break;
-					case "trackMixKey":
+					case "mixKey":
 						track.mixkey = value[key].value;
 					break;
 					default : 
 						track[key] = value[key].value;
 				}
-				track.releaseLabel = releaseDataObject.label_name[0]._id
-					? releaseDataObject.label_name[0]._id
-					: "";
+			}
+			if (releaseDataObject.label_name[0]._id) {
+				track.release_label.push({ _id: releaseDataObject.label_name[0]._id });
 			}
 			tracksDataArray.push(track);
 		})
@@ -230,6 +230,7 @@ const ReleaseAdd = props => {
 		};
 		
 		let newReleaseData = releaseData;
+		// console.log(newReleaseData);
 
 		if (getAvatarFile) { 
 			newReleaseData = new FormData();
@@ -505,7 +506,7 @@ const ReleaseAdd = props => {
 									{trackFormElements.map((trackElement, trackIndex) =>
 										<details key={trackIndex}>
 											<summary aria-expanded="false" data-accordion-control="true" aria-controls={`accordionContainer${trackIndex}`} id={`accordionControl${trackIndex}`}>
-												Add Track {trackIndex + 1}: {trackElement[2].value}
+												Add Track {trackIndex + 1}: {trackElement[3].value}
 											</summary>
 											<div id={`accordionContainer${trackIndex}`} role="region" aria-labelledby={`accordionControl${trackIndex}`} data-accordion-content="true">
 												{trackElement.map((element, index) =>

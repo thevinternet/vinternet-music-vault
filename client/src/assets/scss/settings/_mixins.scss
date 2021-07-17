@@ -1,7 +1,11 @@
+/*-- https://sass-lang.com/documentation/breaking-changes/slash-div --*/
+@use "sass:list";
+@use "sass:math";
+
 /*-- Font Size [size] Pass Pixel value to get REM/Pixel fallback --*/
 
 @mixin fontsize($size) {
-  font-size: ($size / ($base-font-size / 1px)) + 0rem;
+	font-size: list.slash(math.div($base-font-size, 1px), $size) + 0rem;
 }
 
 /*-- Links [link colour, link decoration, visited colour, hover colour] --*/
@@ -52,7 +56,7 @@
   }
   &:focus {
     color: $color;
-    box-shadow: 0 0 0 ($base-spacing-unit / 2) $yellow;
+    box-shadow: 0 0 0 math.div($base-spacing-unit, 2) $yellow;
     outline: none;
   }
 }

@@ -139,7 +139,7 @@ const ReleaseEdit = props => {
 	// Create & Handle Form Submission Object
 	//===============================================================================================================//
 
-  const releaseUpdateHandler = event => {
+	const releaseUpdateHandler = event => {
 		event.preventDefault();
 		
 		const releaseId = props.stateRelease._id;
@@ -151,7 +151,7 @@ const ReleaseEdit = props => {
 
 		const releaseDataMap = new Map(Object.entries(props.stateReleaseForm));
 
-    	releaseDataMap.forEach(function(value, key) {
+		releaseDataMap.forEach(function(value, key) {
 			switch (key) {
 				case "releaseTitle":
 					releaseDataObject.title = value.value;
@@ -173,7 +173,7 @@ const ReleaseEdit = props => {
 					value.forEach(function(element) {
 						releaseDataObject.format.push({
 							name: element.label,
-							release: element.value
+							released: element.value
 						});
 					});
 				break;
@@ -194,8 +194,13 @@ const ReleaseEdit = props => {
 
 		tracksDataMap.forEach(function(value, key) {
 			let track = objBuilderRelease.baseTrackObject();
-			for ( let key in value ) {
+			for (let key in value) {
 				switch (key) {
+					case "trackId":
+						if (value[key].value) {
+							track._id = value[key].value;
+						}
+					break;
 					case "artists": 
 						value[key].forEach(function(element) {
 							element.linkedRecord ?
@@ -209,10 +214,10 @@ const ReleaseEdit = props => {
 					case "trackNumber":
 						track.track_number = value[key].value;
 					break;
-					case "trackGenre":
+					case "genre":
 						track.genre = value[key].value;
 					break;
-					case "trackMixKey":
+					case "mixKey":
 						track.mixkey = value[key].value;
 					break;
 					default : 
@@ -222,9 +227,9 @@ const ReleaseEdit = props => {
 				track.release_catalogue = releaseId;
 				track.release_ref = releaseId;
 				track.release_picture = releaseId;
-				track.release_label = releaseDataObject.label_name[0]._id
-					? releaseDataObject.label_name[0]._id
-					: "";
+			}
+			if (releaseDataObject.label_name[0]._id) {
+				track.release_label.push({ _id: releaseDataObject.label_name[0]._id });
 			}
 			tracksDataArray.push(track);
 		})
@@ -237,6 +242,7 @@ const ReleaseEdit = props => {
 		};
 
 		let updatedReleaseData = releaseData;
+		console.log(updatedReleaseData);
 
 		if (getAvatarFile) { 
 			updatedReleaseData = new FormData();
@@ -245,8 +251,8 @@ const ReleaseEdit = props => {
 			fileFlag = true;
 		}
 
-    	props.onUpdateRelease(releaseId, updatedReleaseData, fileFlag);
-  };
+		props.onUpdateRelease(releaseId, updatedReleaseData, fileFlag);
+	};
 
 	//===============================================================================================================//
 	// Prepare HTML Form Using Processed ReleaseForm Object Array From Redux Store
@@ -354,7 +360,7 @@ const ReleaseEdit = props => {
 	// Prepare HTML Form Using Processed TrackForm Object Array From Redux Store
 	//===============================================================================================================//
 
-  const trackFormRender = (arrayElement, arrayIndex, trackIndex) => {
+	const trackFormRender = (arrayElement, arrayIndex, trackIndex) => {
 		switch (arrayElement.id) {
 			case "trackForm":
 				break;
@@ -439,7 +445,7 @@ const ReleaseEdit = props => {
 		}
 	}
 	
-  //===============================================================================================================//
+	//===============================================================================================================//
 
 	const imageUploadPreviewHandler = event => {
 		setAvatar(URL.createObjectURL(event.target.files[0]));
@@ -507,6 +513,7 @@ const ReleaseEdit = props => {
 			}
 			trackFormElements.push(trackElement);
 		});
+		console.log(trackFormElements);
 	}
 
 	//===============================================================================================================//
@@ -555,7 +562,7 @@ const ReleaseEdit = props => {
 									{trackFormElements.map((trackElement, trackIndex) =>
 										<details key={trackIndex}>
 											<summary aria-expanded="false" data-accordion-control="true" aria-controls={`accordionContainer${trackIndex}`} id={`accordionControl${trackIndex}`}>
-												Edit Track {trackIndex + 1}: {trackElement[2].value}
+												Edit Track {trackIndex + 1}: {trackElement[3].value}
 											</summary>
 											<div id={`accordionContainer${trackIndex}`} role="region" aria-labelledby={`accordionControl${trackIndex}`} data-accordion-content="true">
 												{trackElement.map((element, index) =>
@@ -637,49 +644,49 @@ const ReleaseEdit = props => {
 //===============================================================================================================//
 
 const mapStateToProps = state => {
-  return {
-    stateRelease: state.release.release,
-    stateArtists: state.artist.artists,
+	return {
+		stateRelease: state.release.release,
+		stateArtists: state.artist.artists,
 		stateLabels: state.label.labels,
 		stateTracks: state.track.tracks,
 		stateReleaseForm: state.release.releaseForm,
 		stateTrackForm: state.track.trackForm,
-    stateLoading: state.release.loading,
-    stateError: state.release.error,
-    stateSuccess: state.release.success,
+		stateLoading: state.release.loading,
+		stateError: state.release.error,
+		stateSuccess: state.release.success,
 		stateResponse: state.release.response,
 		stateFeedback: state.release.feedback
-  };
+	};
 };
 
 const mapDispatchToProps = dispatch => {
-  return {
-    onFetchRelease: (releaseId, edit) =>
+	return {
+		onFetchRelease: (releaseId, edit) =>
 			dispatch(releaseActions.fetchReleaseSend(releaseId, edit)),
 		onFetchTracks: (releaseId, edit) =>
 			dispatch(releaseActions.fetchTracksByReleaseSend(releaseId, edit)),
-    onFetchArtists: () => 
+		onFetchArtists: () => 
 			dispatch(releaseActions.fetchArtistsSend()),
-    onFetchLabels: () => 
+		onFetchLabels: () => 
 			dispatch(releaseActions.fetchLabelsSend()),
-    onEditLocalRelease: updatedReleaseForm =>
+		onEditLocalRelease: updatedReleaseForm =>
 			dispatch(releaseActions.editReleaseClientInput(updatedReleaseForm)),
 		onEditLocalTrack: updatedTrackForm =>
-      dispatch(releaseActions.editTrackClientInput(updatedTrackForm)),
-    onUpdateRelease: (releaseId, updatedReleaseData, fileFlag) =>
-      dispatch(releaseActions.updateReleaseSend(releaseId, updatedReleaseData, fileFlag)),
-    onDeleteRelease: releaseId =>
-      dispatch(releaseActions.deleteReleaseSend(releaseId)),
-    onResetStatus: () => 
+			dispatch(releaseActions.editTrackClientInput(updatedTrackForm)),
+		onUpdateRelease: (releaseId, updatedReleaseData, fileFlag) =>
+			dispatch(releaseActions.updateReleaseSend(releaseId, updatedReleaseData, fileFlag)),
+		onDeleteRelease: releaseId =>
+			dispatch(releaseActions.deleteReleaseSend(releaseId)),
+		onResetStatus: () => 
 			dispatch(releaseActions.releaseResetStatus())
-  };
+	};
 };
 
 //===============================================================================================================//
 
 export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+	mapStateToProps,
+	mapDispatchToProps
 )(ReleaseEdit);
 
 //===============================================================================================================//

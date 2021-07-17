@@ -4,7 +4,7 @@
 
 export const baseArtistObject = () => {
   return {
-    aliasName: [],
+    alias_name: [],
     website: []
   };
 };
